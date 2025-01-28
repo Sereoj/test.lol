@@ -1,0 +1,88 @@
+{
+    "levels": [
+        {
+            "name": {
+                "ru": "Новичок",
+                "en": "Novice"
+            },
+            "experience_required": 0
+        },
+        {
+            "name": {
+                "ru": "Творец",
+                "en": "Creator"
+            },
+            "experience_required": 50
+        },
+        {
+            "name": {
+                "ru": "Мастер кисти",
+                "en": "Brush Master"
+            },
+            "experience_required": 150
+        },
+        {
+            "name": {
+                "ru": "Иллюстратор",
+                "en": "Illustrator"
+            },
+            "experience_required": 300
+        },
+        {
+            "name": {
+                "ru": "Артист",
+                "en": "Artist"
+            },
+            "experience_required": 500
+        },
+        {
+            "name": {
+                "ru": "Палитровед",
+                "en": "Palette Expert"
+            },
+            "experience_required": 800
+        },
+        {
+            "name": {
+                "ru": "Дизайнер",
+                "en": "Designer"
+            },
+            "experience_required": 1200
+        },
+        {
+            "name": {
+                "ru": "Визуальный рассказчик",
+                "en": "Visual Storyteller"
+            },
+            "experience_required": 1800
+        },
+        {
+            "name": {
+                "ru": "Графический маг",
+                "en": "Graphic Wizard"
+            },
+            "experience_required": 2500
+        },
+        {
+            "name": {
+                "ru": "Виртуоз",
+                "en": "Virtuoso"
+            },
+            "experience_required": 3500
+        },
+        {
+            "name": {
+                "ru": "Легенда",
+                "en": "Legend"
+            },
+            "experience_required": 5000
+        },
+        {
+            "name": {
+                "ru": "Икона искусства",
+                "en": "Art Icon"
+            },
+            "experience_required": 7000
+        }
+    ]
+}

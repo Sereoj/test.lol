@@ -1,0 +1,62 @@
+[
+    {
+        "name": {
+            "ru": "Цифровой художник",
+            "en": "Digital Artist"
+        }
+    },
+    {
+        "name": {
+            "ru": "Графический дизайнер",
+            "en": "Graphic Designer"
+        }
+    },
+    {
+        "name": {
+            "ru": "Иллюстратор",
+            "en": "Illustrator"
+        }
+    },
+    {
+        "name": {
+            "ru": "Веб-дизайнер",
+            "en": "Web Designer"
+        }
+    },
+    {
+        "name": {
+            "ru": "UX/UI дизайнер",
+            "en": "UX/UI Designer"
+        }
+    },
+    {
+        "name": {
+            "ru": "Аниматор",
+            "en": "Animator"
+        }
+    },
+    {
+        "name": {
+            "ru": "3D моделлер",
+            "en": "3D Modeler"
+        }
+    },
+    {
+        "name": {
+            "ru": "Фотограф",
+            "en": "Photographer"
+        }
+    },
+    {
+        "name": {
+            "ru": "Видеограф",
+            "en": "Videographer"
+        }
+    },
+    {
+        "name": {
+            "ru": "Мультимедийный художник",
+            "en": "Multimedia Artist"
+        }
+    }
+]

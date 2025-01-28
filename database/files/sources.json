@@ -1,0 +1,66 @@
+[
+    {
+        "name": {
+            "en": "Telegram",
+            "ru": "Telegram"
+        },
+        "id": 1,
+        "iconUrl": "/static/svg/telegram.svg"
+    },
+    {
+        "name": {
+            "en": "Youtube",
+            "ru": "Youtube"
+        },
+        "id": 2,
+        "iconUrl": "/static/svg/youtube.svg"
+    },
+    {
+        "name": {
+            "en": "VK",
+            "ru": "VK"
+        },
+        "id": 3,
+        "iconUrl": "/static/svg/vk.svg"
+    },
+    {
+        "name": {
+            "en": "Discord",
+            "ru": "Discord"
+        },
+        "id": 4,
+        "iconUrl": "/static/svg/discord.svg"
+    },
+    {
+        "name": {
+            "en": "Twitter",
+            "ru": "Twitter"
+        },
+        "id": 5,
+        "iconUrl": "/static/svg/twitter.svg"
+    },
+    {
+        "name": {
+            "en": "Facebook",
+            "ru": "Facebook"
+        },
+        "id": 6,
+        "iconUrl": "/static/svg/facebook.svg"
+    },
+    {
+        "name": {
+            "en": "Instagram",
+            "ru": "Instagram"
+        },
+        "id": 7,
+        "iconUrl": "/static/svg/instagram.svg"
+    },
+    {
+        "name": {
+            "en": "Others",
+            "ru": "Другие"
+        },
+        "id": 8,
+        "iconUrl": "/static/svg/socials-other.svg"
+    }
+]

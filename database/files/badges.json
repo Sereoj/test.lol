@@ -1,0 +1,146 @@
+{
+    "badges": [
+        {
+            "name": {
+                "ru": "Новый участник",
+                "en": "New Member"
+            },
+            "color": "#BDBDBD",
+            "description": {
+                "ru": "Статус для тех, кто недавно присоединился к сообществу.",
+                "en": "Status for those who recently joined the community."
+            },
+            "options": {
+                "availability": "open"
+            },
+            "image": "new_member.png"
+        },
+        {
+            "name": {
+                "ru": "Активный участник",
+                "en": "Active Member"
+            },
+            "color": "#4CAF50",
+            "description": {
+                "ru": "Вы активно участвуете в жизни сообщества.",
+                "en": "You actively participate in the community."
+            },
+            "options": {
+                "availability": "achievement",
+                "requirements": {
+                    "type": "comments",
+                    "value": 50
+                }
+            },
+            "image": "active_member.png"
+        },
+        {
+            "name": {
+                "ru": "Опытный художник",
+                "en": "Experienced Artist"
+            },
+            "color": "#FF9800",
+            "description": {
+                "ru": "Ваш опыт и навыки впечатляют.",
+                "en": "Your experience and skills are impressive."
+            },
+            "options": {
+                "availability": "achievement",
+                "requirements": {
+                    "type": "uploads",
+                    "value": 20
+                }
+            },
+            "image": "experienced_artist.png"
+        },
+        {
+            "name": {
+                "ru": "Коллекционер",
+                "en": "Collector"
+            },
+            "color": "#9C27B0",
+            "description": {
+                "ru": "Вы сохранили много иллюстраций в свои закладки.",
+                "en": "You’ve saved many illustrations to your bookmarks."
+            },
+            "options": {
+                "availability": "achievement",
+                "requirements": {
+                    "type": "bookmarks",
+                    "value": 50
+                }
+            },
+            "image": "collector.png"
+        },
+        {
+            "name": {
+                "ru": "Поддерживающий",
+                "en": "Supporter"
+            },
+            "color": "#8BC34A",
+            "description": {
+                "ru": "Вы поддерживаете платформу своим участием.",
+                "en": "You support the platform with your involvement."
+            },
+            "options": {
+                "availability": "purchase",
+                "price": 100
+            },
+            "image": "supporter.png"
+        },
+        {
+            "name": {
+                "ru": "Победитель конкурса",
+                "en": "Contest Winner"
+            },
+            "color": "#FFC107",
+            "description": {
+                "ru": "Вы выиграли в одном из конкурсов.",
+                "en": "You’ve won in one of the contests."
+            },
+            "options": {
+                "availability": "achievement",
+                "requirements": {
+                    "type": "contest_win",
+                    "value": 1
+                }
+            },
+            "image": "contest_winner.png"
+        },
+        {
+            "name": {
+                "ru": "Суперлайкер",
+                "en": "Super Liker"
+            },
+            "color": "#F44336",
+            "description": {
+                "ru": "Вы поставили огромное количество лайков!",
+                "en": "You’ve liked an impressive number of posts!"
+            },
+            "options": {
+                "availability": "achievement",
+                "requirements": {
+                    "type": "likes",
+                    "value": 500
+                }
+            },
+            "image": "super_liker.png"
+        },
+        {
+            "name": {
+                "ru": "Легенда сообщества",
+                "en": "Community Legend"
+            },
+            "color": "#FF6F00",
+            "description": {
+                "ru": "Вы стали частью легенды сообщества.",
+                "en": "You’ve become part of the community’s legend."
+            },
+            "options": {
+                "availability": "purchase",
+                "price": 1000
+            },
+            "image": "community_legend.png"
+        }
+    ]
+}

@@ -1,0 +1,66 @@
+[
+    {
+        "name": {
+            "en": "Painting",
+            "ru": "Рисование"
+        },
+        "id": 1,
+        "color": "#F28585"
+    },
+    {
+        "name": {
+            "en": "Design",
+            "ru": "Граф. дизайн"
+        },
+        "id": 2,
+        "color": "#40A2E3"
+    },
+    {
+        "name": {
+            "en": "Montage",
+            "ru": "Монтаж"
+        },
+        "id": 3,
+        "color": "#59B4C3"
+    },
+    {
+        "name": {
+            "en": "Programming",
+            "ru": "Програм-ние"
+        },
+        "id": 4,
+        "color": "#9F70FD"
+    },
+    {
+        "name": {
+            "en": "Photo",
+            "ru": "Фотография"
+        },
+        "id": 5,
+        "color": "#9F70FD"
+    },
+    {
+        "name": {
+            "en": "Architecture",
+            "ru": "Архитектура"
+        },
+        "id": 6,
+        "color": "#59B4C3"
+    },
+    {
+        "name": {
+            "en": "Creative",
+            "ru": "Креативные"
+        },
+        "id": 7,
+        "color": "#40A2E3"
+    },
+    {
+        "name": {
+            "en": "Others",
+            "ru": "Другие"
+        },
+        "id": 8,
+        "color": "#F28585"
+    }
+]

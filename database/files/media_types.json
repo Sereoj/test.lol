@@ -1,0 +1,22 @@
+[
+    {
+        "name": "image",
+        "mime_types": "image/jpeg,image/png,image/gif",
+        "allowed_extensions": ["jpg", "jpeg", "png", "gif"]
+    },
+    {
+        "name": "video",
+        "mime_types": "video/mp4,video/ogg,video/webm",
+        "allowed_extensions": ["mp4", "ogg", "webm"]
+    },
+    {
+        "name": "audio",
+        "mime_types": "audio/mpeg,audio/ogg,audio/wav",
+        "allowed_extensions": ["mp3", "ogg", "wav"]
+    },
+    {
+        "name": "gif",
+        "mime_types": "image/gif",
+        "allowed_extensions": ["gif"]
+    }
+]

@@ -1,0 +1,37 @@
+[
+    {
+        "name": {"en": "First Registration", "ru": "Первая регистрация"},
+        "description": {"en": "Register as a new user", "ru": "Зарегистрируйтесь как новый пользователь"},
+        "points": 10
+    },
+    {
+        "name": {"en": "Upload 10 Images", "ru": "Загрузить 10 изображений"},
+        "description": {"en": "Upload 10 images to your profile", "ru": "Загрузите 10 изображений в свой профиль"},
+        "points": 20
+    },
+    {
+        "name": {"en": "Upload 50 Images", "ru": "Загрузить 50 изображений"},
+        "description": {"en": "Upload 50 images to your profile", "ru": "Загрузите 50 изображений в свой профиль"},
+        "points": 50
+    },
+    {
+        "name": {"en": "Upload 100 Images", "ru": "Загрузить 100 изображений"},
+        "description": {"en": "Upload 100 images to your profile", "ru": "Загрузите 100 изображений в свой профиль"},
+        "points": 100
+    },
+    {
+        "name": {"en": "Complete Profile", "ru": "Завершить профиль"},
+        "description": {"en": "Complete your profile information", "ru": "Заполните информацию в своем профиле"},
+        "points": 30
+    },
+    {
+        "name": {"en": "First Purchase", "ru": "Первая покупка"},
+        "description": {"en": "Make your first purchase", "ru": "Совершите свою первую покупку"},
+        "points": 40
+    },
+    {
+        "name": {"en": "Refer a Friend", "ru": "Пригласить друга"},
+        "description": {"en": "Refer a friend to register", "ru": "Пригласите друга зарегистрироваться"},
+        "points": 25
+    }
+]

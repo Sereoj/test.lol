@@ -1,0 +1,7 @@
+{
+    "watch": [
+        "."
+    ],
+    "ext": "php",
+    "exec": "E:\\programs\\openserver\\modules\\php\\PHP_8.1\\php.exe vendor/bin/pint"
+}

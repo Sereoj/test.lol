@@ -1,0 +1,114 @@
+[
+    {
+        "name": {
+            "ru": "Опубликовать 5 постов",
+            "en": "Publish 5 posts"
+        },
+        "description": {
+            "ru": "Опубликуйте 5 постов в блоге.",
+            "en": "Publish 5 posts on the blog."
+        },
+        "target": 5,
+        "period": "week",
+        "experience_reward": 300,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Продать 10 изображений",
+            "en": "Sell 10 images"
+        },
+        "description": {
+            "ru": "Продайте 10 изображений через онлайн-платформу.",
+            "en": "Sell 10 images through an online platform."
+        },
+        "target": 10,
+        "period": "month",
+        "experience_reward": 1000,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Опубликовать 10 постов",
+            "en": "Publish 10 posts"
+        },
+        "description": {
+            "ru": "Опубликуйте 10 постов.",
+            "en": "Publish 10 posts."
+        },
+        "target": 10,
+        "period": "week",
+        "experience_reward": 300,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Оставить 20 комментариев",
+            "en": "Leave 20 comments"
+        },
+        "description": {
+            "ru": "Оставьте 20 комментариев на постах других пользователей.",
+            "en": "Leave 20 comments on other users posts."
+        },
+        "target": 20,
+        "period": "week",
+        "experience_reward": 200,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Получить 100 лайков",
+            "en": "Get 100 likes"
+        },
+        "description": {
+            "ru": "Получите 100 лайков на своих постах.",
+            "en": "Get 100 likes on your posts."
+        },
+        "target": 100,
+        "period": "month",
+        "experience_reward": 500,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Скачать 50 файлов",
+            "en": "Download 50 files"
+        },
+        "description": {
+            "ru": "Скачайте 50 файлов с платформы.",
+            "en": "Download 50 files from the platform."
+        },
+        "target": 50,
+        "period": "month",
+        "experience_reward": 400,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Просмотреть 10 видео",
+            "en": "Watch 10 videos"
+        },
+        "description": {
+            "ru": "Просмотрите 10 видео на платформе.",
+            "en": "Watch 10 videos on the platform."
+        },
+        "target": 10,
+        "period": "month",
+        "experience_reward": 300,
+        "virtual_balance_reward": 0
+    },
+    {
+        "name": {
+            "ru": "Заполнить профиль",
+            "en": "Complete your profile"
+        },
+        "description": {
+            "ru": "Заполните все поля в своем профиле.",
+            "en": "Complete all fields in your profile."
+        },
+        "target": 1,
+        "period": "year",
+        "experience_reward": 200,
+        "virtual_balance_reward": 0
+    }
+]

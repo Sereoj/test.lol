@@ -1,0 +1,416 @@
+[
+    {
+        "meta": {
+            "title": {
+                "ru": "Фэнтези",
+                "en": "Fantasy"
+            },
+            "description": {
+                "ru": "Описание категории Фэнтези",
+                "en": "Description of Fantasy category"
+            }
+        },
+        "name": {
+            "ru": "Фэнтези",
+            "en": "Fantasy"
+        },
+        "slug": "fantasy",
+        "description": "Description of Fantasy category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Иллюстрация",
+                "en": "Illustration"
+            },
+            "description": {
+                "ru": "Описание категории Иллюстрация",
+                "en": "Description of Illustration category"
+            }
+        },
+        "name": {
+            "ru": "Иллюстрация",
+            "en": "Illustration"
+        },
+        "slug": "illustration",
+        "description": "Description of Illustration category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "2D",
+                "en": "2D"
+            },
+            "description": {
+                "ru": "Описание категории 2D",
+                "en": "Description of 2D category"
+            }
+        },
+        "name": {
+            "ru": "2D",
+            "en": "2D"
+        },
+        "slug": "2d",
+        "description": "Description of 2D category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Фан-арт",
+                "en": "Fan Art"
+            },
+            "description": {
+                "ru": "Описание категории Фан-арт",
+                "en": "Description of Fan Art category"
+            }
+        },
+        "name": {
+            "ru": "Фан-арт",
+            "en": "Fan Art"
+        },
+        "slug": "fan-art",
+        "description": "Description of Fan Art category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Хоррор",
+                "en": "Horror"
+            },
+            "description": {
+                "ru": "Описание категории Хоррор",
+                "en": "Description of Horror category"
+            }
+        },
+        "name": {
+            "ru": "Хоррор",
+            "en": "Horror"
+        },
+        "slug": "horror",
+        "description": "Description of Horror category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Дизайн персонажей",
+                "en": "Character Design"
+            },
+            "description": {
+                "ru": "Описание категории Дизайн персонажей",
+                "en": "Description of Character Design category"
+            }
+        },
+        "name": {
+            "ru": "Дизайн персонажей",
+            "en": "Character Design"
+        },
+        "slug": "character-design",
+        "description": "Description of Character Design category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Традиционное искусство",
+                "en": "Traditional"
+            },
+            "description": {
+                "ru": "Описание категории Традиционное искусство",
+                "en": "Description of Traditional category"
+            }
+        },
+        "name": {
+            "ru": "Традиционное искусство",
+            "en": "Traditional"
+        },
+        "slug": "traditional",
+        "description": "Description of Traditional category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Существа",
+                "en": "Creatures"
+            },
+            "description": {
+                "ru": "Описание категории Существа",
+                "en": "Description of Creatures category"
+            }
+        },
+        "name": {
+            "ru": "Существа",
+            "en": "Creatures"
+        },
+        "slug": "creatures",
+        "description": "Description of Creatures category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Концепт-арт",
+                "en": "Concept Art"
+            },
+            "description": {
+                "ru": "Описание категории Концепт-арт",
+                "en": "Description of Concept Art category"
+            }
+        },
+        "name": {
+            "ru": "Концепт-арт",
+            "en": "Concept Art"
+        },
+        "slug": "concept-art",
+        "description": "Description of Concept Art category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Животные",
+                "en": "Animals"
+            },
+            "description": {
+                "ru": "Описание категории Животные",
+                "en": "Description of Animals category"
+            }
+        },
+        "name": {
+            "ru": "Животные",
+            "en": "Animals"
+        },
+        "slug": "animals",
+        "description": "Description of Animals category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Реквизит",
+                "en": "Props"
+            },
+            "description": {
+                "ru": "Описание категории Реквизит",
+                "en": "Description of Props category"
+            }
+        },
+        "name": {
+            "ru": "Реквизит",
+            "en": "Props"
+        },
+        "slug": "props",
+        "description": "Description of Props category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Научная фантастика",
+                "en": "Science Fiction"
+            },
+            "description": {
+                "ru": "Описание категории Научная фантастика",
+                "en": "Description of Science Fiction category"
+            }
+        },
+        "name": {
+            "ru": "Научная фантастика",
+            "en": "Science Fiction"
+        },
+        "slug": "science-fiction",
+        "description": "Description of Science Fiction category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Анимация",
+                "en": "Animation"
+            },
+            "description": {
+                "ru": "Описание категории Анимация",
+                "en": "Description of Animation category"
+            }
+        },
+        "name": {
+            "ru": "Анимация",
+            "en": "Animation"
+        },
+        "slug": "animation",
+        "description": "Description of Animation category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Комиксы",
+                "en": "Comic Art"
+            },
+            "description": {
+                "ru": "Описание категории Комиксы",
+                "en": "Description of Comic Art category"
+            }
+        },
+        "name": {
+            "ru": "Комиксы",
+            "en": "Comic Art"
+        },
+        "slug": "comic-art",
+        "description": "Description of Comic Art category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "3D",
+                "en": "3D"
+            },
+            "description": {
+                "ru": "Описание категории 3D",
+                "en": "Description of 3D category"
+            }
+        },
+        "name": {
+            "ru": "3D",
+            "en": "3D"
+        },
+        "slug": "3d",
+        "description": "Description of 3D category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Транспортные средства",
+                "en": "Vehicles"
+            },
+            "description": {
+                "ru": "Описание категории Транспортные средства",
+                "en": "Description of Vehicles category"
+            }
+        },
+        "name": {
+            "ru": "Транспортные средства",
+            "en": "Vehicles"
+        },
+        "slug": "vehicles",
+        "description": "Description of Vehicles category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Карты/Картография",
+                "en": "Maps/Cartography"
+            },
+            "description": {
+                "ru": "Описание категории Карты/Картография",
+                "en": "Description of Maps/Cartography category"
+            }
+        },
+        "name": {
+            "ru": "Карты/Картография",
+            "en": "Maps/Cartography"
+        },
+        "slug": "maps-cartography",
+        "description": "Description of Maps/Cartography category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Визуальная разработка",
+                "en": "Visual Development"
+            },
+            "description": {
+                "ru": "Описание категории Визуальная разработка",
+                "en": "Description of Visual Development category"
+            }
+        },
+        "name": {
+            "ru": "Визуальная разработка",
+            "en": "Visual Development"
+        },
+        "slug": "visual-development",
+        "description": "Description of Visual Development category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Моделирование персонажей",
+                "en": "Character Modeling"
+            },
+            "description": {
+                "ru": "Описание категории Моделирование персонажей",
+                "en": "Description of Character Modeling category"
+            }
+        },
+        "name": {
+            "ru": "Моделирование персонажей",
+            "en": "Character Modeling"
+        },
+        "slug": "character-modeling",
+        "description": "Description of Character Modeling category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Твердая поверхность",
+                "en": "Hard Surface"
+            },
+            "description": {
+                "ru": "Описание категории Твердая поверхность",
+                "en": "Description of Hard Surface category"
+            }
+        },
+        "name": {
+            "ru": "Твердая поверхность",
+            "en": "Hard Surface"
+        },
+        "slug": "hard-surface",
+        "description": "Description of Hard Surface category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Механический дизайн",
+                "en": "Mechanical Design"
+            },
+            "description": {
+                "ru": "Описание категории Механический дизайн",
+                "en": "Description of Mechanical Design category"
+            }
+        },
+        "name": {
+            "ru": "Механический дизайн",
+            "en": "Mechanical Design"
+        },
+        "slug": "mechanical-design",
+        "description": "Description of Mechanical Design category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Концепт-арт окружения",
+                "en": "Environment Concept Art"
+            },
+            "description": {
+                "ru": "Описание категории Концепт-арт окружения",
+                "en": "Description of Environment Concept Art category"
+            }
+        },
+        "name": {
+            "ru": "Концепт-арт окружения",
+            "en": "Environment Concept Art"
+        },
+        "slug": "environment-concept-art",
+        "description": "Description of Environment Concept Art category"
+    },
+    {
+        "meta": {
+            "title": {
+                "ru": "Сториборды",
+                "en": "Storyboards"
+            },
+            "description": {
+                "ru": "Описание категории Сториборды",
+                "en": "Description of Storyboards category"
+            }
+        },
+        "name": {
+            "ru": "Сториборды",
+            "en": "Storyboards"
+        },
+        "slug": "storyboards",
+        "description": "Description of Storyboards category"
+    }
+]
