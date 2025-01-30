@@ -20,19 +20,24 @@ class MediaController extends Controller
     {
         try {
             $files = $request->file('file');
-            $isAdult = $request->boolean('is_adult');
-            $isSubscription = $request->boolean('is_subscription');
-            $isPaid = $request->boolean('is_paid');
-            $isAuthor = $request->boolean('is_author');
 
-            $cacheKey = 'media_upload_' . md5(json_encode($files));
+            $options = [
+                'is_paid' => $request->boolean('is_paid'),
+                'is_adult' => $request->boolean('is_adult'),
+                'is_subscription' => $request->boolean('is_subscription'),
+                'is_author' => $request->boolean('is_author'),
+                'is_public' => true,
+            ];
+
+            $cacheKey = 'media_upload_' . md5(json_encode($files).
+                    json_encode($options));
 
             if (Cache::has($cacheKey)) {
                 \Log::info('Отображаю кеш');
                 return response()->json(Cache::get($cacheKey));
             }
 
-            $media = $this->mediaService->upload($files, $isAdult, $isSubscription, $isPaid, $isAuthor);
+            $media = $this->mediaService->upload($files, $options);
             Cache::put($cacheKey, $media, now()->addMinutes(60));
 
             return response()->json($media, 201);
