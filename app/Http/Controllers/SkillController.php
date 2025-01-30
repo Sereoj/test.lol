@@ -9,6 +9,7 @@ use App\Http\Requests\Skill\UpdateSkillRequest;
 use App\Services\SkillService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SkillController extends Controller
@@ -28,7 +29,11 @@ class SkillController extends Controller
     public function index()
     {
         try {
-            $skills = $this->skillService->getAllSkills();
+            // Используем кеш для получения всех навыков
+            $skills = Cache::remember('skills_list', now()->addMinutes(10), function () {
+                return $this->skillService->getAllSkills();
+            });
+
             Log::info('Skills retrieved successfully');
 
             return response()->json($skills, 200);
@@ -63,6 +68,9 @@ class SkillController extends Controller
         try {
             $skill = $this->skillService->storeSkill($request->all());
             Log::info('Skill stored successfully', ['skill_id' => $skill->id, 'data' => $request->all()]);
+
+            // После добавления нового навыка сбрасываем кеш
+            Cache::forget('skills_list');
 
             return response()->json(['message' => 'Skill stored successfully', 'skill' => $skill], 201);
         } catch (Exception $e) {
@@ -121,7 +129,12 @@ class SkillController extends Controller
     {
         try {
             $user = Auth::user();
-            $skills = $this->skillService->getUserSkills($user->id);
+
+            // Используем кеш для получения навыков пользователя
+            $skills = Cache::remember("user_skills_{$user->id}", now()->addMinutes(10), function () use ($user) {
+                return $this->skillService->getUserSkills($user->id);
+            });
+
             Log::info('User skills retrieved successfully', ['user_id' => $user->id]);
 
             return response()->json($skills, 200);
@@ -143,6 +156,9 @@ class SkillController extends Controller
             $this->skillService->updateSkill($id, $request->all());
             Log::info('Skill updated successfully', ['id' => $id, 'data' => $request->all()]);
 
+            // После обновления навыка сбрасываем кеш с навыками
+            Cache::forget('skills_list');
+
             return response()->json(['message' => 'Skill updated successfully'], 200);
         } catch (Exception $e) {
             Log::error('Error updating skill: '.$e->getMessage(), ['id' => $id, 'data' => $request->all()]);
@@ -161,6 +177,9 @@ class SkillController extends Controller
         try {
             $this->skillService->deleteSkill($id);
             Log::info('Skill deleted successfully', ['id' => $id]);
+
+            // После удаления навыка сбрасываем кеш с навыками
+            Cache::forget('skills_list');
 
             return response()->json(['message' => 'Skill deleted successfully'], 200);
         } catch (Exception $e) {

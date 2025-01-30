@@ -7,6 +7,7 @@ use App\Models\Achievement;
 use App\Services\AchievementService;
 use Auth;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserAchievementController extends Controller
 {
@@ -23,8 +24,18 @@ class UserAchievementController extends Controller
     public function index()
     {
         $user = Auth::user();
+        $cacheKey = 'user_achievements_' . $user->id;
 
-        return response()->json($user->achievements);
+        // Попытка получить достижения из кеша
+        $achievements = Cache::get($cacheKey);
+
+        // Если кеш пуст, извлекаем достижения и сохраняем в кеш
+        if (!$achievements) {
+            $achievements = $user->achievements;
+            Cache::put($cacheKey, $achievements, now()->addMinutes(10)); // Кешируем на 10 минут
+        }
+
+        return response()->json($achievements);
     }
 
     /**
@@ -41,6 +52,10 @@ class UserAchievementController extends Controller
 
         $this->achievementService->assignAchievementToUser($user, $achievement);
 
+        // Очистка кеша достижений пользователя
+        Cache::forget('user_achievements_' . $user->id);
+
+        // Возвращаем актуальные достижения
         return response()->json($user->achievements, 201);
     }
 
@@ -51,6 +66,9 @@ class UserAchievementController extends Controller
     {
         $user = Auth::user();
         $this->achievementService->removeAchievementFromUser($user, $achievement);
+
+        // Очистка кеша достижений пользователя
+        Cache::forget('user_achievements_' . $user->id);
 
         return response()->json($user->achievements);
     }

@@ -7,6 +7,7 @@ use App\Helpers\FileHelper;
 use App\Repositories\MediaRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -29,7 +30,7 @@ class MediaService
 
         $allCreatedFiles = [];
 
-        if (empty($files) || ! is_array($files)) {
+        if (empty($files) || !is_array($files)) {
             Log::error('No files provided or invalid input format.');
             throw new Exception('No files provided or invalid input format.');
         }
@@ -41,11 +42,17 @@ class MediaService
         foreach ($files as $file) {
             try {
                 $mimeType = $file->getMimeType();
+                $cacheKey = sprintf('file_%s_%s', Auth::id(), md5($file->getClientOriginalName() . $mimeType));
+
+                if (Cache::has($cacheKey)) {
+                    $allCreatedFiles[] = Cache::get($cacheKey);
+                    \Log::info('Отображаю кеш '. $cacheKey);
+                    continue;
+                }
 
                 $type = FileHelper::determineFileType($mimeType);
-                if (! $type) {
+                if (!$type) {
                     Log::error("Unsupported file type: {$mimeType}.");
-
                     continue;
                 }
 
@@ -61,7 +68,6 @@ class MediaService
 
                 if (empty($results)) {
                     Log::error("Failed to process file {$file->getClientOriginalName()}.");
-
                     continue;
                 }
 
@@ -73,6 +79,7 @@ class MediaService
                 }
 
                 $originalMedia = null;
+                $mediaData = [];
 
                 foreach ($results as $resultType => $path) {
 
@@ -94,15 +101,21 @@ class MediaService
                         $originalMedia = $media;
                     }
 
-                    $allCreatedFiles[] = $media->toArray();
+                    $mediaData[] = $media->toArray();
                 }
+
+                Cache::put($cacheKey, $mediaData, now()->addMinutes(60));
+                $allCreatedFiles = array_merge($allCreatedFiles, $mediaData);
+
             } catch (Exception $e) {
                 Log::error("Error processing file {$file->getClientOriginalName()}: {$e->getMessage()}");
             }
         }
 
-        return $allCreatedFiles;
+        return $allCreatedFiles ? $allCreatedFiles[0] : null;
     }
+
+
 
     public function getMediaById($id)
     {

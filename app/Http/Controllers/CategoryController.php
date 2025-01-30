@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Category\CategoryRequest;
 use App\Services\CategoryService;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller
 {
@@ -16,36 +17,83 @@ class CategoryController extends Controller
 
     public function index()
     {
-        $artworks = $this->categoryService->getAllCategory();
+        // Кешируем список категорий
+        $cacheKey = 'categories_list';
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
 
-        return response()->json($artworks);
+        // Если в кеше нет данных, загружаем из базы данных
+        $categories = $this->categoryService->getAllCategory();
+
+        // Кешируем результат на 60 минут
+        Cache::put($cacheKey, $categories, now()->addMinutes(60));
+
+        return response()->json($categories);
     }
 
     public function store(CategoryRequest $request)
     {
-        $artwork = $this->categoryService->createCategory($request->validated());
+        $data = $request->validated();
+        $category = $this->categoryService->createCategory($data);
 
-        return response()->json($artwork, 201);
+        // Очистка кеша после добавления новой категории
+        Cache::forget('categories_list');
+
+        return response()->json($category, 201);
     }
 
     public function show($id)
     {
-        $artwork = $this->categoryService->getCategoryById($id);
+        // Проверяем кеш для конкретной категории
+        $cacheKey = 'category_' . $id;
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
 
-        return response()->json($artwork);
+        // Если в кеше нет данных, загружаем из базы данных
+        $category = $this->categoryService->getCategoryById($id)->id;
+
+        if ($category) {
+            // Кешируем результат на 60 минут
+            Cache::put($cacheKey, $category, now()->addMinutes(60));
+
+            return response()->json($category);
+        }
+
+        return response()->json(['message' => 'Category not found'], 404);
     }
 
     public function update(CategoryRequest $request, $id)
     {
-        $artwork = $this->categoryService->updateCategory($id, $request->validated());
+        $data = $request->validated();
+        $category = $this->categoryService->updateCategory($id, $data);
 
-        return response()->json($artwork);
+        if ($category) {
+            // Очистка кеша после обновления категории
+            Cache::forget('category_' . $id);
+            Cache::forget('categories_list');
+
+            return response()->json($category);
+        }
+
+        return response()->json(['message' => 'Category not found'], 404);
     }
 
     public function destroy($id)
     {
-        $this->categoryService->deleteCategory($id);
+        $result = $this->categoryService->deleteCategory($id);
 
-        return response()->json(null, 204);
+        if ($result) {
+            // Очистка кеша после удаления категории
+            Cache::forget('category_' . $id);
+            Cache::forget('categories_list');
+
+            return response()->json(['message' => 'Category deleted successfully']);
+        }
+
+        return response()->json(['message' => 'Category not found'], 404);
     }
 }

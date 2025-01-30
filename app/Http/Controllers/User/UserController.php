@@ -10,6 +10,7 @@ use App\Services\UserService;
 use App\Utils\PasswordUtil;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -30,16 +31,23 @@ class UserController extends Controller
      */
     public function index()
     {
-        try {
-            $users = $this->userService->getAllUsers();
+        // Попытка получить данные из кеша
+        $users = Cache::get('users');
 
-            return response()->json($users);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'An error occurred while fetching users.',
-                'message' => $e->getMessage(),
-            ], 500);
+        // Если кеш пуст, извлекаем данные из базы и сохраняем их в кеш
+        if (!$users) {
+            try {
+                $users = $this->userService->getAllUsers();
+                Cache::put('users', $users, now()->addMinutes(10)); // Кешируем на 10 минут
+            } catch (Exception $e) {
+                return response()->json([
+                    'error' => 'An error occurred while fetching users.',
+                    'message' => $e->getMessage(),
+                ], 500);
+            }
         }
+
+        return response()->json($users);
     }
 
     /**
@@ -50,22 +58,35 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        try {
-            $user = $this->userService->findUserById($id);
+        // Попытка получить данные из кеша
+        $cacheKey = 'user_' . $id;
+        $user = Cache::get($cacheKey);
 
-            if (! $user) {
-                return response()->json(['message' => 'User not found'], 404);
+        if (!$user) {
+            try {
+                $user = $this->userService->findUserById($id);
+
+                if (!$user) {
+                    return response()->json(['message' => 'User not found'], 404);
+                }
+
+                Cache::put($cacheKey, $user, now()->addMinutes(10)); // Кешируем на 10 минут
+            } catch (Exception $e) {
+                return response()->json([
+                    'error' => 'An error occurred while fetching the user.',
+                    'message' => $e->getMessage(),
+                ], 500);
             }
-
-            return response()->json($user);
-        } catch (Exception $e) {
-            return response()->json([
-                'error' => 'An error occurred while fetching the user.',
-                'message' => $e->getMessage(),
-            ], 500);
         }
+
+        return response()->json($user);
     }
 
+    /**
+     * Store a newly created user in storage.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function store(RegisterRequest $request)
     {
         try {
@@ -81,16 +102,21 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Update the specified user in storage.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function update(Request $request, $id)
     {
         $user = User::find($id);
-        if (! $user) {
+        if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|string|email|max:255|unique:users,email,'.$id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
             'password' => 'sometimes|required|string|min:8',
         ]);
 
@@ -99,6 +125,9 @@ class UserController extends Controller
             'email' => $request->email ?? $user->email,
             'password' => $request->password ? PasswordUtil::hash($request->password) : $user->password,
         ]);
+
+        // Очистка кеша после обновления данных пользователя
+        Cache::forget('user_' . $id);
 
         return response()->json($user, 200);
     }
@@ -113,11 +142,15 @@ class UserController extends Controller
         try {
             $user = $this->userService->findUserById($id);
 
-            if (! $user) {
+            if (!$user) {
                 return response()->json(['message' => 'User not found'], 404);
             }
 
             $this->userService->deleteUser($user);
+
+            // Очистка кеша после удаления пользователя
+            Cache::forget('user_' . $id);
+            Cache::forget('users');
 
             return response()->json(['message' => 'User deleted successfully']);
         } catch (Exception $e) {
@@ -128,6 +161,13 @@ class UserController extends Controller
         }
     }
 
+    /**
+     * Change the role of a user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $userId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function changeRole(Request $request, $userId)
     {
         // Валидация данных
@@ -140,6 +180,10 @@ class UserController extends Controller
 
         // Используем сервис для изменения роли
         $updatedUser = $this->userService->changeUserRole($user, $data['role_id']);
+
+        // Очистка кеша после изменения роли пользователя
+        Cache::forget('user_' . $userId);
+        Cache::forget('users');
 
         return response()->json($updatedUser);
     }

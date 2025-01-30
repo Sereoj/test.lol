@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Media\MediaRequest;
 use App\Services\MediaService;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 
 class MediaController extends Controller
 {
@@ -24,7 +25,15 @@ class MediaController extends Controller
             $isPaid = $request->boolean('is_paid');
             $isAuthor = $request->boolean('is_author');
 
+            $cacheKey = 'media_upload_' . md5(json_encode($files));
+
+            if (Cache::has($cacheKey)) {
+                \Log::info('Отображаю кеш');
+                return response()->json(Cache::get($cacheKey));
+            }
+
             $media = $this->mediaService->upload($files, $isAdult, $isSubscription, $isPaid, $isAuthor);
+            Cache::put($cacheKey, $media, now()->addMinutes(60));
 
             return response()->json($media, 201);
         } catch (Exception $e) {
@@ -35,7 +44,14 @@ class MediaController extends Controller
     public function show($id)
     {
         try {
+            $cacheKey = 'media_' . $id;
+            if (Cache::has($cacheKey)) {
+                return response()->json(Cache::get($cacheKey));
+            }
+
             $media = $this->mediaService->getMediaById($id);
+
+            Cache::put($cacheKey, $media, now()->addMinutes(60));
 
             return response()->json($media);
         } catch (Exception $e) {
@@ -48,6 +64,9 @@ class MediaController extends Controller
         try {
             $media = $this->mediaService->updateMedia($id, $request->validated());
 
+            $cacheKey = 'media_' . $id;
+            Cache::put($cacheKey, $media, now()->addMinutes(60));
+
             return response()->json($media);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -58,6 +77,7 @@ class MediaController extends Controller
     {
         try {
             $this->mediaService->deleteMedia($id);
+            Cache::forget('media_' . $id);
 
             return response()->json(null, 204);
         } catch (Exception $e) {

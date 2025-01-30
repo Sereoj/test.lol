@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class RoleController extends Controller
 {
@@ -15,13 +16,22 @@ class RoleController extends Controller
         $this->roleService = $roleService;
     }
 
+    /**
+     * Получить все роли.
+     */
     public function index()
     {
-        $roles = Role::all(); // Получаем все роли
+        // Кешируем список ролей
+        $roles = Cache::remember('roles_list', now()->addMinutes(10), function () {
+            return Role::all();
+        });
 
         return response()->json($roles);
     }
 
+    /**
+     * Создать новую роль.
+     */
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -33,9 +43,15 @@ class RoleController extends Controller
 
         $role = $this->roleService->createRole($data);
 
+        // После создания новой роли сбрасываем кеш с ролями
+        Cache::forget('roles_list');
+
         return response()->json($role, 201);
     }
 
+    /**
+     * Получить роль по ID.
+     */
     public function show($id)
     {
         $role = $this->roleService->getRoleById($id);

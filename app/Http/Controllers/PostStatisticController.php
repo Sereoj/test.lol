@@ -7,6 +7,7 @@ use App\Services\PostStatisticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class PostStatisticController extends Controller
 {
@@ -17,6 +18,9 @@ class PostStatisticController extends Controller
         $this->postStatisticsService = $postStatisticsService;
     }
 
+    /**
+     * Получить сводную статистику для постов с фильтрами.
+     */
     public function summary(PostStatSummaryRequest $request)
     {
         $userId = Auth::id();
@@ -28,16 +32,30 @@ class PostStatisticController extends Controller
             ],
         ];
 
-        $statistics = $this->postStatisticsService->getSummaryStatistics($userId, $filters);
+        // Кешируем сводную статистику для заданных фильтров
+        $cacheKey = 'post_stat_summary_' . $userId . '_' . md5(json_encode($filters));
+
+        $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId, $filters) {
+            return $this->postStatisticsService->getSummaryStatistics($userId, $filters);
+        });
 
         return response()->json($statistics);
     }
 
+    /**
+     * Получить последние статистики постов.
+     */
     public function recent(Request $request)
     {
         $userId = Auth::id();
         $limit = $request->input('limit', 10);
-        $statistics = $this->postStatisticsService->getRecentPostsStatistics($userId, $limit);
+
+        // Кешируем статистику последних постов
+        $cacheKey = 'post_stat_recent_' . $userId . '_limit_' . $limit;
+
+        $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId, $limit) {
+            return $this->postStatisticsService->getRecentPostsStatistics($userId, $limit);
+        });
 
         return response()->json($statistics);
     }

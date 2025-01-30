@@ -36,10 +36,7 @@ class BadgeService
     public function deleteBadge($id)
     {
         $badge = Badge::find($id);
-        if ($badge) {
-            return $badge->delete();
-        }
+        return $badge->delete();
 
-        return false;
     }
 }

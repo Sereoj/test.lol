@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\LevelService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class LevelController extends Controller
 {
@@ -19,7 +20,20 @@ class LevelController extends Controller
      */
     public function index()
     {
-        return $this->levelService->getAllLevels();
+        // Кешируем список уровней
+        $cacheKey = 'levels_list';
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        // Если данных нет в кеше, загружаем их из базы данных
+        $levels = $this->levelService->getAllLevels();
+
+        // Кешируем результат на 60 минут
+        Cache::put($cacheKey, $levels, now()->addMinutes(60));
+
+        return response()->json($levels);
     }
 
     /**
@@ -34,7 +48,11 @@ class LevelController extends Controller
             'experience_required' => 'required|integer',
         ]);
 
+        // Создаем новый уровень
         $level = $this->levelService->createLevel($request->name, $request->experience_required);
+
+        // Очистка кеша после добавления нового уровня
+        Cache::forget('levels_list');
 
         return response()->json($level, 201);
     }

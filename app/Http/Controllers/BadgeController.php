@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Badge\StoreBadgeRequest;
 use App\Http\Requests\Badge\UpdateBadgeRequest;
 use App\Services\BadgeService;
+use Illuminate\Support\Facades\Cache;
 
 class BadgeController extends Controller
 {
@@ -17,15 +18,38 @@ class BadgeController extends Controller
 
     public function index()
     {
+        // Проверяем кеш для списка бейджей
+        $cacheKey = 'badges_list';
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        // Если в кеше нет данных, загружаем из базы данных
         $badges = $this->badgeService->getAllBadges();
+
+        // Кешируем результат на 60 минут
+        Cache::put($cacheKey, $badges, now()->addMinutes(60));
 
         return response()->json($badges);
     }
 
     public function show($id)
     {
+        // Проверяем кеш для конкретного бейджа
+        $cacheKey = 'badge_' . $id;
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
+
+        // Если в кеше нет данных, загружаем из базы данных
         $badge = $this->badgeService->getBadgeById($id);
+
         if ($badge) {
+            // Кешируем результат на 60 минут
+            Cache::put($cacheKey, $badge, now()->addMinutes(60));
+
             return response()->json($badge);
         }
 
@@ -37,6 +61,9 @@ class BadgeController extends Controller
         $data = $request->validated();
         $badge = $this->badgeService->createBadge($data);
 
+        // Очистка кеша после добавления нового бейджа
+        Cache::forget('badges_list');
+
         return response()->json($badge, 201);
     }
 
@@ -44,7 +71,12 @@ class BadgeController extends Controller
     {
         $data = $request->validated();
         $badge = $this->badgeService->updateBadge($id, $data);
+
         if ($badge) {
+            // Очистка кеша после обновления бейджа
+            Cache::forget('badge_' . $id);
+            Cache::forget('badges_list');
+
             return response()->json($badge);
         }
 
@@ -54,7 +86,12 @@ class BadgeController extends Controller
     public function destroy($id)
     {
         $result = $this->badgeService->deleteBadge($id);
+
         if ($result) {
+            // Очистка кеша после удаления бейджа
+            Cache::forget('badge_' . $id);
+            Cache::forget('badges_list');
+
             return response()->json(['message' => 'Badge deleted successfully']);
         }
 

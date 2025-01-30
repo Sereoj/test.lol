@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\EmploymentStatus\StoreEmploymentStatusRequest;
 use App\Http\Requests\EmploymentStatus\UpdateEmploymentStatusRequest;
 use App\Services\EmploymentStatusService;
+use Illuminate\Support\Facades\Cache;
 
 class EmploymentStatusController extends Controller
 {
@@ -17,7 +18,16 @@ class EmploymentStatusController extends Controller
 
     public function index()
     {
+        // Кешируем список статусов трудовой занятости
+        $cacheKey = 'employment_statuses';
+        if (Cache::has($cacheKey)) {
+            // Возвращаем кешированные данные
+            return response()->json(Cache::get($cacheKey));
+        }
+
         $employmentStatuses = $this->employmentStatusService->getAllEmploymentStatuses();
+
+        Cache::put($cacheKey, $employmentStatuses, now()->addMinutes(60));
 
         return response()->json($employmentStatuses);
     }
@@ -37,6 +47,8 @@ class EmploymentStatusController extends Controller
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->createEmploymentStatus($data);
 
+        Cache::forget('employment_statuses');
+
         return response()->json($employmentStatus, 201);
     }
 
@@ -45,6 +57,7 @@ class EmploymentStatusController extends Controller
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->updateEmploymentStatus($id, $data);
         if ($employmentStatus) {
+            Cache::forget('employment_statuses');
             return response()->json($employmentStatus);
         }
 
@@ -55,6 +68,8 @@ class EmploymentStatusController extends Controller
     {
         $result = $this->employmentStatusService->deleteEmploymentStatus($id);
         if ($result) {
+            Cache::forget('employment_statuses');
+
             return response()->json(['message' => 'EmploymentStatus deleted successfully']);
         }
 

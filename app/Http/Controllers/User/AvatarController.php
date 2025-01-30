@@ -7,6 +7,7 @@ use App\Http\Requests\Avatar\UploadAvatarRequest;
 use App\Services\AvatarService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class AvatarController extends Controller
 {
@@ -30,6 +31,9 @@ class AvatarController extends Controller
             $file = $request->file('avatar');
             $avatar = $this->avatarService->uploadAvatar($user->id, $file);
 
+            // Очистка кеша аватаров пользователя после загрузки нового
+            Cache::forget('user_avatars_' . $user->id);
+
             return response()->json(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar], 200);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
@@ -45,7 +49,16 @@ class AvatarController extends Controller
     {
         try {
             $user = Auth::user();
-            $avatars = $this->avatarService->getUserAvatars($user->id);
+            $cacheKey = 'user_avatars_' . $user->id;
+
+            // Попытка получить аватары из кеша
+            $avatars = Cache::get($cacheKey);
+
+            // Если кеш пуст, извлекаем аватары и сохраняем в кеш
+            if (!$avatars) {
+                $avatars = $this->avatarService->getUserAvatars($user->id);
+                Cache::put($cacheKey, $avatars, now()->addMinutes(10)); // Кешируем на 10 минут
+            }
 
             return response()->json($avatars, 200);
         } catch (Exception $e) {
@@ -53,11 +66,20 @@ class AvatarController extends Controller
         }
     }
 
+    /**
+     * Delete an avatar for the authenticated user.
+     *
+     * @param  int  $avatarId
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function deleteAvatar($avatarId)
     {
         try {
             $user = Auth::user();
             $this->avatarService->deleteAvatar($user->id, $avatarId);
+
+            // Очистка кеша аватаров пользователя после удаления
+            Cache::forget('user_avatars_' . $user->id);
 
             return response()->json(['message' => 'Avatar deleted successfully'], 200);
         } catch (Exception $e) {
