@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Repositories\AvatarRepository;
+use Cache;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use Str;
 
 class AvatarService
 {
@@ -18,12 +20,27 @@ class AvatarService
     public function uploadAvatar($userId, $file)
     {
         try {
-            $path = $file->store('avatars', 'public');
+            $fileHash = md5_file($file->getPathname());
+            $cacheKey = "avatar_upload_{$userId}_{$fileHash}";
 
-            return $this->avatarRepository->createAvatar([
+            //Убираем дубли повторных загрузок файлов, чтобы не засорять сервер.
+            if (Cache::has($cacheKey)) {
+                \Log::info("Аватар уже загружен: {$fileHash}");
+                return Cache::get($cacheKey);
+            }
+
+            $fileName = Str::random(15) . '.' . $file->getClientOriginalExtension();
+            $path = $file->storeAs('avatars', $fileName, 'public');
+
+            $avatarData = $this->avatarRepository->createAvatar([
                 'user_id' => $userId,
                 'path' => $path,
             ]);
+            // Кешируем результат на 1 час
+            Cache::put($cacheKey, $avatarData, now()->addHour());
+
+            return $avatarData;
+
         } catch (Exception $e) {
             throw new Exception('An error occurred while uploading the avatar.');
         }

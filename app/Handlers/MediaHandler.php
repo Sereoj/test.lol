@@ -59,7 +59,8 @@ class MediaHandler
 
             $pipeline = new ImagePipeline;
             $pipeline
-                ->addFilter(new WatermarkFilter, ['text' => 'Водяной знак'])
+                ->addFilter(new WatermarkFilter, ['text' => 'Paid'])
+                ->addFilter(new WatermarkWithUsername, ['username' => '@Test'])
                 ->process($originalFilePath, $watermarkedPath);
 
             $results['compressed'] = $watermarkedPath;

@@ -23,7 +23,7 @@ class MediaService
         $this->mediaRepository = $mediaRepository;
     }
 
-    public function upload($files, $is_adult, $is_subscription, $is_paid, $is_author, $is_public = true)
+    public function upload($files, array $options)
     {
         $originalPath = 'originals';
         $processedPath = 'processed';
@@ -42,10 +42,13 @@ class MediaService
         foreach ($files as $file) {
             try {
                 $mimeType = $file->getMimeType();
-                $cacheKey = sprintf('file_%s_%s', Auth::id(), md5($file->getClientOriginalName() . $mimeType));
+
+                $cacheKey = sprintf('file_%s_%s', Auth::id(), md5($file->getClientOriginalName()));
+                Log::info($cacheKey);
 
                 if (Cache::has($cacheKey)) {
-                    $allCreatedFiles[] = Cache::get($cacheKey);
+                    $cachedData = Cache::get($cacheKey);
+                    $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
                     \Log::info('Отображаю кеш '. $cacheKey);
                     continue;
                 }
@@ -56,13 +59,6 @@ class MediaService
                     continue;
                 }
 
-                $options = [
-                    'is_paid' => $is_paid,
-                    'is_adult' => $is_adult,
-                    'is_subscription' => $is_subscription,
-                    'is_author' => $is_author,
-                    'is_public' => $is_public,
-                ];
 
                 $results = $this->mediaHandler->handleFile($type, $file, $options, $originalPath, $processedPath);
 
@@ -82,7 +78,6 @@ class MediaService
                 $mediaData = [];
 
                 foreach ($results as $resultType => $path) {
-
                     $media = $this->mediaRepository->create([
                         'uuid' => Str::uuid(),
                         'name' => $file->getClientOriginalName(),
@@ -91,7 +86,7 @@ class MediaService
                         'mime_type' => $mimeType,
                         'size' => $file->getSize(),
                         'user_id' => Auth::id(),
-                        'is_public' => $is_public,
+                        'is_public' => $options['is_public'],
                         'width' => $width,
                         'height' => $height,
                         'parent_id' => ($resultType === 'original') ? null : $originalMedia->id,
@@ -112,7 +107,7 @@ class MediaService
             }
         }
 
-        return $allCreatedFiles ? $allCreatedFiles[0] : null;
+        return $allCreatedFiles ?? [];
     }
 
 

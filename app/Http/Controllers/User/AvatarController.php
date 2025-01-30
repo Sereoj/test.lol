@@ -28,11 +28,17 @@ class AvatarController extends Controller
     {
         try {
             $user = Auth::user();
+            $files = $request->files->all();
+            \Log::info($files['avatar']);
+            if (isset($files['avatar']) && is_array($files['avatar'])) {
+                throw new Exception('Можно загрузить только одно изображение.');
+            }
+
             $file = $request->file('avatar');
             $avatar = $this->avatarService->uploadAvatar($user->id, $file);
 
-            // Очистка кеша аватаров пользователя после загрузки нового
-            Cache::forget('user_avatars_' . $user->id);
+/*            // Очистка кеша аватаров пользователя после загрузки нового
+            Cache::forget('user_avatars_' . $user->id);*/
 
             return response()->json(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar], 200);
         } catch (Exception $e) {
@@ -51,13 +57,11 @@ class AvatarController extends Controller
             $user = Auth::user();
             $cacheKey = 'user_avatars_' . $user->id;
 
-            // Попытка получить аватары из кеша
             $avatars = Cache::get($cacheKey);
 
-            // Если кеш пуст, извлекаем аватары и сохраняем в кеш
             if (!$avatars) {
                 $avatars = $this->avatarService->getUserAvatars($user->id);
-                Cache::put($cacheKey, $avatars, now()->addMinutes(10)); // Кешируем на 10 минут
+                Cache::put($cacheKey, $avatars, now()->addMinutes(10));
             }
 
             return response()->json($avatars, 200);
