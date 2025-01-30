@@ -28,11 +28,6 @@ class AvatarController extends Controller
     {
         try {
             $user = Auth::user();
-            $files = $request->files->all();
-            \Log::info($files['avatar']);
-            if (isset($files['avatar']) && is_array($files['avatar'])) {
-                throw new Exception('Можно загрузить только одно изображение.');
-            }
 
             $file = $request->file('avatar');
             $avatar = $this->avatarService->uploadAvatar($user->id, $file);

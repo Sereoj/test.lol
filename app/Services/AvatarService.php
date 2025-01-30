@@ -6,6 +6,8 @@ use App\Repositories\AvatarRepository;
 use Cache;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
+use Intervention\Image\Laravel\Facades\Image;
 use Str;
 
 class AvatarService
@@ -29,16 +31,20 @@ class AvatarService
                 return Cache::get($cacheKey);
             }
 
-            $fileName = Str::random(15) . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('avatars', $fileName, 'public');
+            $fileName = Str::random(15) . '.jpg';
+            $path = "avatars/{$fileName}";
+
+            $image = Image::read($file)
+                ->encode(new JpegEncoder(80));
+
+            Storage::disk('public')->put($path, $image);
 
             $avatarData = $this->avatarRepository->createAvatar([
                 'user_id' => $userId,
                 'path' => $path,
             ]);
-            // Кешируем результат на 1 час
-            Cache::put($cacheKey, $avatarData, now()->addHour());
 
+            Cache::put($cacheKey, $avatarData, now()->addHour());
             return $avatarData;
 
         } catch (Exception $e) {
