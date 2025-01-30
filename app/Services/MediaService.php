@@ -8,6 +8,7 @@ use App\Repositories\MediaRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class MediaService
 {
@@ -21,7 +22,7 @@ class MediaService
         $this->mediaRepository = $mediaRepository;
     }
 
-    public function upload($files, $is_adult, $is_subscription, $is_paid, $is_author)
+    public function upload($files, $is_adult, $is_subscription, $is_paid, $is_author, $is_public = true)
     {
         $originalPath = 'originals';
         $processedPath = 'processed';
@@ -29,23 +30,23 @@ class MediaService
         $allCreatedFiles = [];
 
         if (empty($files) || ! is_array($files)) {
+            Log::error('No files provided or invalid input format.');
             throw new Exception('No files provided or invalid input format.');
         }
 
+        $files = array_filter($files, function ($file) {
+            return $file->isValid() && $file->getMimeType();
+        });
+
         foreach ($files as $file) {
             try {
-                if (! $file->isValid()) {
-                    throw new Exception("File {$file->getClientOriginalName()} is invalid.");
-                }
-
                 $mimeType = $file->getMimeType();
-                if (! $mimeType) {
-                    throw new Exception("Unable to determine MIME type for file {$file->getClientOriginalName()}.");
-                }
 
                 $type = FileHelper::determineFileType($mimeType);
                 if (! $type) {
-                    throw new Exception("Unsupported file type: {$mimeType}.");
+                    Log::error("Unsupported file type: {$mimeType}.");
+
+                    continue;
                 }
 
                 $options = [
@@ -53,43 +54,49 @@ class MediaService
                     'is_adult' => $is_adult,
                     'is_subscription' => $is_subscription,
                     'is_author' => $is_author,
+                    'is_public' => $is_public,
                 ];
 
                 $results = $this->mediaHandler->handleFile($type, $file, $options, $originalPath, $processedPath);
 
                 if (empty($results)) {
-                    throw new Exception("Failed to process file {$file->getClientOriginalName()}.");
+                    Log::error("Failed to process file {$file->getClientOriginalName()}.");
+
+                    continue;
                 }
 
+                $width = null;
+                $height = null;
+
+                if ($type == 'image') {
+                    [$width, $height] = getimagesize($file);
+                }
+
+                $originalMedia = null;
+
                 foreach ($results as $resultType => $path) {
-                    if (! file_exists($path)) {
-                        throw new Exception("Processed file not found at path {$path}.");
-                    }
 
                     $media = $this->mediaRepository->create([
+                        'uuid' => Str::uuid(),
                         'name' => $file->getClientOriginalName(),
                         'file_path' => $path,
                         'type' => $resultType,
                         'mime_type' => $mimeType,
                         'size' => $file->getSize(),
                         'user_id' => Auth::id(),
+                        'is_public' => $is_public,
+                        'width' => $width,
+                        'height' => $height,
+                        'parent_id' => ($resultType === 'original') ? null : $originalMedia->id,
                     ]);
 
-                    if (! $media) {
-                        throw new Exception("Failed to save media record for file {$file->getClientOriginalName()}.");
+                    if ($resultType === 'original') {
+                        $originalMedia = $media;
                     }
 
-                    $allCreatedFiles[] = [
-                        'id' => $media->id,
-                        'name' => $media->name,
-                        'file_path' => $media->file_path,
-                        'mime_type' => $media->mime_type,
-                        'size' => $media->size,
-                        'type' => $media->type,
-                        'user_id' => $media->user_id,
-                    ];
+                    $allCreatedFiles[] = $media->toArray();
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error("Error processing file {$file->getClientOriginalName()}: {$e->getMessage()}");
             }
         }

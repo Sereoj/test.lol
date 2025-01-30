@@ -26,8 +26,10 @@ class EmploymentStatusService
         $employmentStatus = EmploymentStatus::find($id);
         if ($employmentStatus) {
             $employmentStatus->update($data);
+
             return $employmentStatus;
         }
+
         return null;
     }
 
@@ -37,6 +39,7 @@ class EmploymentStatusService
         if ($employmentStatus) {
             return $employmentStatus->delete();
         }
+
         return false;
     }
 }

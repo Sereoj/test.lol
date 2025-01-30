@@ -10,6 +10,7 @@ class EmploymentStatus extends Model
     use HasFactory;
 
     protected $fillable = ['name'];
+
     protected $table = 'employment_statuses';
 
     protected $casts = [

@@ -23,6 +23,7 @@ class UserProfileController extends Controller
         if ($profile) {
             return response()->json($profile);
         }
+
         return response()->json(['message' => 'User not found'], 404);
     }
 
@@ -34,6 +35,7 @@ class UserProfileController extends Controller
         if ($profile) {
             return response()->json($profile);
         }
+
         return response()->json(['message' => 'User not found'], 404);
     }
 }

@@ -26,9 +26,9 @@ class UpdateUserProfileRequest extends FormRequest
         return [
             'username' => 'sometimes|required|string|max:255',
             'seo_meta' => 'sometimes|required|json',
-            'slug' => 'sometimes|required|string|max:255|unique:users,slug,' . $this->user()->id,
+            'slug' => 'sometimes|required|string|max:255|unique:users,slug,'.$this->user()->id,
             'description' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,' . $this->user()->id,
+            'email' => 'sometimes|required|email|unique:users,email,'.$this->user()->id,
             'verification' => 'sometimes|required|boolean',
             'experience' => 'sometimes|required|integer',
             'gender' => 'sometimes|required|in:male,female,other',

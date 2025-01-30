@@ -13,9 +13,10 @@ class FollowService
         $following = User::find($followingId);
 
         if ($follower && $following) {
-            if (!$follower->following()->where('following_id', $followingId)->exists()) {
+            if (! $follower->following()->where('following_id', $followingId)->exists()) {
                 $follower->following()->attach($followingId);
                 $following->notify(new UserFollowedNotification($follower));
+
                 return true;
             }
         }
@@ -30,6 +31,7 @@ class FollowService
 
         if ($follower && $following) {
             $follower->following()->detach($followingId);
+
             return true;
         }
 
@@ -42,6 +44,7 @@ class FollowService
         if ($user) {
             return $user->followers;
         }
+
         return collect();
     }
 
@@ -51,6 +54,7 @@ class FollowService
         if ($user) {
             return $user->following;
         }
+
         return collect();
     }
 }

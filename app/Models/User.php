@@ -22,7 +22,7 @@ class User extends Authenticatable
         'username', 'slug', 'description', 'email', 'email_verified_at',
         'verification', 'password', 'provider', 'provider_id', 'role_id', 'usingApps_id', 'userSettings_id',
         'level_id', 'experience', 'gender', 'language', 'age', 'status_id', 'employment_status_id', 'location_id',
-        'employment_status_id'
+        'employment_status_id',
     ];
 
     /**

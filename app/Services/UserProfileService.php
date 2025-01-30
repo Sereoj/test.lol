@@ -21,6 +21,7 @@ class UserProfileService
             //event(new UserExperienceChanged($user));
             return $user;
         }
+
         return null;
     }
 }

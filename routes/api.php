@@ -252,7 +252,6 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/{achievement}', [UserAchievementController::class, 'destroy'])->middleware('role:admin')->name('achievements.destroy'); // для администраторов
     });
 
-
     Route::prefix('locations')->group(function () {
         Route::get('/', [LocationController::class, 'index'])->name('locations.index');
         Route::get('/{id}', [LocationController::class, 'show'])->name('locations.show');
@@ -287,10 +286,10 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('follow')->group(function () {
-            Route::post('/{userId}', [UserFollowController::class, 'follow'])->name('follow.user');
-            Route::delete('/{userId}', [UserFollowController::class, 'unfollow'])->name('unfollow.user');
-            Route::get('/followers/{userId}', [UserFollowController::class, 'followers'])->name('followers');
-            Route::get('/following/{userId}', [UserFollowController::class, 'following'])->name('following');
+        Route::post('/{userId}', [UserFollowController::class, 'follow'])->name('follow.user');
+        Route::delete('/{userId}', [UserFollowController::class, 'unfollow'])->name('unfollow.user');
+        Route::get('/followers/{userId}', [UserFollowController::class, 'followers'])->name('followers');
+        Route::get('/following/{userId}', [UserFollowController::class, 'following'])->name('following');
     });
 });
 

@@ -25,6 +25,7 @@ class UserBadgeService
     {
         $userBadge = UserBadge::findOrFail($id);
         $userBadge->update($data);
+
         return $userBadge;
     }
 
@@ -32,6 +33,7 @@ class UserBadgeService
     {
         $userBadge = UserBadge::findOrFail($id);
         $userBadge->delete();
+
         return response()->json(['message' => 'UserBadge deleted successfully']);
     }
 }

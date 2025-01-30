@@ -3,10 +3,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-
+use App\Services\FollowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Services\FollowService;
 
 class UserFollowController extends Controller
 {
@@ -44,12 +43,14 @@ class UserFollowController extends Controller
     public function followers($userId)
     {
         $followers = $this->followService->getFollowers($userId);
+
         return response()->json($followers);
     }
 
     public function following($userId)
     {
         $following = $this->followService->getFollowing($userId);
+
         return response()->json($following);
     }
 }

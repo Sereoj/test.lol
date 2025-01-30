@@ -15,6 +15,7 @@ class UserEmploymentStatusService
         if ($user && $employmentStatus) {
             $user->employmentStatus()->associate($employmentStatus);
             $user->save();
+
             return $user;
         }
 
@@ -28,6 +29,7 @@ class UserEmploymentStatusService
         if ($user) {
             $user->employmentStatus()->dissociate();
             $user->save();
+
             return $user;
         }
 

@@ -54,7 +54,7 @@ class UserRepository
         ]);
 
         $user->userBalance->create([
-            'balance' => 0.00
+            'balance' => 0.00,
         ]);
 
         // Логирование успешного создания пользователя

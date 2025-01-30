@@ -15,12 +15,13 @@ class Media extends Model
         'mime_type',
         'type',
         'size',
-        'meta',
         'user_id',
-    ];
-
-    protected $casts = [
-        'meta' => 'json',
+        'is_public',
+        'uuid',
+        'width',
+        'height',
+        'size',
+        'parent_id',
     ];
 
     public function posts()

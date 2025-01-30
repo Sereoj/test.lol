@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserBadgeRequest;
 use App\Http\Requests\UpdateUserBadgeRequest;
 use App\Services\UserBadgeService;
-use Illuminate\Http\Request;
 
 class UserBadgeController extends Controller
 {

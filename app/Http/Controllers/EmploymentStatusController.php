@@ -18,6 +18,7 @@ class EmploymentStatusController extends Controller
     public function index()
     {
         $employmentStatuses = $this->employmentStatusService->getAllEmploymentStatuses();
+
         return response()->json($employmentStatuses);
     }
 
@@ -27,6 +28,7 @@ class EmploymentStatusController extends Controller
         if ($employmentStatus) {
             return response()->json($employmentStatus);
         }
+
         return response()->json(['message' => 'EmploymentStatus not found'], 404);
     }
 
@@ -34,6 +36,7 @@ class EmploymentStatusController extends Controller
     {
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->createEmploymentStatus($data);
+
         return response()->json($employmentStatus, 201);
     }
 
@@ -44,6 +47,7 @@ class EmploymentStatusController extends Controller
         if ($employmentStatus) {
             return response()->json($employmentStatus);
         }
+
         return response()->json(['message' => 'EmploymentStatus not found'], 404);
     }
 
@@ -53,6 +57,7 @@ class EmploymentStatusController extends Controller
         if ($result) {
             return response()->json(['message' => 'EmploymentStatus deleted successfully']);
         }
+
         return response()->json(['message' => 'EmploymentStatus not found'], 404);
     }
 }
