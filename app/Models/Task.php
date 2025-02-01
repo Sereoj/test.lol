@@ -14,6 +14,7 @@ class Task extends Model
         'description',
         'target',
         'period',
+        'type',
         'experience_reward',
         'virtual_balance_reward',
         'created_at',

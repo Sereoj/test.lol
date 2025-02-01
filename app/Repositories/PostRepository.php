@@ -2,16 +2,29 @@
 
 namespace App\Repositories;
 
+use App\Events\GifPublished;
+use App\Events\ImagePublished;
+use App\Events\PostPublished;
+use App\Events\VideoPublished;
+use App\Helpers\FileHelper;
 use App\Http\Resources\PostResource;
 use App\Models\Interaction;
 use App\Models\Post;
 use App\Models\User;
+use App\Services\MediaService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class PostRepository
 {
+    protected MediaService $mediaService;
+
+    public function __construct(MediaService $mediaService)
+     {
+         $this->mediaService = $mediaService;
+     }
+
     public function getPosts(array $filters, $userId = null)
     {
         $query = Post::query()
@@ -169,11 +182,51 @@ class PostRepository
             if (isset($data['apps_id'])) {
                 $post->apps()->sync($data['apps_id']);
             }
+
+            // Обработка медиафайлов
             if (isset($data['media'])) {
+                $mediaTypes = [
+                    'images' => [],
+                    'gifs' => [],
+                    'videos' => [],
+                ];
+
+                \Log::info($data['media']);
+
+                foreach ($data['media'] as $mediaId) {
+                    $media = $this->mediaService->getMediaById($mediaId); //FindOrFail
+                    $fileType = FileHelper::determineFileType($media->mime_type); // image
+
+                    switch ($fileType) {
+                        case 'image':
+                            $mediaTypes['images'][] = $media['id'];
+                            break;
+                        case 'gif':
+                            $mediaTypes['gifs'][] = $media['id'];
+                            break;
+                        case 'video':
+                            $mediaTypes['videos'][] = $media['id'];
+                            break;
+                    }
+                }
+
+                //Временное решение
+                if (!empty($mediaTypes['images'])) {
+                    event(new PostPublished($post));
+                }
+                if (!empty($mediaTypes['gifs'])) {
+                    event(new PostPublished($post));
+                }
+                if (!empty($mediaTypes['videos'])) {
+                    event(new PostPublished($post));
+                }
+
                 $post->media()->sync($data['media']);
             }
 
             $post->statistics()->create(['post_id' => $post->id]);
+
+            event(new PostPublished($post));
 
             return $post->load(['user', 'category', 'media', 'tags', 'apps', 'statistics']);
         });

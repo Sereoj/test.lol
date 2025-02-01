@@ -7,6 +7,7 @@ use App\Models\Achievement;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\UserSetting;
+use App\Services\EmploymentStatusService;
 use App\Services\RoleService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -16,11 +17,13 @@ class UserRepository
     private AvatarRepository $avatarRepository;
 
     private RoleService $roleService;
+    private EmploymentStatusService $employmentStatusService;
 
-    public function __construct(AvatarRepository $avatarRepository, RoleService $roleService)
+    public function __construct(AvatarRepository $avatarRepository, RoleService $roleService, EmploymentStatusService $employmentStatusService)
     {
         $this->avatarRepository = $avatarRepository;
         $this->roleService = $roleService;
+        $this->employmentStatusService = $employmentStatusService;
     }
 
     public function create(array $data)
@@ -34,6 +37,7 @@ class UserRepository
         ]);
 
         $role = $this->roleService->getRoleByType('user');
+        $status = $this->employmentStatusService->getEmploymentStatusById(1);
 
         $user = User::query()->create([
             'username' => $data['username'],
@@ -46,14 +50,14 @@ class UserRepository
             'userSettings_id' => $userSettings->id,
             'usingApps_id' => null,
             'location_id' => null,
-            'employment_status_id' => null,
+            'employment_status_id' => $status->id,
             'verification' => false,
             'experience' => 0,
             'gender' => null,
             'age' => null,
         ]);
 
-        $user->userBalance->create([
+        $user->userBalance()->create([
             'balance' => 0.00,
         ]);
 

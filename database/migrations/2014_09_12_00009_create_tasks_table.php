@@ -18,6 +18,7 @@ return new class extends Migration
             $table->json('description')->nullable(); // Описание на разных языках
             $table->integer('target'); // Цель (например, количество выполнений)
             $table->enum('period', ['week', 'month', 'day', 'year', 'half_year']); // Период (например, "неделя", "месяц")
+            $table->string('type');
             $table->integer('experience_reward'); // Награда в опыте
             $table->integer('virtual_balance_reward'); // Награда в виртуальном балансе
             $table->timestamps();

@@ -25,14 +25,19 @@ class UserService
 
     public function createUser(array $data)
     {
-        $data['description'] = 'Welcome to '.config('app.name').'!';
-        $data['slug'] = TextUtil::generateUniqueSlug($data['username'], $this->userRepository->findBySlugCount(Str::slug($data['username'])));
+        try {
+            $data['description'] = 'Welcome to '.config('app.name').'!';
+            $data['slug'] = TextUtil::generateUniqueSlug($data['username'], $this->userRepository->findBySlugCount(Str::slug($data['username'])));
 
-        $user = $this->userRepository->create($data);
+            $user = $this->userRepository->create($data);
 
-        Log::info($user);
+            Log::info($user);
 
-        return $user;
+            return $user;
+        }catch (\Exception $e){
+            Log::error('User creation failed', ['error' => $e->getMessage()]);
+            throw $e;
+        }
     }
 
     public function findUserByEmail(string $email)

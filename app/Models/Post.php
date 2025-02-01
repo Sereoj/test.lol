@@ -41,6 +41,7 @@ class Post extends Model
         'is_free' => 'boolean',
         'price' => 'decimal:2',
         'settings' => 'json',
+        'meta' => 'json'
     ];
 
     public function statistics()

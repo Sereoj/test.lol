@@ -1,5 +1,5 @@
-[
-    {
+{
+    "tasks": [{
         "name": {
             "ru": "Опубликовать 5 постов",
             "en": "Publish 5 posts"
@@ -11,7 +11,8 @@
         "target": 5,
         "period": "week",
         "experience_reward": 300,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "publish_posts"
     },
     {
         "name": {
@@ -25,7 +26,8 @@
         "target": 10,
         "period": "month",
         "experience_reward": 1000,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "sell_images"
     },
     {
         "name": {
@@ -39,7 +41,8 @@
         "target": 10,
         "period": "week",
         "experience_reward": 300,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "publish_posts"
     },
     {
         "name": {
@@ -53,7 +56,8 @@
         "target": 20,
         "period": "week",
         "experience_reward": 200,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "leave_comments"
     },
     {
         "name": {
@@ -67,7 +71,8 @@
         "target": 100,
         "period": "month",
         "experience_reward": 500,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "get_likes"
     },
     {
         "name": {
@@ -81,7 +86,8 @@
         "target": 50,
         "period": "month",
         "experience_reward": 400,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "download_files"
     },
     {
         "name": {
@@ -95,7 +101,8 @@
         "target": 10,
         "period": "month",
         "experience_reward": 300,
-        "virtual_balance_reward": 0
+        "virtual_balance_reward": 0,
+        "type": "watch_videos"
     },
     {
         "name": {
@@ -109,6 +116,7 @@
         "target": 1,
         "period": "year",
         "experience_reward": 200,
-        "virtual_balance_reward": 0
-    }
-]
+        "virtual_balance_reward": 0,
+        "type": "complete_profile"
+    }]
+}

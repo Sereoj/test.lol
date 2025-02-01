@@ -14,6 +14,11 @@ class UserTask extends Model
 
     protected $fillable = ['user_id', 'task_id', 'progress', 'completed', 'period_start', 'period_end'];
 
+    protected $casts = [
+        'completed' => 'boolean',
+        'progress' => 'integer',
+    ];
+
     public function user()
     {
         return $this->belongsTo(User::class);

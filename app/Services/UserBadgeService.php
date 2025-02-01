@@ -23,7 +23,16 @@ class UserBadgeService
 
     public function getUserBadgeById($id)
     {
-        return UserBadge::query()->findOrFail($id);
+        $userBadge = UserBadge::query()
+            ->where('user_id', Auth::id())
+            ->where('badge_id', $id)
+            ->first();
+
+        if ($userBadge) {
+            return $userBadge;
+        }
+
+        return ['message' => 'Badge not found'];
     }
 
     public function updateUserBadge($id, array $data)
