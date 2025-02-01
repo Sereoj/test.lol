@@ -27,6 +27,7 @@ class StoreLocationRequest extends FormRequest
             'name' => 'required|array',
             'name.ru' => 'required|string',
             'name.en' => 'required|string',
+            'address' => 'required|string',
         ];
     }
 

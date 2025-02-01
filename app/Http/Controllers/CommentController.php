@@ -21,17 +21,13 @@ class CommentController extends Controller
 
     public function index(Request $request)
     {
-        // Кешируем комментарии для поста
         $cacheKey = 'comments_post_' . $request->post_id;
         if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные комментарии
             return response()->json(Cache::get($cacheKey));
         }
 
-        // Если в кеше нет данных, загружаем из базы данных
         $comments = $this->commentService->getCommentsForPost($request->post_id);
 
-        // Кешируем результат на 60 минут
         Cache::put($cacheKey, $comments, now()->addMinutes(60));
 
         return response()->json($comments);
@@ -47,7 +43,6 @@ class CommentController extends Controller
 
         $comment = $this->commentService->createComment($post->id, $request->validated());
 
-        // Очистка кеша для поста после добавления нового комментария
         Cache::forget('comments_post_' . $post_id);
 
         try {
@@ -98,7 +93,6 @@ class CommentController extends Controller
     public function destroy($id)
     {
         try {
-            // Очистка кеша для поста после удаления комментария
             $postId = $this->commentService->deleteComment($id)->first()->id;
             Cache::forget('comments_post_' . $postId);
 

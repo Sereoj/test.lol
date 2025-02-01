@@ -22,7 +22,6 @@ class UpdateUserBadgeRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'sometimes|required|exists:users,id',
             'badge_id' => 'sometimes|required|exists:badges,id',
         ];
     }

@@ -49,7 +49,7 @@ class MediaService
                 if (Cache::has($cacheKey)) {
                     $cachedData = Cache::get($cacheKey);
                     $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
-                    \Log::info('Отображаю кеш '. $cacheKey);
+                    Log::info('Отображаю кеш '. $cacheKey);
                     continue;
                 }
 

@@ -22,11 +22,20 @@ class UpdateBadgeRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'sometimes|required|json',
+            'name' => 'sometimes|required|array',
+            'name.ru' => 'sometimes|required|string|max:256',
+            'name.en' => 'sometimes|required|string|max:256',
             'color' => 'sometimes|required|string',
-            'description' => 'sometimes|required|json',
-            'options' => 'sometimes|required|json',
-            'image' => 'nullable|string',
+            'description' => 'sometimes|required|array',
+            'description.ru' => 'sometimes|required|string|max:1000',
+            'description.en' => 'sometimes|required|string|max:1000',
+            'options' => 'sometimes|required|array',
+            'options.availability' => 'sometimes|required|string|in:achievement,open,purchase',
+            'options.requirements' => 'required_if:options.availability,achievement|array',
+            'options.requirements.type' => 'required_if:options.availability,achievement|string|in:comments,uploads,bookmarks,contest_win,likes',
+            'options.requirements.value' => 'required_if:options.availability,achievement|integer',
+            'options.price' => 'required_if:options.availability,purchase|integer',
+            'image' => 'sometimes|string',
         ];
     }
 }

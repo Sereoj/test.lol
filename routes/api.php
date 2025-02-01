@@ -114,6 +114,8 @@ Route::middleware('auth:api')->group(function () {
 
         Route::prefix('badges')->group(function () {
             Route::post('/', [UserBadgeController::class, 'store'])->name('user-badges.store'); // для авторизированных
+            Route::get('/active', [UserBadgeController::class, 'getActiveBadge'])->name('user-badges.get-active');
+            Route::post('/active', [UserBadgeController::class, 'setActiveBadge'])->name('user-badges.set-active'); // для авторизированных
             Route::get('/', [UserBadgeController::class, 'index'])->name('user-badges.index'); // для авторизированных
             Route::get('/{id}', [UserBadgeController::class, 'show'])->name('user-badges.show'); // для авторизированных
             Route::put('/{id}', [UserBadgeController::class, 'update'])->name('user-badges.update'); // для авторизированных
@@ -126,6 +128,13 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/in-progress', [UserTaskController::class, 'inProgressTasks'])->name('tasks.in-progress');
             Route::get('/not-started', [UserTaskController::class, 'notStartedTasks'])->name('tasks.not-started');
             Route::post('/{task}/progress', [UserTaskController::class, 'updateTaskProgress'])->name('tasks.update-progress');
+        });
+
+        Route::prefix('follow')->group(function () {
+            Route::post('/{userId}', [UserFollowController::class, 'follow'])->name('follow.user');
+            Route::delete('/{userId}', [UserFollowController::class, 'unfollow'])->name('unfollow.user');
+            Route::get('/followers', [UserFollowController::class, 'followers'])->name('followers');
+            Route::get('/following', [UserFollowController::class, 'following'])->name('following');
         });
     });
 
@@ -283,13 +292,6 @@ Route::middleware('auth:api')->group(function () {
             Route::put('/{id}', [EmploymentStatusController::class, 'update'])->name('employment-statuses.update');
             Route::delete('/{id}', [EmploymentStatusController::class, 'destroy'])->name('employment-statuses.destroy');
         });
-    });
-
-    Route::prefix('follow')->group(function () {
-        Route::post('/{userId}', [UserFollowController::class, 'follow'])->name('follow.user');
-        Route::delete('/{userId}', [UserFollowController::class, 'unfollow'])->name('unfollow.user');
-        Route::get('/followers/{userId}', [UserFollowController::class, 'followers'])->name('followers');
-        Route::get('/following/{userId}', [UserFollowController::class, 'following'])->name('following');
     });
 });
 

@@ -74,16 +74,15 @@ class UserFollowController extends Controller
     /**
      * Получить список подписчиков пользователя.
      */
-    public function followers($userId)
+    public function followers()
     {
         // Кешируем список подписчиков
+        $userId = Auth::id();
         $cacheKey = "user_{$userId}_followers";
         $followers = Cache::get($cacheKey);
 
         if (!$followers) {
             $followers = $this->followService->getFollowers($userId);
-
-            // Кешируем на 10 минут
             Cache::put($cacheKey, $followers, now()->addMinutes(10));
         }
 
@@ -93,14 +92,17 @@ class UserFollowController extends Controller
     /**
      * Получить список пользователей, на которых подписан данный пользователь.
      */
-    public function following($userId)
+    public function following()
     {
         // Кешируем список подписок
+
+        $userId = Auth::id();
+
         $cacheKey = "user_{$userId}_following";
         $following = Cache::get($cacheKey);
 
         if (!$following) {
-            $following = $this->followService->getFollowing($userId);
+            $following = $this->followService->getFollowing();
 
             // Кешируем на 10 минут
             Cache::put($cacheKey, $following, now()->addMinutes(10));

@@ -46,18 +46,14 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        // Проверяем кеш для конкретной категории
         $cacheKey = 'category_' . $id;
         if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные данные
             return response()->json(Cache::get($cacheKey));
         }
 
-        // Если в кеше нет данных, загружаем из базы данных
         $category = $this->categoryService->getCategoryById($id)->id;
 
         if ($category) {
-            // Кешируем результат на 60 минут
             Cache::put($cacheKey, $category, now()->addMinutes(60));
 
             return response()->json($category);

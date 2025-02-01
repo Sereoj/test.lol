@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SearchRequest;
 use App\Services\PostSearchService;
 use App\Services\SearchSuggestionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Log;
 
 class PostSearchController extends Controller
 {
@@ -22,21 +24,27 @@ class PostSearchController extends Controller
     /**
      * Поиск постов по запросу.
      */
-    public function search(Request $request)
+    public function search(SearchRequest $request)
     {
         $query = $request->input('query');
 
-        // Валидация запроса
-        $validated = $request->validate([
-            'query' => 'required|string|min:3',
-        ]);
-
-        // Использование кеша для поисковых запросов
         $cacheKey = 'search_results_' . md5($query);
 
-        $results = Cache::remember($cacheKey, now()->addMinutes(10), function() use ($query) {
-            return $this->searchService->search($query);
-        });
+        $results = Cache::get($cacheKey);
+
+        if ($results) {
+
+            Log::info("Cache hit for query: {$query}", ['cache_key' => $cacheKey, 'results' => $results]);
+        } else {
+            Log::info("Cache miss for query: {$query}", ['cache_key' => $cacheKey]);
+
+            $results = Cache::remember($cacheKey, now()->addMinutes(10), function() use ($query, $cacheKey) {
+                $searchResults = $this->searchService->search($query);
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+
+                return $searchResults;
+            });
+        }
 
         return response()->json($results);
     }

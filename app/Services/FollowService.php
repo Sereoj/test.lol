@@ -4,57 +4,71 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Notifications\UserFollowedNotification;
+use Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FollowService
 {
     public function followUser($followerId, $followingId)
     {
-        $follower = User::find($followerId);
-        $following = User::find($followingId);
+        try {
+            DB::beginTransaction();
 
-        if ($follower && $following) {
-            if (! $follower->following()->where('following_id', $followingId)->exists()) {
-                $follower->following()->attach($followingId);
-                $following->notify(new UserFollowedNotification($follower));
+            $follower = User::find($followerId);
+            $following = User::find($followingId);
 
-                return true;
+            if ($follower && $following) {
+                if (!$follower->following()->where('following_id', $followingId)->exists()) {
+                    $follower->following()->attach($followingId);
+                    $following->notify(new UserFollowedNotification($follower));
+
+                    DB::commit();
+                    return true;
+                }
             }
-        }
 
-        return false;
+            DB::rollBack();
+            return false;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error following user: ' . $e->getMessage());
+            return false;
+        }
     }
 
     public function unfollowUser($followerId, $followingId)
     {
-        $follower = User::find($followerId);
-        $following = User::find($followingId);
+        try {
+            DB::beginTransaction();
 
-        if ($follower && $following) {
-            $follower->following()->detach($followingId);
+            $follower = User::find($followerId);
+            $following = User::find($followingId);
 
-            return true;
+            if ($follower && $following) {
+                $follower->following()->detach($followingId);
+
+                DB::commit();
+                return true;
+            }
+
+            DB::rollBack();
+            return false;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error unfollowing user: ' . $e->getMessage());
+            return false;
         }
-
-        return false;
     }
 
     public function getFollowers($userId)
     {
         $user = User::find($userId);
-        if ($user) {
-            return $user->followers;
-        }
-
-        return collect();
+        return $user ? $user->followers : collect();
     }
 
-    public function getFollowing($userId)
+    public function getFollowing()
     {
-        $user = User::find($userId);
-        if ($user) {
-            return $user->following;
-        }
-
-        return collect();
+        return Auth::user()->following ?? collect();
     }
 }

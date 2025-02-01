@@ -14,6 +14,11 @@ class UserBadge extends Model
     protected $fillable = [
         'user_id',
         'badge_id',
+        'is_active'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean'
     ];
 
     public function user()
@@ -24,5 +29,10 @@ class UserBadge extends Model
     public function badge()
     {
         return $this->belongsTo(Badge::class);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
     }
 }

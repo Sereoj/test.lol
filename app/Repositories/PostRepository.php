@@ -148,7 +148,7 @@ class PostRepository
 
         return DB::transaction(function () use ($data, $count_posts) {
             $post = Post::query()->create([
-                'meta' => json_encode(TextUtil::defaultMeta()),
+                'meta' => TextUtil::defaultMeta(),
                 'title' => $data['title'],
                 'slug' => TextUtil::generateUniqueSlug($data['title'], $count_posts),
                 'user_id' => Auth::id(),

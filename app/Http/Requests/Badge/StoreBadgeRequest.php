@@ -22,11 +22,22 @@ class StoreBadgeRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|json',
+            'name' => 'required|array',
+            'name.ru' => 'required|string|max:256',
+            'name.en' => 'required|string|max:256',
             'color' => 'required|string',
-            'description' => 'required|json',
-            'options' => 'required|json',
-            'image' => 'nullable|string',
+            'description' => 'required|array',
+            'description.ru' => 'required|string|max:1000',
+            'description.en' => 'required|string|max:1000',
+            'options' => 'required|array',
+            'options.availability' => 'required|string|in:achievement,open,purchase',
+            'options.requirements' => 'required_if:options.availability,achievement|array',
+            'options.requirements.type' => 'required_if:options.availability,achievement|string|in:comments,uploads,bookmarks,contest_win,likes',
+            'options.requirements.value' => 'required_if:options.availability,achievement|integer',
+            'options.price' => 'required_if:options.availability,purchase|integer',
+            'image' => 'required|string',
         ];
     }
 }
+
+//|max:256

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRoleRequest;
 use App\Models\Role;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
@@ -32,15 +33,9 @@ class RoleController extends Controller
     /**
      * Создать новую роль.
      */
-    public function store(Request $request)
+    public function store(StoreRoleRequest $request)
     {
-        $data = $request->validate([
-            'name' => 'required|array',
-            'name.ru' => 'required|string',
-            'name.en' => 'required|string',
-            'type' => 'required|in:admin,user,moderator,guest',
-        ]);
-
+        $data = $request->validated();
         $role = $this->roleService->createRole($data);
 
         // После создания новой роли сбрасываем кеш с ролями

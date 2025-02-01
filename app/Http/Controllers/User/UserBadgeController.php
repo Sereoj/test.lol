@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SetActiveBadgeRequest;
 use App\Http\Requests\StoreUserBadgeRequest;
 use App\Http\Requests\UpdateUserBadgeRequest;
 use App\Services\UserBadgeService;
+use Auth;
+use Exception;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 class UserBadgeController extends Controller
 {
@@ -18,20 +22,17 @@ class UserBadgeController extends Controller
     }
 
     /**
-     * Получить все награды пользователей.
+     * Получить все badge пользователей.
      */
     public function index()
     {
         // Кешируем список наград
         $cacheKey = 'user_badges_all';
 
-        // Проверяем, есть ли данные в кеше
         $badges = Cache::get($cacheKey);
 
         if (!$badges) {
             $badges = $this->userBadgeService->getAllUserBadges();
-
-            // Сохраняем данные в кеш на 10 минут
             Cache::put($cacheKey, $badges, now()->addMinutes(10));
         }
 
@@ -39,12 +40,13 @@ class UserBadgeController extends Controller
     }
 
     /**
-     * Создать награду пользователя.
+     * Создать badge пользователя.
      */
     public function store(StoreUserBadgeRequest $request)
     {
+        $userId = Auth::id();
         // Создаем новую награду
-        $badge = $this->userBadgeService->createUserBadge($request->validated());
+        $badge = $this->userBadgeService->createUserBadge($request->validated() + ['user_id' => $userId]);
 
         // Очищаем кеш, так как награды могли измениться
         Cache::forget('user_badges_all');
@@ -53,7 +55,7 @@ class UserBadgeController extends Controller
     }
 
     /**
-     * Получить награду по ID.
+     * Получить badge по ID.
      */
     public function show($id)
     {
@@ -65,7 +67,6 @@ class UserBadgeController extends Controller
         if (!$badge) {
             $badge = $this->userBadgeService->getUserBadgeById($id);
 
-            // Сохраняем награду в кеш
             Cache::put($cacheKey, $badge, now()->addMinutes(10));
         }
 
@@ -73,24 +74,47 @@ class UserBadgeController extends Controller
     }
 
     /**
-     * Обновить награду пользователя.
+     * Обновить badge пользователя.
      */
     public function update(UpdateUserBadgeRequest $request, $id)
     {
-        // Обновляем награду
-        $badge = $this->userBadgeService->updateUserBadge($id, $request->validated());
+        try {
+            $badge = $this->userBadgeService->updateUserBadge($id, $request->validated());
 
-        // Очищаем кеш награды
-        Cache::forget('user_badge_' . $id);
+            Cache::forget('user_badge_' . $id);
+            Cache::forget('user_badges_all');
 
-        // Очищаем общий кеш наград
-        Cache::forget('user_badges_all');
+            return response()->json($badge);
+        }catch (Exception $exception){
+            return response()->json(['message' => $exception->getMessage()], 500);
+        }
 
-        return response()->json($badge);
+    }
+
+    public function setActiveBadge(SetActiveBadgeRequest $request)
+    {
+        $badgeId = $request->input('badge_id');
+
+        try {
+            $this->userBadgeService->setActiveBadge($badgeId);
+            return response()->json(['message' => 'Badge set as active successfully'], 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
+    }
+
+    public function getActiveBadge()
+    {
+        try {
+            $activeBadge = $this->userBadgeService->getActiveBadge();
+            return response()->json($activeBadge, 200);
+        } catch (Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
+        }
     }
 
     /**
-     * Удалить награду пользователя.
+     * Удалить badge пользователя.
      */
     public function destroy($id)
     {

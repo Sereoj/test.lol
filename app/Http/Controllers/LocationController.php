@@ -68,12 +68,6 @@ class LocationController extends Controller
     public function store(StoreLocationRequest $request)
     {
         try {
-            // Валидация запроса
-            $request->validate([
-                'name' => 'required|string|max:255',
-                'address' => 'required|string',
-            ]);
-
             // Сохранение нового местоположения
             $location = $this->locationService->storeLocation($request->all());
             Log::info('Location stored successfully', [

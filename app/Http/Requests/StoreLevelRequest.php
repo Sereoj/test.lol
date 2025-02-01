@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreUserBadgeRequest extends FormRequest
+class StoreLevelRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -19,10 +19,13 @@ class StoreUserBadgeRequest extends FormRequest
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules()
+    public function rules(): array
     {
         return [
-            'badge_id' => 'required|exists:badges,id',
+            'name' => 'required|array',
+            'name.ru' => 'required|string',
+            'name.en' => 'required|string',
+            'experience_required' => 'required|integer',
         ];
     }
 }

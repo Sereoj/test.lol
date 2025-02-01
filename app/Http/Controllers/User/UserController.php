@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Services\AuthService;
 use App\Services\UserService;
@@ -107,18 +108,12 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function update(Request $request, $id)
+    public function update(UpdateUserRequest $request, $id)
     {
         $user = User::find($id);
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);
         }
-
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $id,
-            'password' => 'sometimes|required|string|min:8',
-        ]);
 
         $user->update([
             'name' => $request->name ?? $user->name,
@@ -126,7 +121,6 @@ class UserController extends Controller
             'password' => $request->password ? PasswordUtil::hash($request->password) : $user->password,
         ]);
 
-        // Очистка кеша после обновления данных пользователя
         Cache::forget('user_' . $id);
 
         return response()->json($user, 200);

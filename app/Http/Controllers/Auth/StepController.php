@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Auth;
 
 class StepController extends Controller
 {
-    private AvatarService $avatarService;
+    protected AvatarService $avatarService;
 
     private AvatarController $avatarController;
 

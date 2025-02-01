@@ -21,7 +21,6 @@ class EmploymentStatusController extends Controller
         // Кешируем список статусов трудовой занятости
         $cacheKey = 'employment_statuses';
         if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные данные
             return response()->json(Cache::get($cacheKey));
         }
 

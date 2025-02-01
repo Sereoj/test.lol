@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreLevelRequest;
 use App\Services\LevelService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -39,15 +40,8 @@ class LevelController extends Controller
     /**
      * Создать новый уровень.
      */
-    public function store(Request $request)
+    public function store(StoreLevelRequest $request)
     {
-        $request->validate([
-            'name' => 'required|array',
-            'name.ru' => 'required|string',
-            'name.en' => 'required|string',
-            'experience_required' => 'required|integer',
-        ]);
-
         // Создаем новый уровень
         $level = $this->levelService->createLevel($request->name, $request->experience_required);
 

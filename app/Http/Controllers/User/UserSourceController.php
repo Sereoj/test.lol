@@ -28,7 +28,7 @@ class UserSourceController extends Controller
             $user = Auth::user();
 
             // Добавляем источник
-            $this->userSourceService->addSourceToUser($user->id, $request->input('source_id'));
+            $this->userSourceService->addSourceToUser($user, $request->input('source_id'));
 
             return response()->json(['message' => 'Source added successfully'], 200);
         } catch (ModelNotFoundException $e) {

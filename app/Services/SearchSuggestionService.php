@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Models\Post;
 use App\Models\Tag;
 use App\Models\User;
+use App\Services\API\LibreTranslateService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -22,6 +23,10 @@ class SearchSuggestionService
 
         if (! $suggestions) {
             $suggestions = collect();
+
+            $translatedQuery = $this->translateQuery($query);
+            \Log::info("Test: ". $translatedQuery);
+            $queries[] = $translatedQuery;
 
             foreach ($queries as $preparedQuery) {
                 // Посты
@@ -66,9 +71,36 @@ class SearchSuggestionService
                 ->values();
 
             // Сохраняем в кэш
-            Cache::put($cacheKey, $suggestions, 60); // 60 минут
+            Cache::put($cacheKey, $suggestions, now()->addMinutes(5));
         }
 
         return $suggestions;
     }
+
+    /**
+     * Метод для перевода текста
+     *
+     * @param string $query
+     * @return string
+     */
+    protected function translateQuery($query)
+    {
+        // Попытаться получить переведённый текст из кэша
+        $cacheKey = 'translation_' . md5($query);
+        $translatedQuery = Cache::get($cacheKey);
+
+        if (!$translatedQuery) {
+            $translatedQuery = LibreTranslateService::translate($query, 'ru', 'en');
+
+            if ($translatedQuery) {
+                Cache::put($cacheKey, $translatedQuery, 60);
+            } else {
+                \Log::warning("Translation failed for query: {$query}");
+                return $query;
+            }
+        }
+
+        return $translatedQuery;
+    }
+
 }

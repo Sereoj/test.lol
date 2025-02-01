@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserAchievementRequest;
 use App\Models\Achievement;
 use App\Services\AchievementService;
 use Auth;
@@ -41,13 +42,9 @@ class UserAchievementController extends Controller
     /**
      * Добавить достижение пользователю.
      */
-    public function store(Request $request)
+    public function store(StoreUserAchievementRequest $request)
     {
         $user = Auth::user();
-        $request->validate([
-            'achievement_id' => 'required|exists:achievements,id',
-        ]);
-
         $achievement = Achievement::findOrFail($request->achievement_id);
 
         $this->achievementService->assignAchievementToUser($user, $achievement);
