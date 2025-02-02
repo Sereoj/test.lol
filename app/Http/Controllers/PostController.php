@@ -24,10 +24,9 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::check() ? Auth::id() : null;
-        $cacheKey = 'posts_' . md5(json_encode($request->all()) . '_' . $userId);
+        $cacheKey = 'posts_'.md5(json_encode($request->all()).'_'.$userId);
 
-        // Используем кеш для списка постов, если он существует
-        $posts = Cache::remember($cacheKey, now()->addMinutes(60), function() use ($request, $userId) {
+        $posts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($request, $userId) {
             return $this->postService->getPosts($request->all(), $userId);
         });
 
@@ -41,8 +40,7 @@ class PostController extends Controller
     {
         $post = $this->postService->createPost($request->validated());
 
-        // Очистка кеша с постами после создания нового
-        Cache::forget('posts_' . md5(json_encode($request->all())));
+        Cache::forget('posts_'.md5(json_encode($request->all())));
 
         return response()->json($post, 201);
     }
@@ -52,10 +50,9 @@ class PostController extends Controller
      */
     public function show(int $id)
     {
-        $cacheKey = 'post_' . $id;
+        $cacheKey = 'post_'.$id;
 
-        // Используем кеш для получения поста
-        $post = Cache::remember($cacheKey, now()->addMinutes(60), function() use ($id) {
+        $post = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($id) {
             return $this->postService->getPost($id);
         });
 
@@ -70,7 +67,7 @@ class PostController extends Controller
         $post = $this->postService->updatePost($id, $request->validated());
 
         // Очистка кеша после обновления
-        Cache::forget('post_' . $id);
+        Cache::forget('post_'.$id);
 
         return response()->json($post);
     }
@@ -83,7 +80,7 @@ class PostController extends Controller
         $this->postService->deletePost($id);
 
         // Очистка кеша после удаления
-        Cache::forget('post_' . $id);
+        Cache::forget('post_'.$id);
 
         return response()->json(null, 204);
     }
@@ -103,7 +100,7 @@ class PostController extends Controller
         }
 
         // Очистка кеша поста после изменения лайков
-        Cache::forget('post_' . $id);
+        Cache::forget('post_'.$id);
 
         return response()->json($post);
     }
@@ -116,8 +113,13 @@ class PostController extends Controller
         $post = $this->postService->repostPost($id);
 
         // Очистка кеша поста после репоста
-        Cache::forget('post_' . $id);
-
+        Cache::forget('post_'.$id);
         return response()->json($post);
+    }
+
+    public function download(Request $request, int $id)
+    {
+        $fileResponse = $this->postService->download($id, $request->input('media'));
+        return $fileResponse ?? response()->json(['message' => 'No media found'], 404);
     }
 }

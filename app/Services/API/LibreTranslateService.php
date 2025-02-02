@@ -12,9 +12,9 @@ class LibreTranslateService
     /**
      * Перевод текста с одного языка на другой.
      *
-     * @param string $text Текст для перевода
-     * @param string $sourceLang Исходный язык
-     * @param string $targetLang Язык для перевода
+     * @param  string  $text  Текст для перевода
+     * @param  string  $sourceLang  Исходный язык
+     * @param  string  $targetLang  Язык для перевода
      * @return string|false Переведённый текст или false в случае ошибки
      */
     public static function translate(string $text, string $sourceLang = 'ru', string $targetLang = 'en')
@@ -26,7 +26,7 @@ class LibreTranslateService
                 'target' => $targetLang,
                 'format' => 'text',
                 'alternatives' => 3,
-                'api_key' => ""
+                'api_key' => '',
             ]);
 
             if ($response->successful()) {
@@ -38,15 +38,15 @@ class LibreTranslateService
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
+
                 return false;
             }
 
-            \Log::error("Translation API call failed: " . $response->body());
+            \Log::error('Translation API call failed: '.$response->body());
         } catch (\Exception $e) {
-            \Log::error("Translation API exception: " . $e->getMessage());
+            \Log::error('Translation API exception: '.$e->getMessage());
         }
 
         return false;
     }
 }
-

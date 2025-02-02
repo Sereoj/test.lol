@@ -19,11 +19,40 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'username', 'slug', 'description', 'email', 'email_verified_at',
-        'verification', 'password', 'provider', 'provider_id', 'role_id', 'usingApps_id', 'userSettings_id',
-        'level_id', 'experience', 'gender', 'language', 'age', 'status_id', 'employment_status_id', 'location_id',
+        'username',
+        'seo_meta',
+        'slug',
+        'description',
+        'email',
+        'email_verified_at',
+        'verification',
+        'experience',
+        'gender',
+        'language',
+        'age',
+        'password',
+        'provider',
+        'provider_id',
+        'level_id',
+        'role_id',
+        'userSettings_id',
+        'usingApps_id',
+        'status_id',
+        'location_id',
         'employment_status_id',
     ];
+
+    public function isProfileComplete(): bool
+    {
+        return ! is_null($this->username) &&
+            ! is_null($this->description) &&
+            ! is_null($this->email_verified_at) &&
+            ! is_null($this->usingApps_id) &&
+            ! is_null($this->gender) &&
+            ! is_null($this->status_id) &&
+            ! is_null($this->employment_status_id) &&
+            ! is_null($this->location_id);
+    }
 
     /**
      * The attributes that should be hidden for serialization.

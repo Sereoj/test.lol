@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Events\CommentCreated;
 use App\Models\Comment;
 use App\Models\CommentLike;
 use App\Models\CommentReport;
@@ -29,7 +30,10 @@ class CommentRepository
 
     public function createComment(array $data)
     {
-        return Comment::create($data);
+        $comment = Comment::create($data);
+        event(new CommentCreated($comment));
+
+        return $comment;
     }
 
     public function updateComment(Comment $comment, array $data)

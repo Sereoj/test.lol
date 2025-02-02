@@ -37,7 +37,7 @@ class BadgeController extends Controller
     public function show($id)
     {
         // Проверяем кеш для конкретного бейджа
-        $cacheKey = 'badge_' . $id;
+        $cacheKey = 'badge_'.$id;
         if (Cache::has($cacheKey)) {
             // Возвращаем кешированные данные
             return response()->json(Cache::get($cacheKey));
@@ -74,7 +74,7 @@ class BadgeController extends Controller
 
         if ($badge) {
             // Очистка кеша после обновления бейджа
-            Cache::forget('badge_' . $id);
+            Cache::forget('badge_'.$id);
             Cache::forget('badges_list');
 
             return response()->json($badge);
@@ -89,7 +89,7 @@ class BadgeController extends Controller
 
         if ($result) {
             // Очистка кеша после удаления бейджа
-            Cache::forget('badge_' . $id);
+            Cache::forget('badge_'.$id);
             Cache::forget('badges_list');
 
             return response()->json(['message' => 'Badge deleted successfully']);

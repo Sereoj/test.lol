@@ -33,7 +33,7 @@ class PostStatisticController extends Controller
         ];
 
         // Кешируем сводную статистику для заданных фильтров
-        $cacheKey = 'post_stat_summary_' . $userId . '_' . md5(json_encode($filters));
+        $cacheKey = 'post_stat_summary_'.$userId.'_'.md5(json_encode($filters));
 
         $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId, $filters) {
             return $this->postStatisticsService->getSummaryStatistics($userId, $filters);
@@ -51,7 +51,7 @@ class PostStatisticController extends Controller
         $limit = $request->input('limit', 10);
 
         // Кешируем статистику последних постов
-        $cacheKey = 'post_stat_recent_' . $userId . '_limit_' . $limit;
+        $cacheKey = 'post_stat_recent_'.$userId.'_limit_'.$limit;
 
         $statistics = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($userId, $limit) {
             return $this->postStatisticsService->getRecentPostsStatistics($userId, $limit);

@@ -48,7 +48,7 @@ class AppController extends Controller
     public function show($id)
     {
         try {
-            $cacheKey = 'app_' . $id;
+            $cacheKey = 'app_'.$id;
             if (Cache::has($cacheKey)) {
                 return response()->json(Cache::get($cacheKey));
             }
@@ -68,7 +68,7 @@ class AppController extends Controller
         try {
             $this->appService->updateApp($id, $request->validated());
 
-            Cache::forget('app_' . $id);
+            Cache::forget('app_'.$id);
             Cache::forget('apps_list');
 
             return response()->json(['message' => 'App updated successfully']);
@@ -83,7 +83,7 @@ class AppController extends Controller
             $this->appService->deleteApp($id);
 
             // Очистить кеш для конкретного приложения и списка приложений после удаления
-            Cache::forget('app_' . $id);
+            Cache::forget('app_'.$id);
             Cache::forget('apps_list');
 
             return response()->json(['message' => 'App deleted successfully']);

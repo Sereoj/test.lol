@@ -50,7 +50,7 @@ class NotTempEmail implements ValidationRule
         ];
 
         // Извлекаем домен email
-        $emailDomain = substr(strrchr($value, "@"), 1);
+        $emailDomain = substr(strrchr($value, '@'), 1);
 
         if (in_array($emailDomain, $tempEmailDomains)) {
             $fail(__('validation.temp_email'));

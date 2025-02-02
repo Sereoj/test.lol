@@ -6,9 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Source\AddSourceRequest;
 use App\Http\Requests\Source\RemoveSourceRequest;
 use App\Services\UserSourceService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserSourceController extends Controller
 {
@@ -34,7 +34,7 @@ class UserSourceController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Source not found'], 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred while adding source: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'An error occurred while adding source: '.$e->getMessage()], 500);
         }
     }
 
@@ -51,7 +51,7 @@ class UserSourceController extends Controller
         } catch (ModelNotFoundException $e) {
             return response()->json(['message' => 'Source not found'], 404);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred while removing source: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'An error occurred while removing source: '.$e->getMessage()], 500);
         }
     }
 
@@ -67,7 +67,7 @@ class UserSourceController extends Controller
             // Проверка кеша
             $sources = Cache::get($cacheKey);
 
-            if (!$sources) {
+            if (! $sources) {
                 $sources = $this->userSourceService->getUserSources($user->id);
 
                 // Кешируем источники на 10 минут
@@ -76,7 +76,7 @@ class UserSourceController extends Controller
 
             return response()->json($sources, 200);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred while retrieving sources: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'An error occurred while retrieving sources: '.$e->getMessage()], 500);
         }
     }
 }

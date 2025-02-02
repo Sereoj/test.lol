@@ -25,7 +25,7 @@ class SearchSuggestionService
             $suggestions = collect();
 
             $translatedQuery = $this->translateQuery($query);
-            \Log::info("Test: ". $translatedQuery);
+            \Log::info('Test: '.$translatedQuery);
             $queries[] = $translatedQuery;
 
             foreach ($queries as $preparedQuery) {
@@ -80,27 +80,27 @@ class SearchSuggestionService
     /**
      * Метод для перевода текста
      *
-     * @param string $query
+     * @param  string  $query
      * @return string
      */
     protected function translateQuery($query)
     {
         // Попытаться получить переведённый текст из кэша
-        $cacheKey = 'translation_' . md5($query);
+        $cacheKey = 'translation_'.md5($query);
         $translatedQuery = Cache::get($cacheKey);
 
-        if (!$translatedQuery) {
+        if (! $translatedQuery) {
             $translatedQuery = LibreTranslateService::translate($query, 'ru', 'en');
 
             if ($translatedQuery) {
                 Cache::put($cacheKey, $translatedQuery, 60);
             } else {
                 \Log::warning("Translation failed for query: {$query}");
+
                 return $query;
             }
         }
 
         return $translatedQuery;
     }
-
 }

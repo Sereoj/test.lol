@@ -14,11 +14,11 @@ class UserBadge extends Model
     protected $fillable = [
         'user_id',
         'badge_id',
-        'is_active'
+        'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active' => 'boolean',
     ];
 
     public function user()

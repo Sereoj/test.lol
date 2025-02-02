@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLevelRequest;
 use App\Services\LevelService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class LevelController extends Controller

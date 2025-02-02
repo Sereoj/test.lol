@@ -10,7 +10,6 @@ use App\Services\UserBadgeService;
 use Auth;
 use Exception;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Http\Request;
 
 class UserBadgeController extends Controller
 {
@@ -31,7 +30,7 @@ class UserBadgeController extends Controller
 
         $badges = Cache::get($cacheKey);
 
-        if (!$badges) {
+        if (! $badges) {
             $badges = $this->userBadgeService->getAllUserBadges();
             Cache::put($cacheKey, $badges, now()->addMinutes(10));
         }
@@ -60,11 +59,11 @@ class UserBadgeController extends Controller
     public function show($id)
     {
         // Кешируем награду по ID
-        $cacheKey = 'user_badge_' . $id;
+        $cacheKey = 'user_badge_'.$id;
 
         $badge = Cache::get($cacheKey);
 
-        if (!$badge) {
+        if (! $badge) {
             $badge = $this->userBadgeService->getUserBadgeById($id);
 
             Cache::put($cacheKey, $badge, now()->addMinutes(10));
@@ -81,11 +80,11 @@ class UserBadgeController extends Controller
         try {
             $badge = $this->userBadgeService->updateUserBadge($id, $request->validated());
 
-            Cache::forget('user_badge_' . $id);
+            Cache::forget('user_badge_'.$id);
             Cache::forget('user_badges_all');
 
             return response()->json($badge);
-        }catch (Exception $exception){
+        } catch (Exception $exception) {
             return response()->json(['message' => $exception->getMessage()], 500);
         }
 
@@ -97,6 +96,7 @@ class UserBadgeController extends Controller
 
         try {
             $this->userBadgeService->setActiveBadge($badgeId);
+
             return response()->json(['message' => 'Badge set as active successfully'], 200);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
@@ -107,6 +107,7 @@ class UserBadgeController extends Controller
     {
         try {
             $activeBadge = $this->userBadgeService->getActiveBadge();
+
             return response()->json($activeBadge, 200);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);
@@ -122,7 +123,7 @@ class UserBadgeController extends Controller
         $this->userBadgeService->deleteUserBadge($id);
 
         // Очищаем кеш
-        Cache::forget('user_badge_' . $id);
+        Cache::forget('user_badge_'.$id);
         Cache::forget('user_badges_all');
 
         return response()->json(['message' => 'Badge deleted successfully'], 200);

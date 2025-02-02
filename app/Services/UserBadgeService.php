@@ -12,12 +12,13 @@ class UserBadgeService
 {
     public function getAllUserBadges()
     {
-        return UserBadge::with( 'badge')->get();
+        return UserBadge::with('badge')->get();
     }
 
     public function createUserBadge(array $data)
     {
         Auth::user()->badges()->syncWithoutDetaching([$data['badge_id']]);
+
         return ['message' => 'Badge assigned successfully'];
     }
 
@@ -70,17 +71,18 @@ class UserBadgeService
                 ->where('badge_id', $badgeId)
                 ->first();
 
-            if (!$userBadge) {
+            if (! $userBadge) {
                 throw new Exception('Badge not found for the user.');
             }
 
             $userBadge->update(['is_active' => true]);
 
             DB::commit();
+
             return $userBadge;
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Error setting active badge: ' . $e->getMessage());
+            Log::error('Error setting active badge: '.$e->getMessage());
             throw $e;
         }
     }
@@ -88,6 +90,7 @@ class UserBadgeService
     public function getActiveBadge()
     {
         $userId = Auth::id();
+
         return UserBadge::query()->where('user_id', $userId)
             ->active()
             ->first();

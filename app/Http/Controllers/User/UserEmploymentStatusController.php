@@ -31,7 +31,7 @@ class UserEmploymentStatusController extends Controller
 
         if ($user) {
             // Очищаем кеш трудового статуса пользователя
-            Cache::forget('user_employment_status_' . $user->id);
+            Cache::forget('user_employment_status_'.$user->id);
 
             return response()->json($user);
         }
@@ -51,7 +51,7 @@ class UserEmploymentStatusController extends Controller
 
         if ($user) {
             // Очищаем кеш трудового статуса пользователя
-            Cache::forget('user_employment_status_' . $user->id);
+            Cache::forget('user_employment_status_'.$user->id);
 
             return response()->json($user);
         }

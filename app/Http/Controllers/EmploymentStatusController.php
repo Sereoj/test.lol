@@ -57,6 +57,7 @@ class EmploymentStatusController extends Controller
         $employmentStatus = $this->employmentStatusService->updateEmploymentStatus($id, $data);
         if ($employmentStatus) {
             Cache::forget('employment_statuses');
+
             return response()->json($employmentStatus);
         }
 

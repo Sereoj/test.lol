@@ -162,6 +162,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/{id}', [PostController::class, 'destroy'])->name('posts.destroy'); // для авторизированных
         Route::post('/{id}/like', [PostController::class, 'toggleLike'])->name('posts.like'); // для авторизированных
         Route::post('/{id}/repost', [PostController::class, 'repost'])->name('posts.repost'); // для авторизированных
+        Route::get('/{id}/download', [PostController::class, 'download'])->name('post.download'); // для авторизированных
 
         // Post statistics routes
         Route::prefix('statistics')->group(function () {

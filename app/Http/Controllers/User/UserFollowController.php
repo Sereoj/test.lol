@@ -55,7 +55,7 @@ class UserFollowController extends Controller
         $cacheKey = "user_{$followerId}_following_{$userId}";
         $isFollowing = Cache::get($cacheKey);
 
-        if (!$isFollowing) {
+        if (! $isFollowing) {
             return response()->json(['message' => 'You are not following this user']);
         }
 
@@ -81,7 +81,7 @@ class UserFollowController extends Controller
         $cacheKey = "user_{$userId}_followers";
         $followers = Cache::get($cacheKey);
 
-        if (!$followers) {
+        if (! $followers) {
             $followers = $this->followService->getFollowers($userId);
             Cache::put($cacheKey, $followers, now()->addMinutes(10));
         }
@@ -101,7 +101,7 @@ class UserFollowController extends Controller
         $cacheKey = "user_{$userId}_following";
         $following = Cache::get($cacheKey);
 
-        if (!$following) {
+        if (! $following) {
             $following = $this->followService->getFollowing();
 
             // Кешируем на 10 минут

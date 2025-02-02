@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRoleRequest;
 use App\Models\Role;
 use App\Services\RoleService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class RoleController extends Controller

@@ -2,10 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Events\GifPublished;
-use App\Events\ImagePublished;
 use App\Events\PostPublished;
-use App\Events\VideoPublished;
 use App\Helpers\FileHelper;
 use App\Http\Resources\PostResource;
 use App\Models\Interaction;
@@ -21,9 +18,9 @@ class PostRepository
     protected MediaService $mediaService;
 
     public function __construct(MediaService $mediaService)
-     {
-         $this->mediaService = $mediaService;
-     }
+    {
+        $this->mediaService = $mediaService;
+    }
 
     public function getPosts(array $filters, $userId = null)
     {
@@ -211,13 +208,13 @@ class PostRepository
                 }
 
                 //Временное решение
-                if (!empty($mediaTypes['images'])) {
+                if (! empty($mediaTypes['images'])) {
                     event(new PostPublished($post));
                 }
-                if (!empty($mediaTypes['gifs'])) {
+                if (! empty($mediaTypes['gifs'])) {
                     event(new PostPublished($post));
                 }
-                if (!empty($mediaTypes['videos'])) {
+                if (! empty($mediaTypes['videos'])) {
                     event(new PostPublished($post));
                 }
 

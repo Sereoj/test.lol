@@ -29,11 +29,12 @@ class MediaController extends Controller
                 'is_public' => true,
             ];
 
-            $cacheKey = 'media_upload_' . md5(json_encode($files).
+            $cacheKey = 'media_upload_'.md5(json_encode($files).
                     json_encode($options));
 
             if (Cache::has($cacheKey)) {
                 \Log::info('Отображаю кеш');
+
                 return response()->json(Cache::get($cacheKey));
             }
 
@@ -49,7 +50,7 @@ class MediaController extends Controller
     public function show($id)
     {
         try {
-            $cacheKey = 'media_' . $id;
+            $cacheKey = 'media_'.$id;
             if (Cache::has($cacheKey)) {
                 return response()->json(Cache::get($cacheKey));
             }
@@ -69,7 +70,7 @@ class MediaController extends Controller
         try {
             $media = $this->mediaService->updateMedia($id, $request->validated());
 
-            $cacheKey = 'media_' . $id;
+            $cacheKey = 'media_'.$id;
             Cache::put($cacheKey, $media, now()->addMinutes(60));
 
             return response()->json($media);
@@ -82,7 +83,7 @@ class MediaController extends Controller
     {
         try {
             $this->mediaService->deleteMedia($id);
-            Cache::forget('media_' . $id);
+            Cache::forget('media_'.$id);
 
             return response()->json(null, 204);
         } catch (Exception $e) {

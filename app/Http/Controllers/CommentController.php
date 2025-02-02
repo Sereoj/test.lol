@@ -21,7 +21,7 @@ class CommentController extends Controller
 
     public function index(Request $request)
     {
-        $cacheKey = 'comments_post_' . $request->post_id;
+        $cacheKey = 'comments_post_'.$request->post_id;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
@@ -43,7 +43,7 @@ class CommentController extends Controller
 
         $comment = $this->commentService->createComment($post->id, $request->validated());
 
-        Cache::forget('comments_post_' . $post_id);
+        Cache::forget('comments_post_'.$post_id);
 
         try {
             return response()->json($comment, 201);
@@ -82,7 +82,7 @@ class CommentController extends Controller
     {
         try {
             $postId = $this->commentService->updateComment($id, $request->validated())->first()->id;
-            Cache::forget('comments_post_' . $postId);
+            Cache::forget('comments_post_'.$postId);
 
             return response()->json(['message' => 'Comment updated successfully']);
         } catch (\Exception $e) {
@@ -94,7 +94,7 @@ class CommentController extends Controller
     {
         try {
             $postId = $this->commentService->deleteComment($id)->first()->id;
-            Cache::forget('comments_post_' . $postId);
+            Cache::forget('comments_post_'.$postId);
 
             return response()->json(['message' => 'Comment deleted successfully']);
         } catch (\Exception $e) {

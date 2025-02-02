@@ -2,17 +2,20 @@
 
 namespace App\Providers;
 
+use App\Events\CommentCreated;
+use App\Events\FileDownloaded;
 use App\Events\GifPublished;
 use App\Events\ImagePublished;
 use App\Events\PostPublished;
+use App\Events\ProfileComplected;
 use App\Events\TaskCompleted;
 use App\Events\TaskCreated;
 use App\Events\UserExperienceChanged;
 use App\Events\VideoPublished;
 use App\Listeners\AddTaskToUsers;
-use App\Listeners\HandleGifPublished;
-use App\Listeners\HandleImagePublished;
-use App\Listeners\HandleVideoPublished;
+use App\Listeners\HandleCommentCreated;
+use App\Listeners\HandleFileDownloaded;
+use App\Listeners\HandleProfileComplected;
 use App\Listeners\UpdateUserExperience;
 use App\Listeners\UpdateUserLevel;
 use App\Listeners\UpdateUserTasksOnPostPublished;
@@ -52,6 +55,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         VideoPublished::class => [
             UpdateUserTasksOnPostPublished::class,
+        ],
+        CommentCreated::class => [
+            HandleCommentCreated::class,
+        ],
+        ProfileComplected::class => [
+            HandleProfileComplected::class,
+        ],
+        FileDownloaded::class => [
+            HandleFileDownloaded::class,
         ],
     ];
 

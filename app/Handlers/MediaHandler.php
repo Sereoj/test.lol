@@ -6,9 +6,7 @@ use App\Processors\BlurFilter;
 use App\Processors\ImagePipeline;
 use App\Processors\WatermarkFilter;
 use App\Processors\WatermarkWithUsername;
-use App\Providers\AppServiceProvider;
 use App\Services\Base\AppSettingsService;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -16,7 +14,9 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class MediaHandler
 {
     protected ImagePipeline $imagePipeline;
+
     private AppSettingsService $appSettingsService;
+
     private int $length;
 
     public function __construct(ImagePipeline $imagePipeline, AppSettingsService $appSettingsService)
@@ -77,7 +77,7 @@ class MediaHandler
         }
 
         if (! empty($options['is_adult'])) {
-            $blurredAdultPath = "$processedPath/blurred_adult/".Str::random($this->length).'.'.$file->getClientOriginalExtension();;
+            $blurredAdultPath = "$processedPath/blurred_adult/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
             $pipeline = new ImagePipeline;
             $pipeline->addFilter(new BlurFilter, ['blur' => 30])

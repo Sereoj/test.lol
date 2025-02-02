@@ -34,7 +34,7 @@ class UserService
             Log::info($user);
 
             return $user;
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Log::error('User creation failed', ['error' => $e->getMessage()]);
             throw $e;
         }

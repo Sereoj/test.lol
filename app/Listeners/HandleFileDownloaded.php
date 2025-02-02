@@ -2,11 +2,11 @@
 
 namespace App\Listeners;
 
-use App\Events\PostPublished;
+use App\Events\FileDownloaded;
 use App\Services\UserTaskService;
 use Illuminate\Support\Facades\Log;
 
-class UpdateUserTasksOnPostPublished
+class HandleFileDownloaded
 {
     protected UserTaskService $taskService;
 
@@ -21,12 +21,12 @@ class UpdateUserTasksOnPostPublished
     /**
      * Handle the event.
      */
-    public function handle(PostPublished $event)
+    public function handle(FileDownloaded $event): void
     {
-        $post = $event->post;
-        $user = $post->user;
+        $media = $event->media;
+        $user = $media->user;
 
-        Log::info("Comment created: $post");
-        $this->taskService->processTasks($user, 'publish_posts');
+        Log::info("File downloaded: $media");
+        $this->taskService->processTasks($user, 'download_files');
     }
 }

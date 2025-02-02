@@ -42,6 +42,7 @@ class CategoryService
     public function deleteCategory($id)
     {
         $artwork = Category::query()->findOrFail($id);
+
         return $artwork->delete();
     }
 }

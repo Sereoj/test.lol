@@ -28,7 +28,7 @@ class PostSearchController extends Controller
     {
         $query = $request->input('query');
 
-        $cacheKey = 'search_results_' . md5($query);
+        $cacheKey = 'search_results_'.md5($query);
 
         $results = Cache::get($cacheKey);
 
@@ -38,7 +38,7 @@ class PostSearchController extends Controller
         } else {
             Log::info("Cache miss for query: {$query}", ['cache_key' => $cacheKey]);
 
-            $results = Cache::remember($cacheKey, now()->addMinutes(10), function() use ($query, $cacheKey) {
+            $results = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->search($query);
                 Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
 
@@ -57,9 +57,9 @@ class PostSearchController extends Controller
         $query = $request->input('query');
 
         // Использование кеша для предложений
-        $cacheKey = 'search_suggestions_' . md5($query);
+        $cacheKey = 'search_suggestions_'.md5($query);
 
-        $suggestions = Cache::remember($cacheKey, now()->addMinutes(10), function() use ($query) {
+        $suggestions = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($query) {
             return $this->searchSuggestionService->suggest($query);
         });
 

@@ -32,8 +32,8 @@ class AvatarController extends Controller
             $file = $request->file('avatar');
             $avatar = $this->avatarService->uploadAvatar($user->id, $file);
 
-/*            // Очистка кеша аватаров пользователя после загрузки нового
-            Cache::forget('user_avatars_' . $user->id);*/
+            /*            // Очистка кеша аватаров пользователя после загрузки нового
+                        Cache::forget('user_avatars_' . $user->id);*/
 
             return response()->json(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar], 200);
         } catch (Exception $e) {
@@ -50,11 +50,11 @@ class AvatarController extends Controller
     {
         try {
             $user = Auth::user();
-            $cacheKey = 'user_avatars_' . $user->id;
+            $cacheKey = 'user_avatars_'.$user->id;
 
             $avatars = Cache::get($cacheKey);
 
-            if (!$avatars) {
+            if (! $avatars) {
                 $avatars = $this->avatarService->getUserAvatars($user->id);
                 Cache::put($cacheKey, $avatars, now()->addMinutes(10));
             }
@@ -78,7 +78,7 @@ class AvatarController extends Controller
             $this->avatarService->deleteAvatar($user->id, $avatarId);
 
             // Очистка кеша аватаров пользователя после удаления
-            Cache::forget('user_avatars_' . $user->id);
+            Cache::forget('user_avatars_'.$user->id);
 
             return response()->json(['message' => 'Avatar deleted successfully'], 200);
         } catch (Exception $e) {

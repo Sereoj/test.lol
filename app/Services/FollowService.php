@@ -19,20 +19,23 @@ class FollowService
             $following = User::find($followingId);
 
             if ($follower && $following) {
-                if (!$follower->following()->where('following_id', $followingId)->exists()) {
+                if (! $follower->following()->where('following_id', $followingId)->exists()) {
                     $follower->following()->attach($followingId);
                     $following->notify(new UserFollowedNotification($follower));
 
                     DB::commit();
+
                     return true;
                 }
             }
 
             DB::rollBack();
+
             return false;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error following user: ' . $e->getMessage());
+            Log::error('Error following user: '.$e->getMessage());
+
             return false;
         }
     }
@@ -49,14 +52,17 @@ class FollowService
                 $follower->following()->detach($followingId);
 
                 DB::commit();
+
                 return true;
             }
 
             DB::rollBack();
+
             return false;
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Error unfollowing user: ' . $e->getMessage());
+            Log::error('Error unfollowing user: '.$e->getMessage());
+
             return false;
         }
     }
@@ -64,6 +70,7 @@ class FollowService
     public function getFollowers($userId)
     {
         $user = User::find($userId);
+
         return $user ? $user->followers : collect();
     }
 

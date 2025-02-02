@@ -2,10 +2,8 @@
 
 namespace App\Services;
 
-use App\Models\Source;
 use App\Models\UserSource;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class UserSourceService
@@ -35,12 +33,13 @@ class UserSourceService
                     ->pluck('source_id')
                     ->toArray();
 
-                throw new Exception('The user already has other sources: ' . implode(', ', $existingSourceIds));
+                throw new Exception('The user already has other sources: '.implode(', ', $existingSourceIds));
             }
 
             $user->sources()->syncWithoutDetaching([$sourceId]);
 
             DB::commit();
+
             return true;
         } catch (Exception $e) {
             DB::rollBack();

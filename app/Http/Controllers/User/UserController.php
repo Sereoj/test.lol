@@ -36,7 +36,7 @@ class UserController extends Controller
         $users = Cache::get('users');
 
         // Если кеш пуст, извлекаем данные из базы и сохраняем их в кеш
-        if (!$users) {
+        if (! $users) {
             try {
                 $users = $this->userService->getAllUsers();
                 Cache::put('users', $users, now()->addMinutes(10)); // Кешируем на 10 минут
@@ -60,14 +60,14 @@ class UserController extends Controller
     public function show($id)
     {
         // Попытка получить данные из кеша
-        $cacheKey = 'user_' . $id;
+        $cacheKey = 'user_'.$id;
         $user = Cache::get($cacheKey);
 
-        if (!$user) {
+        if (! $user) {
             try {
                 $user = $this->userService->findUserById($id);
 
-                if (!$user) {
+                if (! $user) {
                     return response()->json(['message' => 'User not found'], 404);
                 }
 
@@ -111,7 +111,7 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, $id)
     {
         $user = User::find($id);
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'User not found'], 404);
         }
 
@@ -121,7 +121,7 @@ class UserController extends Controller
             'password' => $request->password ? PasswordUtil::hash($request->password) : $user->password,
         ]);
 
-        Cache::forget('user_' . $id);
+        Cache::forget('user_'.$id);
 
         return response()->json($user, 200);
     }
@@ -136,14 +136,14 @@ class UserController extends Controller
         try {
             $user = $this->userService->findUserById($id);
 
-            if (!$user) {
+            if (! $user) {
                 return response()->json(['message' => 'User not found'], 404);
             }
 
             $this->userService->deleteUser($user);
 
             // Очистка кеша после удаления пользователя
-            Cache::forget('user_' . $id);
+            Cache::forget('user_'.$id);
             Cache::forget('users');
 
             return response()->json(['message' => 'User deleted successfully']);
@@ -158,7 +158,6 @@ class UserController extends Controller
     /**
      * Change the role of a user.
      *
-     * @param  \Illuminate\Http\Request  $request
      * @param  int  $userId
      * @return \Illuminate\Http\JsonResponse
      */
@@ -176,7 +175,7 @@ class UserController extends Controller
         $updatedUser = $this->userService->changeUserRole($user, $data['role_id']);
 
         // Очистка кеша после изменения роли пользователя
-        Cache::forget('user_' . $userId);
+        Cache::forget('user_'.$userId);
         Cache::forget('users');
 
         return response()->json($updatedUser);

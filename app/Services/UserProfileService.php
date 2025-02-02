@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Events\ProfileComplected;
 use App\Events\UserExperienceChanged;
 use App\Models\User;
 
@@ -17,6 +18,10 @@ class UserProfileService
         $user = User::find($userId);
         if ($user) {
             $user->update($data);
+
+            if ($user->isProfileComplete()) {
+                event(new ProfileComplected($user));
+            }
 
             //event(new UserExperienceChanged($user));
             return $user;

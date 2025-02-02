@@ -28,10 +28,11 @@ class AvatarService
             //Убираем дубли повторных загрузок файлов, чтобы не засорять сервер.
             if (Cache::has($cacheKey)) {
                 \Log::info("Аватар уже загружен: {$fileHash}");
+
                 return Cache::get($cacheKey);
             }
 
-            $fileName = Str::random(15) . '.jpg';
+            $fileName = Str::random(15).'.jpg';
             $path = "avatars/{$fileName}";
 
             $image = Image::read($file)
@@ -45,6 +46,7 @@ class AvatarService
             ]);
 
             Cache::put($cacheKey, $avatarData, now()->addHour());
+
             return $avatarData;
 
         } catch (Exception $e) {

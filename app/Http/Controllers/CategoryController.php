@@ -46,7 +46,7 @@ class CategoryController extends Controller
 
     public function show($id)
     {
-        $cacheKey = 'category_' . $id;
+        $cacheKey = 'category_'.$id;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
         }
@@ -69,7 +69,7 @@ class CategoryController extends Controller
 
         if ($category) {
             // Очистка кеша после обновления категории
-            Cache::forget('category_' . $id);
+            Cache::forget('category_'.$id);
             Cache::forget('categories_list');
 
             return response()->json($category);
@@ -84,7 +84,7 @@ class CategoryController extends Controller
 
         if ($result) {
             // Очистка кеша после удаления категории
-            Cache::forget('category_' . $id);
+            Cache::forget('category_'.$id);
             Cache::forget('categories_list');
 
             return response()->json(['message' => 'Category deleted successfully']);

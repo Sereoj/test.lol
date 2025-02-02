@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Services\UserTaskService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use App\Services\UserTaskService;
-use Exception;
 
 class UserTaskController extends Controller
 {
@@ -24,7 +24,7 @@ class UserTaskController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $cacheKey = 'user_tasks_' . $user->id . '_' . md5($request->fullUrl());
+        $cacheKey = 'user_tasks_'.$user->id.'_'.md5($request->fullUrl());
 
         $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $request) {
             $filters = [
@@ -33,6 +33,7 @@ class UserTaskController extends Controller
                 'experience_reward' => $request->input('experience_reward'),
                 'virtual_balance_reward' => $request->input('virtual_balance_reward'),
             ];
+
             return $this->userTaskService->getUserTasks($user, $filters);
         });
 
@@ -45,7 +46,7 @@ class UserTaskController extends Controller
     public function completedTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_completed_tasks_' . $user->id;
+        $cacheKey = 'user_completed_tasks_'.$user->id;
 
         // Проверяем кеш
         $completedTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
@@ -61,7 +62,7 @@ class UserTaskController extends Controller
     public function inProgressTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_in_progress_tasks_' . $user->id;
+        $cacheKey = 'user_in_progress_tasks_'.$user->id;
 
         // Проверяем кеш
         $inProgressTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
@@ -77,7 +78,7 @@ class UserTaskController extends Controller
     public function notStartedTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_not_started_tasks_' . $user->id;
+        $cacheKey = 'user_not_started_tasks_'.$user->id;
 
         // Проверяем кеш
         $notStartedTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
@@ -100,8 +101,9 @@ class UserTaskController extends Controller
 
         try {
             $this->userTaskService->updateTaskProgress($user, $taskId, $request->progress);
-            Cache::forget('user_tasks_' . $user->id);
-            Cache::forget('user_in_progress_tasks_' . $user->id);
+            Cache::forget('user_tasks_'.$user->id);
+            Cache::forget('user_in_progress_tasks_'.$user->id);
+
             return response()->json(['message' => 'Task progress updated successfully']);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 400);

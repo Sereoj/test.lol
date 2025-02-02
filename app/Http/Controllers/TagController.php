@@ -27,7 +27,7 @@ class TagController extends Controller
         $tags = Cache::get('tags');
 
         // Если кеш пуст, извлекаем данные из базы и сохраняем их в кеш
-        if (!$tags) {
+        if (! $tags) {
             $tags = $this->tagService->getAllTags();
             Cache::put('tags', $tags, now()->addMinutes(10)); // Кешируем на 10 минут
         }
@@ -59,10 +59,10 @@ class TagController extends Controller
     public function show($id)
     {
         // Попытка получить данные из кеша
-        $cacheKey = 'tag_' . $id;
+        $cacheKey = 'tag_'.$id;
         $tag = Cache::get($cacheKey);
 
-        if (!$tag) {
+        if (! $tag) {
             // Если кеш пуст, извлекаем данные из базы и сохраняем в кеш
             $tag = $this->tagService->getTagById($id);
             Cache::put($cacheKey, $tag, now()->addMinutes(10)); // Кешируем на 10 минут
@@ -82,7 +82,7 @@ class TagController extends Controller
 
         // Очистка кеша после обновления тега
         Cache::forget('tags');
-        Cache::forget('tag_' . $id);
+        Cache::forget('tag_'.$id);
 
         return response()->json($tag);
     }
@@ -99,7 +99,7 @@ class TagController extends Controller
 
         // Очистка кеша после удаления тега
         Cache::forget('tags');
-        Cache::forget('tag_' . $id);
+        Cache::forget('tag_'.$id);
 
         return response()->json(null, 204);
     }

@@ -33,12 +33,12 @@ class SocialiteController extends Controller
             return $authUser;
         }
 
-        return User::create([
-            'name' => $user->name,
-            'email' => $user->email,
-            'provider' => $provider,
-            'provider_id' => $user->id,
-            'password' => Hash::make(str_random(24)),
-        ]);
+        /*        return User::create([
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'provider' => $provider,
+                    'provider_id' => $user->id,
+                    //'password' => Hash::make(str_random(24)),
+                ]);*/
     }
 }

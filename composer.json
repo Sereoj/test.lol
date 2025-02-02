@@ -15,7 +15,8 @@
         "laravel/tinker": "^2.8",
         "socialiteproviders/apple": "^5.6",
         "socialiteproviders/google": "^4.1",
-        "socialiteproviders/yandex": "^4.1"
+        "socialiteproviders/yandex": "^4.1",
+        "ext-zip": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

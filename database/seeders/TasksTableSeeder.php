@@ -15,12 +15,12 @@ class TasksTableSeeder extends Seeder
      */
     public function run(): void
     {
-/*        // Отключаем проверку внешних ключей
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        // Очищаем таблицу
-        DB::table('tasks')->truncate();
-        // Включаем проверку обратно
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');*/
+        /*        // Отключаем проверку внешних ключей
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                // Очищаем таблицу
+                DB::table('tasks')->truncate();
+                // Включаем проверку обратно
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');*/
 
         $jsonFilePath = database_path('files/tasks.json');
 

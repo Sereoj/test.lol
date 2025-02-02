@@ -28,13 +28,14 @@ class UserProfileController extends Controller
         $cacheKey = "user_profile_{$user->id}";
         $profile = Cache::get($cacheKey);
 
-        if (!$profile) {
+        if (! $profile) {
             // Если профиль не найден в кеше, запросим его из базы данных
             $profile = $this->userProfileService->getUserProfile($user->id);
 
             if ($profile) {
                 // Кешируем профиль на 10 минут
                 Cache::put($cacheKey, $profile, now()->addMinutes(10));
+
                 return response()->json($profile);
             }
 
@@ -65,7 +66,7 @@ class UserProfileController extends Controller
 
             return response()->json(['message' => 'Unable to update profile'], 400);
         } catch (\Exception $e) {
-            return response()->json(['message' => 'An error occurred while updating profile: ' . $e->getMessage()], 500);
+            return response()->json(['message' => 'An error occurred while updating profile: '.$e->getMessage()], 500);
         }
     }
 }

@@ -17,6 +17,7 @@ class UserRepository
     private AvatarRepository $avatarRepository;
 
     private RoleService $roleService;
+
     private EmploymentStatusService $employmentStatusService;
 
     public function __construct(AvatarRepository $avatarRepository, RoleService $roleService, EmploymentStatusService $employmentStatusService)

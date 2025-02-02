@@ -30,7 +30,7 @@ class MediaService
 
         $allCreatedFiles = [];
 
-        if (empty($files) || !is_array($files)) {
+        if (empty($files) || ! is_array($files)) {
             Log::error('No files provided or invalid input format.');
             throw new Exception('No files provided or invalid input format.');
         }
@@ -49,21 +49,23 @@ class MediaService
                 if (Cache::has($cacheKey)) {
                     $cachedData = Cache::get($cacheKey);
                     $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
-                    Log::info('Отображаю кеш '. $cacheKey);
+                    Log::info('Отображаю кеш '.$cacheKey);
+
                     continue;
                 }
 
                 $type = FileHelper::determineFileType($mimeType);
-                if (!$type) {
+                if (! $type) {
                     Log::error("Unsupported file type: {$mimeType}.");
+
                     continue;
                 }
-
 
                 $results = $this->mediaHandler->handleFile($type, $file, $options, $originalPath, $processedPath);
 
                 if (empty($results)) {
                     Log::error("Failed to process file {$file->getClientOriginalName()}.");
+
                     continue;
                 }
 
@@ -109,8 +111,6 @@ class MediaService
 
         return $allCreatedFiles ?? [];
     }
-
-
 
     public function getMediaById($id)
     {
