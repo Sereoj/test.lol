@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
             $table->decimal('amount', 10, 2);
-            $table->enum('status', ['succeeded', 'failed', 'pending'])->default('pending');
+            $table->enum('status', ['succeeded', 'failed', 'pending', 'completed'])->default('pending');
             $table->timestamps();
         });
     }

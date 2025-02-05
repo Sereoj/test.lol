@@ -5,15 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class Withdrawal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'type', 'amount', 'currency', 'status', 'metadata'];
-
-    protected $casts = [
-        'metadata' => 'json',
-    ];
+    protected $fillable = ['user_id', 'amount', 'fee', 'currency', 'status'];
 
     public function user()
     {

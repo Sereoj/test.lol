@@ -11,13 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
+        /**
+         * 🔹 Таблица всех транзакций (пополнения, покупки, выводы, переводы)
+         * Используется для журналирования финансовых операций пользователей.
+         * `metadata` — JSON с дополнительными данными (например, ID поста, эквайринг и т. д.).
+         */
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnUpdate()->cascadeOnDelete();
-            $table->decimal('amount', 10, 2); // Сумма транзакции
-            $table->string('type'); // Тип транзакции (например, "credit" или "debit")
-            $table->enum('status', ['pending', 'success', 'rejected'])->default('pending');
-            $table->text('description')->nullable(); // Описание транзакции
+            $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->string('type', 20)->index(); // Тип: 'topup', 'purchase', 'withdrawal', 'transfer'
+            $table->decimal('amount', 14, 4);
+            $table->string('currency', 3)->index();
+            $table->string('status', 20)->default('pending')->index(); // 'pending', 'completed', 'failed'
+            $table->json('metadata')->nullable(); // JSON с доп. инфо (ID поста, способ оплаты и т. д.)
             $table->timestamps();
         });
     }

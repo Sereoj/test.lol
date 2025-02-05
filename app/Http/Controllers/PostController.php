@@ -39,7 +39,6 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $post = $this->postService->createPost($request->validated());
-
         Cache::forget('posts_'.md5(json_encode($request->all())));
 
         return response()->json($post, 201);
@@ -65,8 +64,6 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, int $id)
     {
         $post = $this->postService->updatePost($id, $request->validated());
-
-        // Очистка кеша после обновления
         Cache::forget('post_'.$id);
 
         return response()->json($post);
@@ -78,8 +75,6 @@ class PostController extends Controller
     public function destroy(int $id)
     {
         $this->postService->deletePost($id);
-
-        // Очистка кеша после удаления
         Cache::forget('post_'.$id);
 
         return response()->json(null, 204);
@@ -98,10 +93,7 @@ class PostController extends Controller
         } elseif ($action === 'dislike') {
             $post = $this->postService->unlikePost($id);
         }
-
-        // Очистка кеша поста после изменения лайков
         Cache::forget('post_'.$id);
-
         return response()->json($post);
     }
 
@@ -111,8 +103,6 @@ class PostController extends Controller
     public function repost(int $id)
     {
         $post = $this->postService->repostPost($id);
-
-        // Очистка кеша поста после репоста
         Cache::forget('post_'.$id);
         return response()->json($post);
     }

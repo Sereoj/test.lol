@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\EmailVerificationController;
 use App\Http\Controllers\Auth\SocialiteController;
 use App\Http\Controllers\Auth\StepController;
 use App\Http\Controllers\BadgeController;
+use App\Http\Controllers\BalanceController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EmploymentStatusController;
@@ -16,10 +17,13 @@ use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostSearchController;
 use App\Http\Controllers\PostStatisticController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\SourceController;
+use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TagController;
+use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\User\AvatarController;
 use App\Http\Controllers\User\UserAchievementController;
 use App\Http\Controllers\User\UserBadgeController;
@@ -87,6 +91,20 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('user')->group(function () {
         Route::get('/', [AuthController::class, 'user'])->name('user'); // для авторизированных
+
+        // Баланс
+        Route::get('/balance', [BalanceController::class, 'getBalance']);
+        Route::post('/balance/topup', [BalanceController::class, 'topUpBalance']);
+        Route::post('/balance/withdraw', [BalanceController::class, 'withdrawBalance']);
+        Route::post('/balance/transfer', [BalanceController::class, 'transferBalance']);
+        // Транзакции
+        Route::get('/transactions', [TransactionController::class, 'getTransactions']);
+        // Покупки
+        Route::post('/posts/{postId}/purchase', [PurchaseController::class, 'purchasePost']);
+
+        Route::get('/subscriptions/active', [SubscriptionController::class, 'getActiveSubscription']);
+        Route::post('/subscriptions', [SubscriptionController::class, 'createSubscription']);
+        Route::post('/subscriptions/{subscriptionId}/extend', [SubscriptionController::class, 'extendSubscription']);
 
         Route::prefix('profile')->group(function () {
             Route::get('/', [UserProfileController::class, 'show'])->name('profile.show');

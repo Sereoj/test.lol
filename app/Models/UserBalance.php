@@ -9,7 +9,7 @@ class UserBalance extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'balance'];
+    protected $fillable = ['user_id', 'balance', 'pending_balance', 'currency'];
 
     public function user()
     {
