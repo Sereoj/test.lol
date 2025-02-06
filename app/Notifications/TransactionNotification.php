@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -39,7 +38,7 @@ class TransactionNotification extends Notification
         return (new MailMessage)
             ->subject('Transaction Update')
             ->line("Your transaction with ID {$this->transaction->id} is now {$this->transaction->status}.")
-            ->action('View Transaction', url('/transactions/' . $this->transaction->id))
+            ->action('View Transaction', url('/transactions/'.$this->transaction->id))
             ->line('Thank you for using our platform!');
     }
 

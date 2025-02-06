@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Events\TaskCreated;
 use App\Helpers\UserTaskHelper;
-use App\Models\User;
+use App\Models\Users\User;
 
 class AddTaskToUsers
 {

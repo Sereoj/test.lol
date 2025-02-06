@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\User\AvatarController;
 use App\Http\Requests\Avatar\UploadAvatarRequest;
-use App\Models\User;
-use App\Services\AvatarService;
+use App\Models\Users\User;
+use App\Services\Users\AvatarService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

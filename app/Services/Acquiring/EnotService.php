@@ -10,12 +10,12 @@ class EnotService
     {
         // Логика для Enot
         return Topup::create([
-            'user_id'  => $userId,
-            'amount'   => $amount,
-            'fee'      => $fee,
+            'user_id' => $userId,
+            'amount' => $amount,
+            'fee' => $fee,
             'currency' => $currency,
-            'gateway'  => 'enot',
-            'status'   => 'succeeded',
+            'gateway' => 'enot',
+            'status' => 'succeeded',
         ]);
     }
 }

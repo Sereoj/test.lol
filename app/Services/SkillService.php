@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Skill;
-use App\Models\SkillUser;
+use App\Models\Users\SkillUser;
 use Exception;
 
 class SkillService

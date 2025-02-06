@@ -10,12 +10,12 @@ class TinkoffService
     {
         // Логика для Tinkoff
         return Topup::create([
-            'user_id'  => $userId,
-            'amount'   => $amount,
-            'fee'      => $fee,
+            'user_id' => $userId,
+            'amount' => $amount,
+            'fee' => $fee,
             'currency' => $currency,
-            'gateway'  => 'tinkoff',
-            'status'   => 'succeeded',
+            'gateway' => 'tinkoff',
+            'status' => 'succeeded',
         ]);
     }
 }

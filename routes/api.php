@@ -14,9 +14,9 @@ use App\Http\Controllers\LevelController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\PostSearchController;
-use App\Http\Controllers\PostStatisticController;
+use App\Http\Controllers\Post\PostController;
+use App\Http\Controllers\Post\PostSearchController;
+use App\Http\Controllers\Post\PostStatisticController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SkillController;
@@ -184,6 +184,7 @@ Route::middleware('auth:api')->group(function () {
 
         // Post statistics routes
         Route::prefix('statistics')->group(function () {
+            Route::get('/{post}/summary', [PostStatisticController::class, 'getPostStatistics'])->name('posts.statistics.post'); // для авторизированных
             Route::get('/summary', [PostStatisticController::class, 'summary'])->name('posts.statistics.summary'); // для авторизированных
             Route::get('/recent', [PostStatisticController::class, 'recent'])->name('posts.statistics.recent'); // для авторизированных
         });

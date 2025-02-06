@@ -3,10 +3,11 @@
 namespace App\Services;
 
 use App\Models\Category;
-use App\Models\Post;
+use App\Models\Posts\Post;
 use App\Models\Tag;
-use App\Models\User;
+use App\Models\Users\User;
 use App\Services\API\LibreTranslateService;
+use App\Services\Posts\PostSearchService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 

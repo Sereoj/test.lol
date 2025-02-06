@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\BalanceService;
-use App\Services\PaymentGatewayService;
-use Illuminate\Http\Request;
+use App\Services\Transactions\BalanceService;
+use App\Services\Transactions\PaymentGatewayService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
 class BalanceController extends Controller
 {
     protected BalanceService $balanceService;
+
     protected PaymentGatewayService $paymentGatewayService;
 
     public function __construct(BalanceService $balanceService, PaymentGatewayService $paymentGatewayService)
@@ -24,7 +25,7 @@ class BalanceController extends Controller
     {
         $currency = $request->input('currency');
 
-        if (!$currency || !is_string($currency) || strlen($currency) !== 3) {
+        if (! $currency || ! is_string($currency) || strlen($currency) !== 3) {
             return response()->json(['error' => 'Некорректная или отсутствующая валюта'], 400);
         }
 
@@ -41,9 +42,9 @@ class BalanceController extends Controller
     {
         try {
             $validated = $request->validate([
-                'amount'   => 'required|numeric|min:1',
+                'amount' => 'required|numeric|min:1',
                 'currency' => 'required|string|size:3',
-                'gateway'  => 'required|string',
+                'gateway' => 'required|string',
             ]);
 
             $topup = $this->balanceService->topUpBalance(
@@ -65,8 +66,8 @@ class BalanceController extends Controller
         try {
             $validated = $request->validate([
                 'recipient_id' => 'required|exists:users,id|different:user_id',
-                'amount'       => 'required|numeric|min:1',
-                'currency'     => 'required|string|size:3',
+                'amount' => 'required|numeric|min:1',
+                'currency' => 'required|string|size:3',
             ]);
 
             $transfer = $this->balanceService->transferBalance(
@@ -88,7 +89,7 @@ class BalanceController extends Controller
     {
         try {
             $validated = $request->validate([
-                'amount'   => 'required|numeric|min:1',
+                'amount' => 'required|numeric|min:1',
                 'currency' => 'required|string|size:3',
             ]);
 

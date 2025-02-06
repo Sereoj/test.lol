@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\PurchaseService;
-use Illuminate\Http\Request;
+use App\Services\Transactions\PurchaseService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PurchaseController extends Controller
 {
@@ -29,6 +29,7 @@ class PurchaseController extends Controller
                 $validated['amount'],
                 $validated['currency']
             );
+
             return response()->json($purchase, 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 400);

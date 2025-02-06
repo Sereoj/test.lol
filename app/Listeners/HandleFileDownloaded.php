@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\FileDownloaded;
-use App\Services\UserTaskService;
+use App\Services\Users\UserTaskService;
 use Illuminate\Support\Facades\Log;
 
 class HandleFileDownloaded

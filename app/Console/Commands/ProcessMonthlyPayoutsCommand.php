@@ -2,13 +2,14 @@
 
 namespace App\Console\Commands;
 
-use App\Models\UserBalance;
-use App\Services\BalanceService;
+use App\Models\Users\UserBalance;
+use App\Services\Transactions\BalanceService;
 use Illuminate\Console\Command;
 
 class ProcessMonthlyPayoutsCommand extends Command
 {
     protected $signature = 'payouts:process';
+
     protected $description = 'Process monthly payouts to sellers';
 
     protected $balanceService;

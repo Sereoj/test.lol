@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\User;
+use App\Models\Users\User;
 use App\Notifications\UserFollowedNotification;
 use Auth;
 use Illuminate\Support\Facades\DB;

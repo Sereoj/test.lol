@@ -10,12 +10,12 @@ class AnypayService
     {
         // Здесь будет логика обработки платежей через Anypay
         return Topup::create([
-            'user_id'  => $userId,
-            'amount'   => $amount,
-            'fee'      => $fee,
+            'user_id' => $userId,
+            'amount' => $amount,
+            'fee' => $fee,
             'currency' => $currency,
-            'gateway'  => 'anypay',
-            'status'   => 'succeeded',
+            'gateway' => 'anypay',
+            'status' => 'succeeded',
         ]);
     }
 }

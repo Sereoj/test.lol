@@ -3,10 +3,10 @@
 namespace App\Repositories;
 
 use App\Events\CommentCreated;
-use App\Models\Comment;
-use App\Models\CommentLike;
-use App\Models\CommentReport;
-use App\Models\CommentRepost;
+use App\Models\Comments\Comment;
+use App\Models\Comments\CommentLike;
+use App\Models\Comments\CommentReport;
+use App\Models\Comments\CommentRepost;
 
 class CommentRepository
 {

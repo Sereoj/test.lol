@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use App\Models\PasswordReset;
-use App\Models\User;
+use App\Models\Users\User;
+use App\Services\Users\UserService;
 use App\Utils\CodeGenerator;
 use App\Utils\PasswordUtil;
 use Exception;

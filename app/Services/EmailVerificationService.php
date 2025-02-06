@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\EmailVerification;
+use App\Services\Users\UserService;
 use App\Utils\CodeGenerator;
 use Exception;
 use Illuminate\Support\Carbon;

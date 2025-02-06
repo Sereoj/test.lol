@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmploymentStatus\AssignEmploymentStatusRequest;
 use App\Http\Requests\EmploymentStatus\RemoveEmploymentStatusRequest;
-use App\Services\UserEmploymentStatusService;
+use App\Services\Users\UserEmploymentStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 

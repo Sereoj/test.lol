@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\CommentCreated;
-use App\Services\UserTaskService;
+use App\Services\Users\UserTaskService;
 use Illuminate\Support\Facades\Log;
 
 class HandleCommentCreated

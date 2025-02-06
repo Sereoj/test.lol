@@ -7,7 +7,7 @@ use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RefreshTokenRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
-use App\Services\UserService;
+use App\Services\Users\UserService;
 use Exception;
 use Illuminate\Http\Request;
 

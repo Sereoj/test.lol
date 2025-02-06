@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SetActiveBadgeRequest;
 use App\Http\Requests\StoreUserBadgeRequest;
 use App\Http\Requests\UpdateUserBadgeRequest;
-use App\Services\UserBadgeService;
+use App\Services\Users\UserBadgeService;
 use Auth;
 use Exception;
 use Illuminate\Support\Facades\Cache;

@@ -34,7 +34,6 @@ class PostStatSummaryRequest extends FormRequest
     public function messages()
     {
         return [
-            'category_id.exists' => 'The selected category is invalid.',
             'date_range.start_date.date' => 'The start date must be a valid date.',
             'date_range.end_date.date' => 'The end date must be a valid date.',
             'date_range.end_date.after_or_equal' => 'The end date must be after or equal to the start date.',

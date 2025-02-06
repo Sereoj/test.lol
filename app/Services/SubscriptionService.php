@@ -20,13 +20,13 @@ class SubscriptionService
     public function createSubscription($plan, $amount, $currency, $duration)
     {
         return Subscription::create([
-            'user_id'   => Auth::id(),
-            'plan'      => $plan,
-            'status'    => 'active',
-            'amount'    => $amount,
-            'currency'  => $currency,
-            'started_at'=> now(),
-            'expires_at'=> now()->add($duration),
+            'user_id' => Auth::id(),
+            'plan' => $plan,
+            'status' => 'active',
+            'amount' => $amount,
+            'currency' => $currency,
+            'started_at' => now(),
+            'expires_at' => now()->add($duration),
         ]);
     }
 

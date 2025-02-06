@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Comment\CommentReactRequest;
 use App\Http\Requests\Comment\CommentRequest;
 use App\Http\Requests\Comment\ReportCommentRequest;
-use App\Models\Post;
+use App\Models\Posts\Post;
 use App\Services\CommentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;

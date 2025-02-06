@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Achievement;
-use App\Models\User;
+use App\Models\Users\User;
 
 class AchievementService
 {

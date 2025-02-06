@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\TransactionService;
-use Illuminate\Http\Request;
+use App\Services\Transactions\TransactionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TransactionController extends Controller
 {
@@ -18,7 +18,7 @@ class TransactionController extends Controller
     public function getTransactions(Request $request): JsonResponse
     {
         $transactions = $this->transactionService->getUserTransactions($request->user()->id);
+
         return response()->json($transactions);
     }
 }
-

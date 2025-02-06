@@ -10,12 +10,12 @@ class SelectionService
     {
         // Логика для Selection
         return Topup::create([
-            'user_id'  => $userId,
-            'amount'   => $amount,
-            'fee'      => $fee,
+            'user_id' => $userId,
+            'amount' => $amount,
+            'fee' => $fee,
             'currency' => $currency,
-            'gateway'  => 'selection',
-            'status'   => 'succeeded',
+            'gateway' => 'selection',
+            'status' => 'succeeded',
         ]);
     }
 }

@@ -2,8 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Post;
+use App\Models\Posts\Post;
 use App\Repositories\CommentRepository;
+use App\Services\Posts\PostStatisticsService;
 use Illuminate\Support\Facades\Auth;
 
 class CommentService

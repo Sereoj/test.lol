@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Services\SubscriptionService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SubscriptionController extends Controller
 {
@@ -19,6 +19,7 @@ class SubscriptionController extends Controller
     {
         $this->subscriptionService->checkAndUpdateSubscriptionStatus();
         $subscription = $this->subscriptionService->getActiveSubscription();
+
         return response()->json($subscription);
     }
 
@@ -48,6 +49,7 @@ class SubscriptionController extends Controller
         ]);
 
         $this->subscriptionService->extendSubscription($subscriptionId, $validated['duration']);
+
         return response()->json(['success' => true]);
     }
 }

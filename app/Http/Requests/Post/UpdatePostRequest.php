@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Post;
 
-use App\Models\Post;
+use App\Models\Posts\Post;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;

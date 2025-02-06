@@ -17,7 +17,7 @@ class Fee extends Model
     ];
 
     // Метод для получения комиссии по типу
-    public static function getFeeByType(string $type, string $gateway = null)
+    public static function getFeeByType(string $type, ?string $gateway = null)
     {
         $query = self::where('type', $type);
 

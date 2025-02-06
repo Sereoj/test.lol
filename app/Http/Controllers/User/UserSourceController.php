@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Source\AddSourceRequest;
 use App\Http\Requests\Source\RemoveSourceRequest;
-use App\Services\UserSourceService;
+use App\Services\Users\UserSourceService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
