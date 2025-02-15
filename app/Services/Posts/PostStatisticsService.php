@@ -2,7 +2,7 @@
 
 namespace App\Services\Posts;
 
-use App\Models\Interaction;
+use App\Models\Interactions\Interaction;
 use App\Models\Posts\PostStatistic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

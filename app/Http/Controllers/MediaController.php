@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Media\MediaRequest;
-use App\Services\MediaService;
+use App\Services\Media\MediaService;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 

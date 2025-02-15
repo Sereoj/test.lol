@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Users\UserBalance;
-use App\Services\Transactions\BalanceService;
+use App\Services\Billing\BalanceService;
 use Illuminate\Console\Command;
 
 class ProcessMonthlyPayoutsCommand extends Command

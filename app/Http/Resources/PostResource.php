@@ -25,7 +25,7 @@ class PostResource extends JsonResource
             'relevance_score' => $this->relevance_score,
             'media' => MediaResource::collection($this->whenLoaded('media')),
             'apps' => AppResource::collection($this->whenLoaded('apps')),
-            'user' => UserResource::make($this->whenLoaded('user')),
+            'user' => UserShortResource::make($this->whenLoaded('user')),
         ];
     }
 }

@@ -10,12 +10,14 @@ use App\Events\PostPublished;
 use App\Events\ProfileComplected;
 use App\Events\TaskCompleted;
 use App\Events\TaskCreated;
+use App\Events\UserActivity;
 use App\Events\UserExperienceChanged;
 use App\Events\VideoPublished;
 use App\Listeners\AddTaskToUsers;
 use App\Listeners\HandleCommentCreated;
 use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleProfileComplected;
+use App\Listeners\UpdateOnlineStatus;
 use App\Listeners\UpdateUserExperience;
 use App\Listeners\UpdateUserLevel;
 use App\Listeners\UpdateUserTasksOnPostPublished;
@@ -34,6 +36,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         Registered::class => [
             SendEmailVerificationNotification::class,
+        ],
+        UserActivity::class => [
+            UpdateOnlineStatus::class,
         ],
         TaskCreated::class => [
             AddTaskToUsers::class,

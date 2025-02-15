@@ -6,7 +6,7 @@ use App\Http\Requests\Skill\AddSkillRequest;
 use App\Http\Requests\Skill\RemoveSkillRequest;
 use App\Http\Requests\Skill\StoreSkillRequest;
 use App\Http\Requests\Skill\UpdateSkillRequest;
-use App\Services\SkillService;
+use App\Services\Content\SkillService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;

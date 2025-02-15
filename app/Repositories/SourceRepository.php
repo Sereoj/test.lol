@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Source;
+use App\Models\Content\Source;
 
 class SourceRepository
 {

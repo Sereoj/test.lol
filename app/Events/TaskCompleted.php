@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\Task;
+use App\Models\Content\Task;
 use App\Models\Users\User;
 use Illuminate\Queue\SerializesModels;
 

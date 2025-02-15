@@ -32,5 +32,7 @@ class SourcesTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Sources table seeded successfully!');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Models\Users;
 
-use App\Models\Badge;
+use App\Models\Content\Badge;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

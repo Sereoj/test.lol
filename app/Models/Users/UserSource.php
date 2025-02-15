@@ -14,6 +14,4 @@ class UserSource extends Model
     protected $fillable = [
         'user_id', 'source_id',
     ];
-
-    public $timestamps = true;
 }

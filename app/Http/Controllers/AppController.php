@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\App\AppRequest;
-use App\Services\AppService;
+use App\Services\Apps\AppService;
 use Illuminate\Support\Facades\Cache;
 
 class AppController extends Controller

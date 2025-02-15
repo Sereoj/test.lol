@@ -3,12 +3,12 @@
 namespace App\Repositories;
 
 use App\Events\UserExperienceChanged;
-use App\Models\Achievement;
-use App\Models\Task;
+use App\Models\Content\Achievement;
+use App\Models\Content\Task;
 use App\Models\Users\User;
 use App\Models\Users\UserSetting;
-use App\Services\EmploymentStatusService;
-use App\Services\RoleService;
+use App\Services\Employment\EmploymentStatusService;
+use App\Services\Roles\RoleService;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -60,6 +60,12 @@ class UserRepository
 
         $user->userBalance()->create([
             'balance' => 0.00,
+            'currency' => 'USD',
+        ]);
+
+        $user->userBalance()->create([
+            'balance' => 0.00,
+            'currency' => 'RUB',
         ]);
 
         // Логирование успешного создания пользователя
@@ -128,6 +134,7 @@ class UserRepository
                 'sources',
                 'skills',
                 'avatars',
+                'onlineStatus',
             ])
             ->find($id);
     }
@@ -166,6 +173,7 @@ class UserRepository
                 'sources',
                 'skills',
                 'avatars',
+                'onlineStatus',
             ])
             ->where('slug', $slug)
             ->first();
@@ -193,6 +201,7 @@ class UserRepository
                 'sources',
                 'skills',
                 'avatars',
+                'onlineStatus',
             ])
             ->where('email', $email)
             ->first();

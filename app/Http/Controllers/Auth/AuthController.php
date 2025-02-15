@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RefreshTokenRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Services\AuthService;
+use App\Http\Resources\UserLongResource;
+use App\Services\Authentication\AuthService;
 use App\Services\Users\UserService;
 use Exception;
 use Illuminate\Http\Request;
@@ -57,7 +58,7 @@ class AuthController extends Controller
         try {
             $refreshToken = $request->input('refresh_token');
 
-            return $this->authService->refreshToken($refreshToken);
+            return response()->json($this->authService->refreshToken($refreshToken));
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'An error occurred during token refresh',
@@ -68,27 +69,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $user = $request->user()->load([
-            'level',
-            'achievements',
-            'role',
-            'badges',
-            'usingApps',
-            'userSettings',
-            'specializations',
-            'status',
-            'following',
-            'followers',
-            'employmentStatus',
-            'location',
-            'tasks',
-            'userBalance',
-            'transactions',
-            'sources',
-            'skills',
-            'avatars',
-        ]);
-
+        $user = new UserLongResource($this->userService->findUserById($request->user()->id));
         return response()->json($user);
     }
 

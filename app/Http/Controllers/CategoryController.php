@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Category\CategoryRequest;
-use App\Services\CategoryService;
+use App\Services\Content\CategoryService;
 use Illuminate\Support\Facades\Cache;
 
 class CategoryController extends Controller

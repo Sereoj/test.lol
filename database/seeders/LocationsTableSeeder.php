@@ -31,5 +31,7 @@ class LocationsTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Locations table seeded successfully!');
     }
 }

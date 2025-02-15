@@ -31,9 +31,6 @@ return new class extends Migration
 
             $table->index(['status', 'created_at']);
             $table->index(['user_id', 'created_at']);
-            $table->index(['views_count', 'created_at']);
-            $table->index(['likes_count', 'created_at']);
-            $table->index(['reposts_count', 'created_at']);
         });
     }
 

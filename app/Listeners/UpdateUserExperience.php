@@ -4,7 +4,7 @@ namespace App\Listeners;
 
 use App\Events\TaskCompleted;
 use App\Events\UserExperienceChanged;
-use App\Models\Achievement;
+use App\Models\Content\Achievement;
 
 class UpdateUserExperience
 {

@@ -34,5 +34,7 @@ class CategoriesTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Categories table seeded successfully!');
     }
 }

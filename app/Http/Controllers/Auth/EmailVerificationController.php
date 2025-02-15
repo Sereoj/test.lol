@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SendVerificationCodeRequest;
 use App\Http\Requests\Auth\VerifyEmailRequest;
-use App\Services\EmailVerificationService;
+use App\Services\Authentication\EmailVerificationService;
 
 class EmailVerificationController extends Controller
 {

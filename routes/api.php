@@ -208,7 +208,7 @@ Route::middleware('auth:api')->group(function () {
         Route::get('/{tag}', [TagController::class, 'show'])->name('tags.show'); // авторизированных
 
         Route::middleware('role:admin')->group(function () {
-            Route::post('/tags', [TagController::class, 'store'])->name('tags.store'); // для администраторов
+            Route::post('/', [TagController::class, 'store'])->name('tags.store'); // для администраторов
             Route::put('/{tag}', [TagController::class, 'update'])->name('tags.update'); // для администраторов
             Route::delete('/{tag}', [TagController::class, 'destroy'])->name('tags.destroy'); // для администраторов
         });

@@ -44,5 +44,7 @@ class BadgesTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Badges table seeded successfully!');
     }
 }

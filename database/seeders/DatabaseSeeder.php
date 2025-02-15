@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AchievementsTableSeeder::class,
             StatusesTableSeeder::class,
             LevelsTableSeeder::class,
+            TasksTableSeeder::class,
             EmploymentStatusesTableSeeder::class,
             SpecializationsTableSeeder::class,
             LocationsTableSeeder::class,
@@ -28,6 +29,7 @@ class DatabaseSeeder extends Seeder
             BadgesTableSeeder::class,
             FeeSeeder::class,
             UsersTableSeeder::class,
+            PassportClientsSeeder::class,
         ]);
     }
 }

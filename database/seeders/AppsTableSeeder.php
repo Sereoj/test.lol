@@ -25,5 +25,7 @@ class AppsTableSeeder extends Seeder
         ];
 
         DB::table('apps')->insert($apps);
+
+        $this->command->info('Apps table seeded successfully!');
     }
 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreRoleRequest;
-use App\Models\Role;
-use App\Services\RoleService;
+use App\Models\Roles\Role;
+use App\Services\Roles\RoleService;
 use Illuminate\Support\Facades\Cache;
 
 class RoleController extends Controller

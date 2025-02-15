@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Transactions\TransactionService;
+use App\Services\Billing\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

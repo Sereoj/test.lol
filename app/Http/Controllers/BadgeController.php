@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Badge\StoreBadgeRequest;
 use App\Http\Requests\Badge\UpdateBadgeRequest;
-use App\Services\BadgeService;
+use App\Services\Content\BadgeService;
 use Illuminate\Support\Facades\Cache;
 
 class BadgeController extends Controller

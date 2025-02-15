@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SubscriptionService;
+use App\Services\Billing\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

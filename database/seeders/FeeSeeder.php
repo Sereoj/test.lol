@@ -96,6 +96,6 @@ class FeeSeeder extends Seeder
             ],
         ]);
 
-        $this->command->info('Таблица fees успешно засеяна!');
+        $this->command->info('Fees table seeded successfully!');
     }
 }

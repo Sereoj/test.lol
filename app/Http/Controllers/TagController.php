@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tag\StoreTagRequest;
 use App\Http\Requests\Tag\UpdateTagRequest;
-use App\Services\TagService;
+use App\Services\Content\TagService;
 use Illuminate\Support\Facades\Cache;
 
 class TagController extends Controller

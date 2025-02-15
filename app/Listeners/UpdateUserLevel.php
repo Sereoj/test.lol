@@ -3,7 +3,7 @@
 namespace App\Listeners;
 
 use App\Events\UserExperienceChanged;
-use App\Models\Level;
+use App\Models\Users\UserLevel;
 
 class UpdateUserLevel
 {
@@ -23,7 +23,7 @@ class UpdateUserLevel
         $user = $event->user;
         $userExperience = $user->experience;
 
-        $level = Level::where('experience_required', '<=', $userExperience)
+        $level = UserLevel::where('experience_required', '<=', $userExperience)
             ->orderBy('experience_required', 'desc')
             ->first();
 

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Models\Users\User;
-use App\Services\AuthService;
+use App\Services\Authentication\AuthService;
 use App\Services\Users\UserService;
 use App\Utils\PasswordUtil;
 use Exception;

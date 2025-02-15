@@ -32,5 +32,7 @@ class SkillsTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Skills table seeded successfully!');
     }
 }

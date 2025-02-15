@@ -2,7 +2,7 @@
 
 namespace App\Services\Users;
 
-use App\Models\Role;
+use App\Models\Roles\Role;
 use App\Models\Users\User;
 use App\Repositories\UserRepository;
 use App\Utils\TextUtil;

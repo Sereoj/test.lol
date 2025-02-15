@@ -3,14 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreLevelRequest;
-use App\Services\LevelService;
+use App\Services\Users\UserLevelService;
 use Illuminate\Support\Facades\Cache;
 
 class LevelController extends Controller
 {
-    protected LevelService $levelService;
+    protected UserLevelService $levelService;
 
-    public function __construct(LevelService $levelService)
+    public function __construct(UserLevelService $levelService)
     {
         $this->levelService = $levelService;
     }

@@ -2,19 +2,18 @@
 
 namespace App\Models\Users;
 
-use App\Models\Achievement;
-use App\Models\Avatar;
-use App\Models\Badge;
-use App\Models\EmploymentStatus;
-use App\Models\Level;
-use App\Models\Location;
-use App\Models\Role;
-use App\Models\Skill;
-use App\Models\Source;
-use App\Models\Specialization;
-use App\Models\Status;
-use App\Models\Task;
-use App\Models\Transaction;
+use App\Models\Apps\App;
+use App\Models\Billing\Transaction;
+use App\Models\Content\Achievement;
+use App\Models\Content\Badge;
+use App\Models\Content\Skill;
+use App\Models\Content\Source;
+use App\Models\Content\Specialization;
+use App\Models\Content\Task;
+use App\Models\Employment\EmploymentStatus;
+use App\Models\Locations\Location;
+use App\Models\Media\Avatar;
+use App\Models\Roles\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -90,7 +89,7 @@ class User extends Authenticatable
 
     public function level()
     {
-        return $this->belongsTo(Level::class);
+        return $this->belongsTo(UserLevel::class);
     }
 
     public function achievements()
@@ -110,12 +109,12 @@ class User extends Authenticatable
 
     public function usingApps()
     {
-        return $this->belongsTo(Role::class);
+        return $this->belongsTo(App::class, 'usingApps_id');
     }
 
     public function userSettings()
     {
-        return $this->belongsTo(UserSetting::class);
+        return $this->belongsTo(UserSetting::class, 'userSettings_id');
     }
 
     public function specializations()
@@ -125,7 +124,7 @@ class User extends Authenticatable
 
     public function status()
     {
-        return $this->belongsTo(Status::class);
+        return $this->belongsTo(UserStatus::class);
     }
 
     // Подписки (Following)
@@ -142,12 +141,12 @@ class User extends Authenticatable
 
     public function employmentStatus()
     {
-        return $this->belongsTo(EmploymentStatus::class);
+        return $this->belongsTo(EmploymentStatus::class, 'employment_status_id');
     }
 
     public function location()
     {
-        return $this->belongsTo(Location::class);
+        return $this->belongsTo(Location::class, 'location_id');
     }
 
     public function tasks()
@@ -157,7 +156,7 @@ class User extends Authenticatable
 
     public function userBalance()
     {
-        return $this->hasOne(UserBalance::class);
+        return $this->hasMany(UserBalance::class);
     }
 
     public function transactions()
@@ -180,12 +179,17 @@ class User extends Authenticatable
         return $this->hasMany(Avatar::class);
     }
 
+    public function onlineStatus()
+    {
+        return $this->hasOne(UserOnlineStatus::class);
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         static::created(function ($user) {
-            $level = Level::query()->where('experience_required', 0)->first();
+            $level = UserLevel::query()->where('experience_required', 0)->first();
             $user->level()->associate($level);
             $user->save();
         });

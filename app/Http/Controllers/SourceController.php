@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Source\CreateSourceRequest;
 use App\Http\Requests\Source\UpdateSourceRequest;
-use App\Services\SourceService;
+use App\Services\Content\SourceService;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;

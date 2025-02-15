@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\Transactions\BalanceService;
-use App\Services\Transactions\PaymentGatewayService;
+use App\Services\Billing\BalanceService;
+use App\Services\Billing\PaymentGatewayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

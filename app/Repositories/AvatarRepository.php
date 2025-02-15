@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Avatar;
+use App\Models\Media\Avatar;
 
 class AvatarRepository
 {

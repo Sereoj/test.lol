@@ -2,7 +2,7 @@
 
 namespace App\Services\Users;
 
-use App\Models\EmploymentStatus;
+use App\Models\Employment\EmploymentStatus;
 use App\Models\Users\User;
 
 class UserEmploymentStatusService

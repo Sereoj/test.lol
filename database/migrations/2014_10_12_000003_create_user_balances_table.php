@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('currency', 3)->default('USD')->index(); // Валюта счета
             $table->timestamps();
 
-            $table->unique('user_id'); // У каждого пользователя только одна запись в этой таблице
+            //$table->unique('user_id'); // У каждого пользователя только одна запись в этой таблице
         });
     }
 

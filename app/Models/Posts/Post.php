@@ -2,11 +2,11 @@
 
 namespace App\Models\Posts;
 
-use App\Models\App;
-use App\Models\Category;
-use App\Models\Interaction;
-use App\Models\Media;
-use App\Models\Tag;
+use App\Models\Apps\App;
+use App\Models\Categories\Category;
+use App\Models\Content\Tag;
+use App\Models\Interactions\Interaction;
+use App\Models\Media\Media;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

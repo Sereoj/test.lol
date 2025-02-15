@@ -2,7 +2,7 @@
 
 namespace App\Models\Users;
 
-use App\Models\Task;
+use App\Models\Content\Task;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 

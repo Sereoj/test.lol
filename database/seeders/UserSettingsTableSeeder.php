@@ -31,14 +31,10 @@ class UserSettingsTableSeeder extends Seeder
                 'preferences_feed' => 'likes',
                 'created_at' => now(), 'updated_at' => now(),
             ],
-            [
-                'is_online' => false,
-                'is_preferences_feed' => false,
-                'preferences_feed' => 'default',
-                'created_at' => now(), 'updated_at' => now(),
-            ],
         ];
 
         DB::table('user_settings')->insert($settings);
+
+        $this->command->info('UserSettings table seeded successfully!');
     }
 }

@@ -31,5 +31,7 @@ class SpecializationsTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Specializations table seeded successfully!');
     }
 }

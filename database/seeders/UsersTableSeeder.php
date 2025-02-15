@@ -26,11 +26,11 @@ class UsersTableSeeder extends Seeder
                 'language' => 'en',
                 'age' => 30,
                 'password' => Hash::make('securepassword'),
-                'role_id' => 1, // Пример ID роли
-                'usingApps_id' => 1, // Пример ID приложения
-                'userSettings_id' => 1, // Пример ID настроек пользователя
-                'status_id' => 1, // Пример ID статуса
-                'location_id' => 1, // Пример ID локации
+                'role_id' => 1,
+                'usingApps_id' => 1,
+                'userSettings_id' => 1,
+                'status_id' => 1,
+                'location_id' => 1,
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
@@ -79,5 +79,6 @@ class UsersTableSeeder extends Seeder
         }
 
         DB::table('users')->insert($users);
+        $this->command->info('Users table seeded successfully!');
     }
 }

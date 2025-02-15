@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmploymentStatus\StoreEmploymentStatusRequest;
 use App\Http\Requests\EmploymentStatus\UpdateEmploymentStatusRequest;
-use App\Services\EmploymentStatusService;
+use App\Services\Employment\EmploymentStatusService;
 use Illuminate\Support\Facades\Cache;
 
 class EmploymentStatusController extends Controller

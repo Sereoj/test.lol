@@ -3,9 +3,8 @@
 namespace Database\Seeders;
 
 use App\Events\TaskCreated;
-use App\Models\Task;
+use App\Models\Content\Task;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 
 class TasksTableSeeder extends Seeder
@@ -49,5 +48,6 @@ class TasksTableSeeder extends Seeder
             event(new TaskCreated($task));
         }
 
+        $this->command->info('Tasks table seeded successfully!');
     }
 }

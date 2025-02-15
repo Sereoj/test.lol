@@ -2,7 +2,7 @@
 
 namespace App\Services\Acquiring;
 
-use App\Models\Topup;
+use App\Models\Billing\Topup;
 
 class SelectionService
 {

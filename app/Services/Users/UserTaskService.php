@@ -3,7 +3,7 @@
 namespace App\Services\Users;
 
 use App\Events\TaskCompleted;
-use App\Models\Task;
+use App\Models\Content\Task;
 use App\Models\Users\User;
 use App\Models\Users\UserTask;
 use Exception;

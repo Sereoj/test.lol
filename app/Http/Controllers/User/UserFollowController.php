@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Services\FollowService;
+use App\Services\Users\UserFollowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
 class UserFollowController extends Controller
 {
-    protected FollowService $followService;
+    protected UserFollowService $followService;
 
-    public function __construct(FollowService $followService)
+    public function __construct(UserFollowService $followService)
     {
         $this->followService = $followService;
     }

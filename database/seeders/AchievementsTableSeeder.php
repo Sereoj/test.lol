@@ -32,5 +32,7 @@ class AchievementsTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Achievements table seeded successfully!');
     }
 }

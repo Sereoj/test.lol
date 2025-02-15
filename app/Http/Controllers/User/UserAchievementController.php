@@ -4,8 +4,8 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserAchievementRequest;
-use App\Models\Achievement;
-use App\Services\AchievementService;
+use App\Models\Content\Achievement;
+use App\Services\Content\AchievementService;
 use Auth;
 use Illuminate\Support\Facades\Cache;
 

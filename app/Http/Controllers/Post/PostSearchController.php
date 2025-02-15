@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Post;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
 use App\Services\Posts\PostSearchService;
-use App\Services\SearchSuggestionService;
+use App\Services\Posts\SearchSuggestionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Log;

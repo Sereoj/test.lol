@@ -32,5 +32,7 @@ class StatusesTableSeeder extends Seeder
                 'updated_at' => now(),
             ]);
         }
+
+        $this->command->info('Statuses table seeded successfully!');
     }
 }

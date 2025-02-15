@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Media;
+use App\Models\Media\Media;
 use Illuminate\Support\Collection;
 
 class MediaRepository
