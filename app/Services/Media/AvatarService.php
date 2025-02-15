@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Media;
 
 use App\Repositories\AvatarRepository;

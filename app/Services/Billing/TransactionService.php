@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services\Billing;
 
 use App\Models\Billing\Transaction;
