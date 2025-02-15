@@ -5,12 +5,28 @@
     "dev": "vite",
     "build": "vite build",
     "prepare": "husky",
+    "lint": "phpcs --standard=PSR12 ./",
+    "fix:cs": "php-cs-fixer fix ./",
+    "analyze": "phpstan analyze ./",
     "test": "echo 'Running tests...' && exit 0"
   },
   "devDependencies": {
+    "@commitlint/cli": "^19.7.1",
+    "@commitlint/config-conventional": "^19.7.1",
     "axios": "^1.6.4",
     "husky": "^9.1.7",
     "laravel-vite-plugin": "^1.0.0",
+    "lint-staged": "^15.4.3",
     "vite": "^5.0.0"
+  },
+  "lint-staged": {
+    "src/**/*.php": [
+      "npm run fix:cs",
+      "npm run lint",
+      "npm run analyze"
+    ]
+  },
+  "dependencies": {
+    "commitlint": "^19.7.1"
   }
 }
