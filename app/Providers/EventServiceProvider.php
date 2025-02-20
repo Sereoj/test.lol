@@ -17,6 +17,7 @@ use App\Listeners\AddTaskToUsers;
 use App\Listeners\HandleCommentCreated;
 use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleProfileComplected;
+use App\Listeners\PostPublishedListener;
 use App\Listeners\UpdateOnlineStatus;
 use App\Listeners\UpdateUserExperience;
 use App\Listeners\UpdateUserLevel;
@@ -50,6 +51,7 @@ class EventServiceProvider extends ServiceProvider
             UpdateUserLevel::class,
         ],
         PostPublished::class => [
+            PostPublishedListener::class,
             UpdateUserTasksOnPostPublished::class,
         ],
         ImagePublished::class => [

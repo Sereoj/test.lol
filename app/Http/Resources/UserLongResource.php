@@ -18,6 +18,7 @@ class UserLongResource extends JsonResource
             'id' => $this->id,
             'username' => $this->username,
             'email' => $this->email,
+            'avatars' => $this->avatars,
             'level' => new LevelResource($this->level),
             'achievements' => AchievementResource::collection($this->achievements),
             'role' => new RoleResource($this->role),

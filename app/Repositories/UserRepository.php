@@ -9,6 +9,7 @@ use App\Models\Users\User;
 use App\Models\Users\UserSetting;
 use App\Services\Employment\EmploymentStatusService;
 use App\Services\Roles\RoleService;
+use App\Store\UserRelations;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -109,33 +110,14 @@ class UserRepository
             $query->where('email', $filters['email']);
         }
 
-        return $query->with(['level', 'achievements', 'role', 'badges', 'usingApps', 'userSettings', 'specializations', 'status', 'following', 'followers', 'employmentStatus', 'location', 'tasks', 'userBalance', 'transactions', 'sources', 'skills', 'avatars'])->get();
+        return $query
+            ->with(UserRelations::getUserRelations())->get();
     }
 
     public function findById(int $id)
     {
         return User::query()
-            ->with([
-                'level',
-                'achievements',
-                'role',
-                'badges',
-                'usingApps',
-                'userSettings',
-                'specializations',
-                'status',
-                'following',
-                'followers',
-                'employmentStatus',
-                'location',
-                'tasks',
-                'userBalance',
-                'transactions',
-                'sources',
-                'skills',
-                'avatars',
-                'onlineStatus',
-            ])
+            ->with(UserRelations::getUserRelations())
             ->find($id);
     }
 
@@ -154,27 +136,7 @@ class UserRepository
     public function findBySlug(string $slug)
     {
         return User::query()
-            ->with([
-                'level',
-                'achievements',
-                'role',
-                'badges',
-                'usingApps',
-                'userSettings',
-                'specializations',
-                'status',
-                'following',
-                'followers',
-                'employmentStatus',
-                'location',
-                'tasks',
-                'userBalance',
-                'transactions',
-                'sources',
-                'skills',
-                'avatars',
-                'onlineStatus',
-            ])
+            ->with(UserRelations::getUserRelations())
             ->where('slug', $slug)
             ->first();
     }
@@ -182,27 +144,7 @@ class UserRepository
     public function findByEmail(string $email)
     {
         return User::query()
-            ->with([
-                'level',
-                'achievements',
-                'role',
-                'badges',
-                'usingApps',
-                'userSettings',
-                'specializations',
-                'status',
-                'following',
-                'followers',
-                'employmentStatus',
-                'location',
-                'tasks',
-                'userBalance',
-                'transactions',
-                'sources',
-                'skills',
-                'avatars',
-                'onlineStatus',
-            ])
+            ->with(UserRelations::getUserRelations())
             ->where('email', $email)
             ->first();
     }

@@ -31,8 +31,6 @@ class UserService
 
             $user = $this->userRepository->create($data);
 
-            Log::info($user);
-
             return $user;
         } catch (\Exception $e) {
             Log::error('User creation failed', ['error' => $e->getMessage()]);

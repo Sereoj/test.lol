@@ -49,7 +49,6 @@ class BadgeController extends Controller
         if ($badge) {
             // Кешируем результат на 60 минут
             Cache::put($cacheKey, $badge, now()->addMinutes(60));
-
             return response()->json($badge);
         }
 

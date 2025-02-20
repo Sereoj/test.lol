@@ -85,6 +85,7 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'experience' => 'integer',
+        'verification' => 'boolean'
     ];
 
     public function level()
@@ -177,6 +178,11 @@ class User extends Authenticatable
     public function avatars()
     {
         return $this->hasMany(Avatar::class);
+    }
+
+    public function currentAvatar()
+    {
+        return $this->hasOne(Avatar::class)->latest();
     }
 
     public function onlineStatus()

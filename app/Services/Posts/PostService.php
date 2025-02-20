@@ -3,7 +3,7 @@
 namespace App\Services\Posts;
 
 use App\Events\FileDownloaded;
-use App\Http\Resources\PostResource;
+use App\Http\Resources\ThumbMediaResource;
 use App\Models\Posts\Post;
 use App\Repositories\PostRepository;
 use Illuminate\Support\Facades\Auth;
@@ -27,7 +27,7 @@ class PostService
     {
         $posts = $this->postRepository->getPosts($filters, $userId);
 
-        return PostResource::collection($posts);
+        return ThumbMediaResource::collection($posts);
     }
 
     public function getPost(int $id)
@@ -40,7 +40,7 @@ class PostService
 
         $this->statService->incrementViews($post->id);
 
-        return new PostResource($post);
+        return $post;
     }
 
     public function createPost(array $data)

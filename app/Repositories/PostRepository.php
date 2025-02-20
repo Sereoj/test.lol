@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Events\PostPublished;
 use App\Helpers\FileHelper;
-use App\Http\Resources\PostResource;
+use App\Http\Resources\ThumbMediaResource;
 use App\Models\Interactions\Interaction;
 use App\Models\Posts\Post;
 use App\Models\Users\User;
@@ -24,22 +24,44 @@ class PostRepository
 
     public function getPosts(array $filters, $userId = null)
     {
-        $query = Post::query()
+        $selectFields = [
+            'posts.id',
+            'posts.title',
+            'posts.slug',
+            'posts.is_adult_content',
+            'posts.is_nsfl_content',
+            'posts.is_free',
+            'posts.has_copyright',
+            'posts.user_id',
+            'posts.created_at',
+            'posts.updated_at',
+            DB::raw('
+                (COALESCE(post_statistics.likes_count, 0) * 3 +
+                 COALESCE(post_statistics.downloads_count, 0) * 5 +
+                 COALESCE(post_statistics.views_count, 0) * 1) as relevance_score
+            '),
+        ];
+
+        $groupByFields = [
+            'posts.id',
+            'posts.title',
+            'posts.slug',
+            'posts.is_adult_content',
+            'posts.is_nsfl_content',
+            'posts.is_free',
+            'posts.has_copyright',
+            'posts.user_id',
+            'posts.created_at',
+            'posts.updated_at',
+            'post_statistics.likes_count',
+            'post_statistics.downloads_count',
+            'post_statistics.views_count',
+        ];
+
+
+        $query = Post::published()
             ->with(['media', 'user'])
-            ->select([
-                'posts.id',
-                'posts.title',
-                'posts.content',
-                'posts.category_id',
-                'posts.user_id',
-                'posts.created_at',
-                'posts.updated_at',
-                DB::raw('
-                    (COALESCE(post_statistics.likes_count, 0) * 3 +
-                     COALESCE(post_statistics.downloads_count, 0) * 5 +
-                     COALESCE(post_statistics.views_count, 0) * 1) as relevance_score
-                '),
-            ])
+            ->select($selectFields)
             ->leftJoin('post_statistics', 'posts.id', '=', 'post_statistics.post_id');
 
         if ($userId) {
@@ -99,17 +121,6 @@ class PostRepository
                     $query->orderByDesc('relevance_score');
                     break;
             }
-
-            $userCategories = Interaction::query()
-                ->where('interactions.user_id', $userId)
-                ->join('posts', 'interactions.post_id', '=', 'posts.id')
-                ->distinct()
-                ->pluck('posts.category_id')
-                ->toArray();
-
-            $query->when(! empty($userCategories), function ($query) use ($userCategories) {
-                $query->orWhereIn('posts.category_id', $userCategories);
-            });
         } else {
             $query->orderByDesc('relevance_score');
         }
@@ -129,18 +140,7 @@ class PostRepository
         $perPage = $filters['per_page'] ?? 40;
         $pageOffset = $filters['page_offset'] ?? 0;
 
-        $query->groupBy([
-            'posts.id',
-            'posts.title',
-            'posts.content',
-            'posts.category_id',
-            'posts.user_id',
-            'posts.created_at',
-            'posts.updated_at',
-            'post_statistics.likes_count',
-            'post_statistics.downloads_count',
-            'post_statistics.views_count',
-        ]);
+        $query->groupBy($groupByFields);
 
         return $query->paginate($perPage, ['*'], 'page', $pageOffset + 1);
     }
@@ -149,7 +149,7 @@ class PostRepository
     {
         $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])->findOrFail($id);
 
-        return new PostResource($post);
+        return $post;
     }
 
     public function createPost(array $data)
@@ -163,7 +163,7 @@ class PostRepository
                 'slug' => TextUtil::generateUniqueSlug($data['title'], $count_posts),
                 'user_id' => Auth::id(),
                 'content' => $data['content'],
-                'status' => $data['status'] ?? Post::STATUS_DRAFT,
+                'status' => Post::STATUS_DRAFT,
                 'is_adult_content' => $data['is_adult_content'] ?? false,
                 'is_nsfl_content' => $data['is_nsfl_content'] ?? false,
                 'has_copyright' => $data['has_copyright'] ?? false,

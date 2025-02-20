@@ -1,39 +1,39 @@
 <?php
 
-use App\Http\Controllers\AppController;
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Auth\EmailVerificationController;
-use App\Http\Controllers\Auth\SocialiteController;
-use App\Http\Controllers\Auth\StepController;
-use App\Http\Controllers\BadgeController;
-use App\Http\Controllers\BalanceController;
+use App\Http\Controllers\Apps\AppController;
+use App\Http\Controllers\Authentication\AuthController;
+use App\Http\Controllers\Authentication\EmailVerificationController;
+use App\Http\Controllers\Authentication\PasswordResetController;
+use App\Http\Controllers\Authentication\SocialiteController;
+use App\Http\Controllers\Authentication\StepController;
+use App\Http\Controllers\Billing\BalanceController;
+use App\Http\Controllers\Billing\PurchaseController;
+use App\Http\Controllers\Billing\SubscriptionController;
+use App\Http\Controllers\Billing\TransactionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EmploymentStatusController;
-use App\Http\Controllers\LevelController;
-use App\Http\Controllers\LocationController;
-use App\Http\Controllers\MediaController;
-use App\Http\Controllers\PasswordResetController;
-use App\Http\Controllers\Post\PostController;
-use App\Http\Controllers\Post\PostSearchController;
-use App\Http\Controllers\Post\PostStatisticController;
-use App\Http\Controllers\PurchaseController;
-use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SkillController;
+use App\Http\Controllers\Media\AvatarController;
+use App\Http\Controllers\Posts\MediaController;
+use App\Http\Controllers\Posts\PostController;
+use App\Http\Controllers\Posts\PostSearchController;
+use App\Http\Controllers\Posts\PostStatisticController;
 use App\Http\Controllers\SourceController;
-use App\Http\Controllers\SubscriptionController;
 use App\Http\Controllers\TagController;
-use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\User\AvatarController;
-use App\Http\Controllers\User\UserAchievementController;
-use App\Http\Controllers\User\UserBadgeController;
-use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\User\UserEmploymentStatusController;
-use App\Http\Controllers\User\UserFollowController;
-use App\Http\Controllers\User\UserLanguageController;
-use App\Http\Controllers\User\UserProfileController;
-use App\Http\Controllers\User\UserSourceController;
-use App\Http\Controllers\User\UserTaskController;
+use App\Http\Controllers\BadgeController;
+use App\Http\Controllers\UserLevelController;
+use App\Http\Controllers\UserLocationController;
+use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\Users\UserAchievementController;
+use App\Http\Controllers\Users\UserBadgeController;
+use App\Http\Controllers\Users\UserController;
+use App\Http\Controllers\Users\UserEmploymentStatusController;
+use App\Http\Controllers\Users\UserFollowController;
+use App\Http\Controllers\Users\UserLanguageController;
+use App\Http\Controllers\Users\UserProfileController;
+use App\Http\Controllers\Users\UserSourceController;
+use App\Http\Controllers\Users\UserTaskController;
+use App\Http\Controllers\UserSkillController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -125,19 +125,19 @@ Route::middleware('auth:api')->group(function () {
 
         // User skills routes
         Route::prefix('skills')->group(function () {
-            Route::post('/', [SkillController::class, 'addSkill'])->middleware('role:admin')->name('user.skills.add'); // для администраторов
-            Route::delete('/', [SkillController::class, 'removeSkill'])->middleware('role:admin')->name('user.skills.remove'); // для администраторов
-            Route::get('/', [SkillController::class, 'getUserSkills'])->name('user.skills.get'); // для авторизированных
+            Route::post('/', [UserSkillController::class, 'addSkill'])->middleware('role:admin')->name('user.skills.add'); // для администраторов
+            Route::delete('/', [UserSkillController::class, 'removeSkill'])->middleware('role:admin')->name('user.skills.remove'); // для администраторов
+            Route::get('/', [UserSkillController::class, 'getUserSkills'])->name('user.skills.get'); // для авторизированных
         });
 
         Route::prefix('badges')->group(function () {
-            Route::post('/', [UserBadgeController::class, 'store'])->name('user-badges.store'); // для авторизированных
-            Route::get('/active', [UserBadgeController::class, 'getActiveBadge'])->name('user-badges.get-active');
-            Route::post('/active', [UserBadgeController::class, 'setActiveBadge'])->name('user-badges.set-active'); // для авторизированных
-            Route::get('/', [UserBadgeController::class, 'index'])->name('user-badges.index'); // для авторизированных
-            Route::get('/{id}', [UserBadgeController::class, 'show'])->name('user-badges.show'); // для авторизированных
-            Route::put('/{id}', [UserBadgeController::class, 'update'])->name('user-badges.update'); // для авторизированных
-            Route::delete('/{id}', [UserBadgeController::class, 'destroy'])->name('user-badges.destroy'); // для авторизированных
+            Route::post('/', [BadgeController::class, 'store'])->name('user-badges.store'); // для авторизированных
+            Route::get('/active', [BadgeController::class, 'getActiveBadge'])->name('user-badges.get-active');
+            Route::post('/active', [BadgeController::class, 'setActiveBadge'])->name('user-badges.set-active'); // для авторизированных
+            Route::get('/', [BadgeController::class, 'index'])->name('user-badges.index'); // для авторизированных
+            Route::get('/{id}', [BadgeController::class, 'show'])->name('user-badges.show'); // для авторизированных
+            Route::put('/{id}', [BadgeController::class, 'update'])->name('user-badges.update'); // для авторизированных
+            Route::delete('/{id}', [BadgeController::class, 'destroy'])->name('user-badges.destroy'); // для авторизированных
         });
 
         Route::prefix('tasks')->group(function () {
@@ -206,10 +206,9 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('tags')->group(function () {
         Route::get('/', [TagController::class, 'index'])->name('tags.index'); // для гостей или авторизированных
         Route::get('/{tag}', [TagController::class, 'show'])->name('tags.show'); // авторизированных
-
+        Route::post('/', [TagController::class, 'store'])->name('tags.store'); // для авторизированных
+        Route::put('/{tag}', [TagController::class, 'update'])->name('tags.update'); // для авторизированных
         Route::middleware('role:admin')->group(function () {
-            Route::post('/', [TagController::class, 'store'])->name('tags.store'); // для администраторов
-            Route::put('/{tag}', [TagController::class, 'update'])->name('tags.update'); // для администраторов
             Route::delete('/{tag}', [TagController::class, 'destroy'])->name('tags.destroy'); // для администраторов
         });
     });
@@ -247,13 +246,13 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('skills')->group(function () {
-        Route::get('/', [SkillController::class, 'index'])->name('skills.index'); // авторизированных
+        Route::get('/', [UserSkillController::class, 'index'])->name('skills.index'); // авторизированных
 
         Route::middleware(['role:admin'])->group(function () {
-            Route::post('/', [SkillController::class, 'store'])->name('skills.store'); // для администраторов
-            Route::get('/{id}', [SkillController::class, 'show'])->name('skills.show'); // для администраторов
-            Route::put('/{id}', [SkillController::class, 'update'])->name('skills.update'); // для администраторов
-            Route::delete('/{id}', [SkillController::class, 'destroy'])->name('skills.destroy'); // для администраторов
+            Route::post('/', [UserSkillController::class, 'store'])->name('skills.store'); // для администраторов
+            Route::get('/{id}', [UserSkillController::class, 'show'])->name('skills.show'); // для администраторов
+            Route::put('/{id}', [UserSkillController::class, 'update'])->name('skills.update'); // для администраторов
+            Route::delete('/{id}', [UserSkillController::class, 'destroy'])->name('skills.destroy'); // для администраторов
         });
     });
 
@@ -266,13 +265,13 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('levels')->middleware('role:admin')->group(function () {
-        Route::get('/', [LevelController::class, 'index'])->name('levels.index'); // для администраторов
-        Route::post('/', [LevelController::class, 'store'])->name('levels.store'); // для администраторов
+        Route::get('/', [UserLevelController::class, 'index'])->name('levels.index'); // для администраторов
+        Route::post('/', [UserLevelController::class, 'store'])->name('levels.store'); // для администраторов
     });
 
     Route::prefix('roles')->middleware('role:admin')->group(function () {
-        Route::get('/{role}', [RoleController::class, 'show'])->name('roles.show');  // авторизированных
-        Route::resource('/', RoleController::class)->except(['show']);
+        Route::get('/{role}', [UserRoleController::class, 'show'])->name('roles.show');  // авторизированных
+        Route::resource('/', UserRoleController::class)->except(['show']);
     });
 
     Route::prefix('achievements')->group(function () {
@@ -282,13 +281,13 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('locations')->group(function () {
-        Route::get('/', [LocationController::class, 'index'])->name('locations.index');
-        Route::get('/{id}', [LocationController::class, 'show'])->name('locations.show');
+        Route::get('/', [UserLocationController::class, 'index'])->name('locations.index');
+        Route::get('/{id}', [UserLocationController::class, 'show'])->name('locations.show');
 
         Route::middleware(['role:admin'])->group(function () {
-            Route::post('/', [LocationController::class, 'store'])->name('locations.store');
-            Route::put('/{id}', [LocationController::class, 'update'])->name('locations.update');
-            Route::delete('/{id}', [LocationController::class, 'destroy'])->name('locations.destroy');
+            Route::post('/', [UserLocationController::class, 'store'])->name('locations.store');
+            Route::put('/{id}', [UserLocationController::class, 'update'])->name('locations.update');
+            Route::delete('/{id}', [UserLocationController::class, 'destroy'])->name('locations.destroy');
         });
     });
 
