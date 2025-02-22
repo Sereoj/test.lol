@@ -19,18 +19,6 @@ class ThumbMediaResource extends JsonResource
             return $media->reject(fn($item) => $item->type === Media::STATUS_ORIGINAL);
         });
 
-        $imageCount = $filteredMedia->filter(fn($item) => str_starts_with($item->mime_type, 'image'))->count();
-        $hasVideo = $filteredMedia->contains(fn($item) => str_starts_with($item->mime_type, 'video'));
-
-        $mediaType = match (true) {
-            $hasVideo => 'video',
-            $imageCount === 1 => 'single',
-            $imageCount === 2 => 'double',
-            $imageCount === 3 => 'triple',
-            $imageCount >= 4 => 'quad',
-            default => null
-        };
-
         return [
             'title' => $this->title,
             'slug' => $this->slug,
@@ -39,10 +27,7 @@ class ThumbMediaResource extends JsonResource
             'is_free' => $this->is_free,
             'has_copyright' => $this->has_copyright,
             'user' => UserShortResource::make($this->whenLoaded('user')),
-            'type' => $mediaType,
-            'media' => MediaShortResource::collection($this->whenLoaded('media',  function ($media) {
-                return $media->reject(fn($item) => $item->type === Media::STATUS_ORIGINAL);
-            }))
+            'media' => MediaShortResource::groupMedia($filteredMedia)
         ];
     }
 }
