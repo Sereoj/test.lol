@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use function App\Helpers\getvideosize;
 
 class MediaService
 {
@@ -72,8 +73,15 @@ class MediaService
                 $width = null;
                 $height = null;
 
-                if ($type == 'image') {
-                    [$width, $height] = getimagesize($file);
+                switch ($type)
+                {
+                    case 'image':
+                        [$width, $height] = getimagesize($file);
+                        break;
+                    case 'video':
+                        [$width, $height] = getvideosize($file);
+                        break;
+                    default:
                 }
 
                 $originalMedia = null;

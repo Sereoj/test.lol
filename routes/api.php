@@ -57,27 +57,11 @@ Route::delete('/oauth/clients/{client_id}', [ClientController::class, 'destroy']
 Route::post('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'store'])->name('passport.personal_tokens.store');
 Route::delete('/oauth/personal-access-tokens/{token_id}', [PersonalAccessTokenController::class, 'destroy'])->name('passport.personal_tokens.destroy');*/
 
-// Public routes
-Route::post('/language', [UserLanguageController::class, 'setLanguage'])->middleware('guest')->name('set.language'); // для гостей или авторизированных
-Route::post('/register', [AuthController::class, 'register'])->middleware('guest')->name('register'); // только для гостей
-Route::post('/login', [AuthController::class, 'login'])->middleware('guest')->name('login'); // только для гостей
-Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('refresh-token'); // для авторизированных
-Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode'])->middleware('guest')->name('send.verification.code'); // для гостей
-Route::post('/verify-email', [EmailVerificationController::class, 'verifyEmail'])->middleware('guest')->name('verify.email'); // для гостей
-Route::post('/password/reset/email', [PasswordResetController::class, 'sendPasswordResetEmail'])->middleware('guest')->name('password.reset.email'); // только для гостей
-Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->middleware('guest')->name('password.reset'); // только для гостей
-
 // Socialite routes
 Route::prefix('auth')->middleware('guest')->group(function () {
     Route::get('redirect/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('auth.redirect'); // для гостей
     Route::get('callback/{provider}', [SocialiteController::class, 'handleProviderCallback'])->name('auth.callback'); // для гостей
 });
-
-// Public posts route
-Route::get('/posts', [PostController::class, 'index'])->name('posts.index'); // для гостей или авторизированных
-Route::get('/search', [PostSearchController::class, 'search'])->name('posts.search'); // для гостей
-Route::get('/search/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest'); // для гостей
-
 // Authenticated routes
 Route::middleware('auth:api')->group(function () {
     // Auth routes
@@ -312,6 +296,23 @@ Route::middleware('auth:api')->group(function () {
             Route::delete('/{id}', [EmploymentStatusController::class, 'destroy'])->name('employment-statuses.destroy');
         });
     });
+});
+
+// Public posts route
+Route::middleware('guest')->group(function () {
+    Route::get('/posts', [PostController::class, 'index'])->name('posts.index'); // для гостей или авторизированных
+    Route::get('/search', [PostSearchController::class, 'search'])->name('posts.search'); // для гостей
+    Route::get('/search/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest'); // для гостей
+
+    // Public routes
+    Route::post('/language', [UserLanguageController::class, 'setLanguage'])->name('set.language'); // для гостей или авторизированных
+    Route::post('/register', [AuthController::class, 'register'])->name('register'); // только для гостей
+    Route::post('/login', [AuthController::class, 'login'])->name('login'); // только для гостей
+    Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('refresh-token'); // для авторизированных
+    Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode'])->name('send.verification.code'); // для гостей
+    Route::post('/verify-email', [EmailVerificationController::class, 'verifyEmail'])->name('verify.email'); // для гостей
+    Route::post('/password/reset/email', [PasswordResetController::class, 'sendPasswordResetEmail'])->name('password.reset.email'); // только для гостей
+    Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->name('password.reset'); // только для гостей
 });
 
 Route::fallback(function (Request $request) {

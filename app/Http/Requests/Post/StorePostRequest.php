@@ -46,7 +46,7 @@ class StorePostRequest extends FormRequest
             'tags_id.*' => 'exists:tags,id',
             'apps_id' => 'array',
             'apps_id.*' => 'exists:apps,id',
-            'media' => 'array',
+            'media' => 'array|max:4',
             'media.*' => 'exists:media,id',
         ];
     }

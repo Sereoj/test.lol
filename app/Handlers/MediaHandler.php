@@ -7,6 +7,9 @@ use App\Processors\ImagePipeline;
 use App\Processors\WatermarkFilter;
 use App\Processors\WatermarkWithUsername;
 use App\Services\Base\AppSettingsService;
+use App\Services\Media\VideoService;
+use FFMpeg\FFMpeg;
+use FFMpeg\Format\Video\X264;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -44,7 +47,7 @@ class MediaHandler
         } elseif ($type === 'gif') {
             $results = array_merge($results, $this->handleGif($file, $originalFilePath));
         } elseif ($type === 'video') {
-            $results = array_merge($results, $this->handleVideo($file, $originalFilePath));
+            $results = array_merge($results, $this->handleVideo($file, $originalFilePath, $options, $processedPath));
         }
 
         return $results;
@@ -107,9 +110,44 @@ class MediaHandler
         return ['compressed' => $originalFilePath];
     }
 
-    protected function handleVideo(UploadedFile $file, string $originalFilePath): array
+    protected function handleVideo(UploadedFile $file, string $originalFilePath, array $options, string $processedPath): array
     {
-        // Логика обработки видео (например, сжатие или изменение формата).
-        return ['compressed' => $originalFilePath];
+        $results = [];
+
+        $storagePath = sprintf("%s/", storage_path('app/public'));
+
+        if (!empty($options['is_paid'])) {
+            $processedFileName = Str::random(20).'.mp4';
+            $watermarkedPath = "$processedPath/watermarked/".$processedFileName;
+
+            copy($originalFilePath, $storagePath.$watermarkedPath);
+            $results['compressed'] = $watermarkedPath;
+        }
+
+        if (!empty($options['is_author'])) {
+            $processedFileName = Str::random(20).'.mp4';
+            $authorWatermarkedPath = "$processedPath/watermarked/".$processedFileName;
+
+            copy($originalFilePath, $storagePath.$authorWatermarkedPath);
+            $results['compressed'] = $authorWatermarkedPath;
+        }
+
+        if (!empty($options['is_adult'])) {
+            $processedFileName = Str::random(20).'.mp4';
+            $blurredPath = "/$processedPath/blurred_adult/".$processedFileName;
+
+            copy($originalFilePath, $storagePath.$blurredPath);
+            $results['compressed'] = $blurredPath;
+        }
+
+        if (!empty($options['is_subscription'])) {
+            $processedFileName = Str::random(20).'.mp4';
+            $subscriptionPath = "/$processedPath/blurred/".$processedFileName;
+
+            copy($originalFilePath, $storagePath.$subscriptionPath);
+            $results['compressed'] = $subscriptionPath;
+        }
+
+        return $results;
     }
 }
