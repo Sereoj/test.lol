@@ -4,11 +4,13 @@ namespace App\Repositories;
 
 use App\Events\PostPublished;
 use App\Helpers\FileHelper;
-use App\Http\Resources\ThumbMediaResource;
 use App\Models\Interactions\Interaction;
 use App\Models\Posts\Post;
 use App\Models\Users\User;
 use App\Services\Media\MediaService;
+use App\Services\Posts\Assistants\MediaTypeFilterService;
+use App\Services\Posts\Assistants\SortingService;
+use App\Services\Posts\Assistants\TimeFrameFilterService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,125 +26,85 @@ class PostRepository
 
     public function getPosts(array $filters, $userId = null)
     {
-        $selectFields = [
-            'posts.id',
-            'posts.title',
-            'posts.slug',
-            'posts.is_adult_content',
-            'posts.is_nsfl_content',
-            'posts.is_free',
-            'posts.has_copyright',
-            'posts.user_id',
-            'posts.created_at',
-            'posts.updated_at',
-            DB::raw('
-                (COALESCE(post_statistics.likes_count, 0) * 3 +
-                 COALESCE(post_statistics.downloads_count, 0) * 5 +
-                 COALESCE(post_statistics.views_count, 0) * 1) as relevance_score
-            '),
-        ];
-
-        $groupByFields = [
-            'posts.id',
-            'posts.title',
-            'posts.slug',
-            'posts.is_adult_content',
-            'posts.is_nsfl_content',
-            'posts.is_free',
-            'posts.has_copyright',
-            'posts.user_id',
-            'posts.created_at',
-            'posts.updated_at',
-            'post_statistics.likes_count',
-            'post_statistics.downloads_count',
-            'post_statistics.views_count',
-        ];
-
-
+        // Базовый запрос
         $query = Post::published()
             ->with(['media', 'user'])
-            ->select($selectFields)
+            ->select([
+                'posts.id',
+                'posts.title',
+                'posts.slug',
+                'posts.is_adult_content',
+                'posts.is_nsfl_content',
+                'posts.is_free',
+                'posts.has_copyright',
+                'posts.user_id',
+                'posts.created_at',
+                'posts.updated_at',
+                DB::raw('
+                    (COALESCE(post_statistics.likes_count, 0) * 3 +
+                     COALESCE(post_statistics.downloads_count, 0) * 5 +
+                     COALESCE(post_statistics.views_count, 0) * 1) as relevance_score
+                '),
+            ])
             ->leftJoin('post_statistics', 'posts.id', '=', 'post_statistics.post_id');
 
+        // Учет предпочтений пользователя
         if ($userId) {
-            $userPreferences = optional(User::query()->find($userId)->userSettings)->preferences_feed;
-
-            $recentInteractions = Interaction::query()
-                ->where('user_id', $userId)
+            $user = User::find($userId);
+            $userPreferences = optional($user->userSettings)->preferences_feed ?? 'default';
+            $recentInteractions = Interaction::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->limit(30)
                 ->pluck('post_id')
                 ->toArray();
 
-            $query->when(! empty($recentInteractions), function ($query) use ($recentInteractions) {
+            $query->when(!empty($recentInteractions), function ($query) use ($recentInteractions) {
                 $query->whereNotIn('posts.id', $recentInteractions);
             });
 
-            switch ($userPreferences) {
-                case 'popularity':
-                    $query->orderByRaw('
-                        (
-                            COALESCE(post_statistics.likes_count, 0) * 2 +
-                            COALESCE(post_statistics.reposts_count, 0) * 3 +
-                            COALESCE(post_statistics.comments_count, 0) * 1.5 +
-                            COALESCE(post_statistics.downloads_count, 0) * 4 +
-                            COALESCE(post_statistics.purchases_count, 0) * 5 +
-                            COALESCE(post_statistics.views_count, 0) * 0.5
-                        ) / POW(TIMESTAMPDIFF(HOUR, posts.created_at, NOW()) + 1, 0.5) DESC
-                    ');
-                    break;
-                case 'downloads':
-                    $query->orderByRaw('
-                        (
-                            (COALESCE(post_statistics.downloads_count, 0) * 4) +
-                            (COALESCE(post_statistics.likes_count, 0) * 2) +
-                            (COALESCE(post_statistics.comments_count, 0) * 2) +
-                            (COALESCE(post_statistics.downloads_count, 0) /
-                                GREATEST(COALESCE(post_statistics.likes_count, 1), 1) * 3) +
-                            (COALESCE(post_statistics.views_count, 0) * 0.5)
-                        ) *
-                        (1 + 1 / (TIMESTAMPDIFF(HOUR, posts.created_at, NOW()) + 1)) DESC
-                    ');
-                    break;
-                case 'likes':
-                    $query->orderByRaw('
-                        (
-                            (COALESCE(post_statistics.likes_count, 0) * 3) +
-                            (COALESCE(post_statistics.downloads_count, 0) * 2) +
-                            (COALESCE(post_statistics.comments_count, 0) * 2) +
-                            (COALESCE(post_statistics.likes_count, 0) /
-                                GREATEST(COALESCE(post_statistics.views_count, 1), 1) * 3) +
-                            (COALESCE(post_statistics.views_count, 0) * 0.5)
-                        ) *
-                        (1 + 1 / (TIMESTAMPDIFF(HOUR, posts.created_at, NOW()) + 1)) DESC
-                    ');
-                    break;
-                default:
-                    $query->orderByDesc('relevance_score');
-                    break;
-            }
+            // Применение стратегии сортировки через сервис
+            app(SortingService::class)->apply($query, $userPreferences);
         } else {
-            $query->orderByDesc('relevance_score');
+            // Применение стандартной сортировки
+            app(SortingService::class)->apply($query, 'default');
         }
 
-        $query->when(isset($filters['time_frame']), function ($query) use ($filters) {
-            $timeFrameMap = [
-                'week' => now()->subWeek(),
-                'month' => now()->subMonth(),
-                'year' => now()->subYear(),
-            ];
+        // Применение фильтрации по временному диапазону
+        app(TimeFrameFilterService::class)->apply($query, $filters['time_frame'] ?? null);
 
-            if (isset($timeFrameMap[$filters['time_frame']])) {
-                $query->where('posts.created_at', '>=', $timeFrameMap[$filters['time_frame']]);
-            }
-        });
+        // Фильтрация по типам медиа
+        $mediaTypes = isset($filters['media_type']) && is_string($filters['media_type'])
+            ? [$filters['media_type']] // Преобразуем строку в массив
+            : ($filters['media_type'] ?? []);
 
+        app(MediaTypeFilterService::class)->apply(
+            $query,
+            $mediaTypes,
+            $filters['filter_mode'] ?? 'or'
+        );
+
+        // Пагинация
         $perPage = $filters['per_page'] ?? 40;
         $pageOffset = $filters['page_offset'] ?? 0;
 
-        $query->groupBy($groupByFields);
-
-        return $query->paginate($perPage, ['*'], 'page', $pageOffset + 1);
+        return $query->groupBy([
+            'posts.id',
+            'posts.title',
+            'posts.slug',
+            'posts.is_adult_content',
+            'posts.is_nsfl_content',
+            'posts.is_free',
+            'posts.has_copyright',
+            'posts.user_id',
+            'posts.created_at',
+            'posts.updated_at',
+            DB::raw('(COALESCE(post_statistics.likes_count, 0) * 3 +
+                     COALESCE(post_statistics.downloads_count, 0) * 5 +
+                     COALESCE(post_statistics.views_count, 0) * 1)'),
+            'post_statistics.likes_count',
+            'post_statistics.downloads_count',
+            'post_statistics.views_count',
+        ])->paginate($perPage, ['*'], 'page', $pageOffset + 1);
     }
 
     public function getPost(int $id)
