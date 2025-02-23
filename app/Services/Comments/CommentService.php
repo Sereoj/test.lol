@@ -2,6 +2,9 @@
 
 namespace App\Services\Comments;
 
+use App\Formatters\CommentFormatter;
+use App\Http\Resources\Comments\CommentCollection;
+use App\Http\Resources\Comments\CommentResource;
 use App\Models\Posts\Post;
 use App\Repositories\CommentRepository;
 use App\Services\Posts\PostStatisticsService;
@@ -9,25 +12,23 @@ use Illuminate\Support\Facades\Auth;
 
 class CommentService
 {
-    private CommentRepository $commentRepository;
+    protected CommentRepository $commentRepository;
 
-    private PostStatisticsService $postStatisticsService;
+    protected PostStatisticsService $postStatisticsService;
 
-    public function __construct(CommentRepository $commentRepository, PostStatisticsService $postStatisticsService)
+    public function __construct(
+        CommentRepository $commentRepository,
+        PostStatisticsService $postStatisticsService,
+    )
     {
         $this->commentRepository = $commentRepository;
         $this->postStatisticsService = $postStatisticsService;
     }
 
-    public function getCommentsForPost($postId)
+    public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        $post = Post::find($postId);
-
-        if (! $post) {
-            return ['message' => 'Post not found.'];
-        }
-
-        return $this->commentRepository->getCommentsForPost($postId);
+        $rawComments = $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
+        return new CommentCollection($rawComments);
     }
 
     public function updateComment($id, array $data)

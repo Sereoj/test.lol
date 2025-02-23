@@ -38,4 +38,9 @@ class Comment extends Model
     {
         return $this->hasMany(CommentReport::class);
     }
+
+    public function reposts()
+    {
+        return $this->hasMany(CommentRepost::class);
+    }
 }

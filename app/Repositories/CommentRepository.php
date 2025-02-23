@@ -15,12 +15,22 @@ class CommentRepository
         return Comment::find($id);
     }
 
-    public function getCommentsForPost($postId)
+    public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        return Comment::with(['replies', 'likes', 'reports'])
+        return Comment::with([
+            'user',
+            'likes',
+            'reports',
+            'reposts',
+            'replies.user',
+            'replies.likes',
+            'replies.reports',
+            'replies.reposts',
+        ])
             ->where('post_id', $postId)
-            ->whereNull('parent_id')
-            ->get();
+            ->whereNull('parent_id') // Только родительские комментарии
+            ->orderBy($sortBy, $order)
+            ->paginate($limit, ['*'], 'page', $page);
     }
 
     public function findParentComment($parentId)

@@ -21,14 +21,14 @@ class CommentController extends Controller
 
     public function index(Request $request)
     {
-        $cacheKey = 'comments_post_'.$request->post_id;
+/*        $cacheKey = 'comments_post_'.$request->post_id;
         if (Cache::has($cacheKey)) {
             return response()->json(Cache::get($cacheKey));
-        }
+        }*/
 
         $comments = $this->commentService->getCommentsForPost($request->post_id);
 
-        Cache::put($cacheKey, $comments, now()->addMinutes(60));
+        //Cache::put($cacheKey, $comments, now()->addMinutes(60));
 
         return response()->json($comments);
     }
