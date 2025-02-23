@@ -16,7 +16,7 @@ class ThumbMediaResource extends JsonResource
     public function toArray(Request $request): array
     {
         $filteredMedia = $this->whenLoaded('media', function ($media) {
-            return $media->reject(fn($item) => $item->type === Media::STATUS_ORIGINAL);
+            return $media->reject(fn($item) => $item->type != Media::STATUS_ORIGINAL);
         });
 
         return [
