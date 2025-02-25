@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Posts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
+use App\Http\Resources\Posts\PostResource;
 use App\Services\Posts\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,8 +53,8 @@ class PostController extends Controller
     {
         $cacheKey = 'post_'.$id;
 
-        $post = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($id) {
-            return $this->postService->getPost($id);
+        $post = Cache::remember($cacheKey, now()->addSeconds(2), function () use ($id) {
+            return new PostResource($this->postService->getPost($id));
         });
 
         return response()->json($post);

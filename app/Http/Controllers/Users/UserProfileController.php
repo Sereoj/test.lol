@@ -22,8 +22,11 @@ class UserProfileController extends Controller
      */
     public function show()
     {
-        $user = Auth::user();
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
+        $user = Auth::user();
         // Проверка кеша перед запросом
         $cacheKey = "user_profile_{$user->id}";
         $profile = Cache::get($cacheKey);
@@ -50,9 +53,12 @@ class UserProfileController extends Controller
      */
     public function update(UpdateUserProfileRequest $request)
     {
-        $user = Auth::user();
-        $data = $request->validated();
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
 
+        $data = $request->validated();
+        $user = Auth::user();
         try {
             $profile = $this->userProfileService->updateUserProfile($user->id, $data);
 

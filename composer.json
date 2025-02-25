@@ -22,6 +22,7 @@
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "friendsofphp/php-cs-fixer": "^3.68",
+        "knuckleswtf/scribe": "^5.0",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.18",
         "mockery/mockery": "^1.4.4",

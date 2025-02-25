@@ -23,17 +23,70 @@ class UpdateUserProfileRequest extends FormRequest
      */
     public function rules(): array
     {
+        $userId = $this->user() ? $this->user()->id : null;
+
         return [
             'username' => 'sometimes|required|string|max:255',
             'seo_meta' => 'sometimes|required|json',
-            'slug' => 'sometimes|required|string|max:255|unique:users,slug,'.$this->user()->id,
+            'slug' => 'sometimes|required|string|max:255|unique:users,slug,' . ($userId ?? ''),
             'description' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:users,email,'.$this->user()->id,
+            'email' => 'sometimes|required|email|unique:users,email,' . ($userId ?? ''),
             'verification' => 'sometimes|required|boolean',
             'experience' => 'sometimes|required|integer',
             'gender' => 'sometimes|required|in:male,female,other',
             'language' => 'sometimes|required|string|max:2',
             'age' => 'sometimes|required|integer',
+        ];
+    }
+
+    /**
+     * Define the body parameters for Scribe documentation.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'username' => [
+                'description' => 'The username of the user.',
+                'example' => 'johndoe',
+            ],
+            'seo_meta' => [
+                'description' => 'SEO metadata in JSON format.',
+                'example' => '{"title": "John Doe Profile", "description": "A user profile"}',
+            ],
+            'slug' => [
+                'description' => 'A unique slug for the user profile.',
+                'example' => 'john-doe',
+            ],
+            'description' => [
+                'description' => 'A short description of the user.',
+                'example' => 'Software developer with 5 years of experience.',
+            ],
+            'email' => [
+                'description' => 'The user\'s email address.',
+                'example' => 'john.doe@example.com',
+            ],
+            'verification' => [
+                'description' => 'Whether the user\'s profile is verified.',
+                'example' => true,
+            ],
+            'experience' => [
+                'description' => 'Years of experience.',
+                'example' => 5,
+            ],
+            'gender' => [
+                'description' => 'The user\'s gender.',
+                'example' => 'male',
+            ],
+            'language' => [
+                'description' => 'The user\'s preferred language (2-letter code).',
+                'example' => 'en',
+            ],
+            'age' => [
+                'description' => 'The user\'s age.',
+                'example' => 30,
+            ],
         ];
     }
 

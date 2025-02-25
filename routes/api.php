@@ -13,6 +13,7 @@ use App\Http\Controllers\Billing\TransactionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EmploymentStatusController;
+use App\Http\Controllers\InitController;
 use App\Http\Controllers\Media\AvatarController;
 use App\Http\Controllers\Posts\MediaController;
 use App\Http\Controllers\Posts\PostController;
@@ -25,7 +26,6 @@ use App\Http\Controllers\UserLevelController;
 use App\Http\Controllers\UserLocationController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\Users\UserAchievementController;
-use App\Http\Controllers\Users\UserBadgeController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Users\UserEmploymentStatusController;
 use App\Http\Controllers\Users\UserFollowController;
@@ -300,6 +300,8 @@ Route::middleware('auth:api')->group(function () {
 
 // Public posts route
 Route::middleware('guest')->group(function () {
+    Route::get('/init', [InitController::class, 'init'])->name('init');
+
     Route::get('/posts', [PostController::class, 'index'])->name('posts.index'); // для гостей или авторизированных
     Route::get('/search', [PostSearchController::class, 'search'])->name('posts.search'); // для гостей
     Route::get('/search/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest'); // для гостей

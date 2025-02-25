@@ -38,6 +38,20 @@ class UploadAvatarRequest extends FormRequest
         ];
     }
 
+    /**
+     * Define the body parameters for Scribe documentation.
+     *
+     * @return array<string, array<string, mixed>>
+     */
+    public function bodyParameters(): array
+    {
+        return [
+            'avatar' => [
+                'description' => 'The avatar image to upload. Must be an image file (jpeg, png, jpg, or gif) with a maximum size of 2MB.',
+                'exampleNoAutoGenerate' => true,
+            ],
+        ];
+    }
     protected function failedValidation(Validator $validator)
     {
         $errors = $validator->errors();
