@@ -12,7 +12,9 @@ use Intervention\Image\Laravel\Facades\Image;
 
 class ProcessImageJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable;
+    use Dispatchable;
+    use InteractsWithQueue;
+    use Queueable;
 
     protected string $inputPath;
 

@@ -15,7 +15,7 @@ class SearchSuggestionService
     public function suggest($query, $limit = 10)
     {
         // Готовим запросы для поиска
-        $queries = (new PostSearchService)->prepareSearchQueries($query);
+        $queries = (new PostSearchService())->prepareSearchQueries($query);
 
         // Проверяем, есть ли результат в кэше
         $cacheKey = 'search_suggestions_'.md5($query);

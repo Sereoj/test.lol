@@ -15,7 +15,7 @@ class TokenService
 
     public function __construct()
     {
-        $this->appSettingsService = new AppSettingsService;
+        $this->appSettingsService = new AppSettingsService();
     }
 
     /**

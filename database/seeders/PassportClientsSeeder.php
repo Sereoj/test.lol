@@ -15,11 +15,15 @@ class PassportClientsSeeder extends Seeder
         $clientRepository = app(ClientRepository::class);
 
         $personalClient = $clientRepository->createPersonalAccessClient(
-            1, 'Personal Access Client', env('APP_URL')
+            1,
+            'Personal Access Client',
+            env('APP_URL')
         );
 
         $passwordClient = $clientRepository->createPasswordGrantClient(
-            1, 'Password Grant Client', env('APP_URL')
+            1,
+            'Password Grant Client',
+            env('APP_URL')
         );
 
         if ($personalClient) {

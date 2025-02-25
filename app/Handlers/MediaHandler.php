@@ -60,10 +60,10 @@ class MediaHandler
         if (! empty($options['is_paid'])) {
             $watermarkedPath = "$processedPath/watermarked/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
-            $pipeline = new ImagePipeline;
+            $pipeline = new ImagePipeline();
             $pipeline
-                ->addFilter(new WatermarkFilter, ['text' => 'Paid'])
-                ->addFilter(new WatermarkWithUsername, ['username' => '@Test'])
+                ->addFilter(new WatermarkFilter(), ['text' => 'Paid'])
+                ->addFilter(new WatermarkWithUsername(), ['username' => '@Test'])
                 ->process($originalFilePath, $watermarkedPath);
 
             $results['compressed'] = $watermarkedPath;
@@ -72,8 +72,8 @@ class MediaHandler
         if (! empty($options['is_author'])) {
             $blurredPath = "$processedPath/watermarked/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
-            $pipeline = new ImagePipeline;
-            $pipeline->addFilter(new WatermarkWithUsername, ['username' => '@Test'])
+            $pipeline = new ImagePipeline();
+            $pipeline->addFilter(new WatermarkWithUsername(), ['username' => '@Test'])
                 ->process($originalFilePath, $blurredPath);
 
             $results['compressed'] = $blurredPath;
@@ -82,9 +82,9 @@ class MediaHandler
         if (! empty($options['is_adult'])) {
             $blurredAdultPath = "$processedPath/blurred_adult/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
-            $pipeline = new ImagePipeline;
-            $pipeline->addFilter(new BlurFilter, ['blur' => 30])
-                ->addFilter(new WatermarkFilter, ['text' => 'Content 18+'])
+            $pipeline = new ImagePipeline();
+            $pipeline->addFilter(new BlurFilter(), ['blur' => 30])
+                ->addFilter(new WatermarkFilter(), ['text' => 'Content 18+'])
                 ->process($originalFilePath, $blurredAdultPath);
 
             $results['compressed'] = $blurredAdultPath;
@@ -93,9 +93,9 @@ class MediaHandler
         if (! empty($options['is_subscription'])) {
             $blurredPath = "$processedPath/blurred/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
-            $pipeline = new ImagePipeline;
-            $pipeline->addFilter(new BlurFilter, ['blur' => 30])
-                ->addFilter(new WatermarkFilter, ['text' => 'Водяной знак'])
+            $pipeline = new ImagePipeline();
+            $pipeline->addFilter(new BlurFilter(), ['blur' => 30])
+                ->addFilter(new WatermarkFilter(), ['text' => 'Водяной знак'])
                 ->process($originalFilePath, $blurredPath);
 
             $results['compressed'] = $blurredPath;
