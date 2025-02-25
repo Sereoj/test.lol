@@ -32,7 +32,7 @@ class UserFollowedNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('You have a new follower!')
             ->line('You have a new follower!')
             ->action('View Profile', url('/profile/'.$this->follower->id))

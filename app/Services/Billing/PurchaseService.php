@@ -48,7 +48,7 @@ class PurchaseService
             }
 
             try {
-                $paymentGatewayService = new PaymentGatewayService;
+                $paymentGatewayService = new PaymentGatewayService();
                 $paymentGatewayService->processPayment($user->id, $totalAmount, $currency, 'anypay', $platformFee->fixed_amount);
             } catch (Exception $e) {
                 throw new Exception('Ошибка при обработке платежа: '.$e->getMessage());

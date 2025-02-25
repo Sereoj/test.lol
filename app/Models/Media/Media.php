@@ -11,10 +11,10 @@ class Media extends Model
 {
     use HasFactory;
 
-    const STATUS_ORIGINAL = 'original';
-    const STATUS_RESIZED = 'resized';
-    const STATUS_BLUR = 'blur';
-    const STATUS_COMPRESSED = 'compressed';
+    public const STATUS_ORIGINAL = 'original';
+    public const STATUS_RESIZED = 'resized';
+    public const STATUS_BLUR = 'blur';
+    public const STATUS_COMPRESSED = 'compressed';
 
     protected $fillable = [
         'name',

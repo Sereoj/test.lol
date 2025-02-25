@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Posts\Assistants;
+
 class MediaTypeFilterService
 {
     protected array $mediaTypesMap = [

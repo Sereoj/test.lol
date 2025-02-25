@@ -8,7 +8,8 @@ use Illuminate\Queue\SerializesModels;
 
 class UserActivity
 {
-    use Dispatchable, SerializesModels;
+    use Dispatchable;
+    use SerializesModels;
 
     public User $user;
 
