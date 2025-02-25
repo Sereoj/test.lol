@@ -39,8 +39,8 @@ class MediaShortResource extends JsonResource
             return [];
         }
 
-        $images = $media->filter(fn($item) => str_starts_with($item->mime_type, 'image'))->values();
-        $videos = $media->filter(fn($item) => str_starts_with($item->mime_type, 'video'))->values();
+        $images = $media->filter(fn ($item) => str_starts_with($item->mime_type, 'image'))->values();
+        $videos = $media->filter(fn ($item) => str_starts_with($item->mime_type, 'video'))->values();
 
         $result = [];
 
@@ -48,14 +48,14 @@ class MediaShortResource extends JsonResource
         if ($images->count() > 0 && $images->count() <= 4) {
             $result[] = [
                 'type' => 'group',
-                'group' => $images->map(fn($item) => new self($item))->toArray()
+                'group' => $images->map(fn ($item) => new self($item))->toArray()
             ];
         }
 
         if ($videos->count() > 0 && $videos->count() <= 4) {
             $result[] = [
                 'type' => 'group',
-                'group' => $videos->map(fn($item) => new self($item))->toArray()
+                'group' => $videos->map(fn ($item) => new self($item))->toArray()
             ];
         }
 
@@ -89,7 +89,7 @@ class MediaShortResource extends JsonResource
         return $media->chunk(4)->map(function ($chunk) {
             return [
                 'type' => 'group',
-                'group' => $chunk->map(fn($item) => new self($item))->toArray()
+                'group' => $chunk->map(fn ($item) => new self($item))->toArray()
             ];
         })->toArray();
     }

@@ -13,13 +13,13 @@ class PaymentGatewayService
     {
         switch ($gateway) {
             case 'anypay':
-                return (new AnypayService)->processTopup($userId, $amount, $currency, $fee);
+                return (new AnypayService())->processTopup($userId, $amount, $currency, $fee);
             case 'selection':
-                return (new SelectionService)->processTopup($userId, $amount, $currency, $fee);
+                return (new SelectionService())->processTopup($userId, $amount, $currency, $fee);
             case 'enot':
-                return (new EnotService)->processTopup($userId, $amount, $currency, $fee);
+                return (new EnotService())->processTopup($userId, $amount, $currency, $fee);
             case 'tinkoff':
-                return (new TinkoffService)->processTopup($userId, $amount, $currency, $fee);
+                return (new TinkoffService())->processTopup($userId, $amount, $currency, $fee);
             default:
                 throw new \Exception('Gateway not supported.');
         }

@@ -35,7 +35,7 @@ class TransactionNotification extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Transaction Update')
             ->line("Your transaction with ID {$this->transaction->id} is now {$this->transaction->status}.")
             ->action('View Transaction', url('/transactions/'.$this->transaction->id))

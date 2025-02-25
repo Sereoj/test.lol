@@ -120,7 +120,7 @@ class PostService
         $zipFileName = sprintf('%s.zip', $filename);
         $zipPath = storage_path(sprintf('app/public/%s', $zipFileName));
 
-        $zip = new ZipArchive;
+        $zip = new ZipArchive();
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
             $filesAdded = false;
 

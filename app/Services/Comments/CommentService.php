@@ -19,8 +19,7 @@ class CommentService
     public function __construct(
         CommentRepository $commentRepository,
         PostStatisticsService $postStatisticsService,
-    )
-    {
+    ) {
         $this->commentRepository = $commentRepository;
         $this->postStatisticsService = $postStatisticsService;
     }

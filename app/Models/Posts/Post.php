@@ -14,15 +14,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
-    const STATUS_DRAFT = 'draft';
+    public const STATUS_DRAFT = 'draft';
 
-    const STATUS_PUBLISHED = 'published';
+    public const STATUS_PUBLISHED = 'published';
 
-    const STATUS_ARCHIVED = 'archived';
+    public const STATUS_ARCHIVED = 'archived';
 
-    const STATUS_REJECTED = 'rejected';
+    public const STATUS_REJECTED = 'rejected';
 
     protected $fillable = [
         'title',

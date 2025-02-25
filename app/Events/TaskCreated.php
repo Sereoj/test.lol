@@ -9,7 +9,9 @@ use Illuminate\Queue\SerializesModels;
 
 class TaskCreated
 {
-    use Dispatchable, InteractsWithSockets, SerializesModels;
+    use Dispatchable;
+    use InteractsWithSockets;
+    use SerializesModels;
 
     public Task $task;
 
