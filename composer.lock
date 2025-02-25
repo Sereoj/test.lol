@@ -1377,19 +1377,21 @@
         },
         {
             "name": "intervention/image-laravel",
-            "version": "1.5.3",
+            "version": "1.5.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Intervention/image-laravel.git",
-                "reference": "e0f001ae69bbed495693689e6dcc5ee588f1f8af"
+                "reference": "71a4679e8345f16ebbee91e1ae52d15d7669e78b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Intervention/image-laravel/zipball/e0f001ae69bbed495693689e6dcc5ee588f1f8af",
-                "reference": "e0f001ae69bbed495693689e6dcc5ee588f1f8af",
+                "url": "https://api.github.com/repos/Intervention/image-laravel/zipball/71a4679e8345f16ebbee91e1ae52d15d7669e78b",
+                "reference": "71a4679e8345f16ebbee91e1ae52d15d7669e78b",
                 "shasum": ""
             },
             "require": {
+                "illuminate/http": "^8|^9|^10|^11|^12",
+                "illuminate/routing": "^8|^9|^10|^11|^12",
                 "illuminate/support": "^8|^9|^10|^11|^12",
                 "intervention/image": "^3.11",
                 "php": "^8.1"
@@ -1439,7 +1441,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Intervention/image-laravel/issues",
-                "source": "https://github.com/Intervention/image-laravel/tree/1.5.3"
+                "source": "https://github.com/Intervention/image-laravel/tree/1.5.4"
             },
             "funding": [
                 {
@@ -1455,7 +1457,7 @@
                     "type": "ko_fi"
                 }
             ],
-            "time": "2025-02-25T15:30:08+00:00"
+            "time": "2025-02-25T16:25:46+00:00"
         },
         {
             "name": "laravel/framework",
