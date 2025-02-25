@@ -1,31 +1,10 @@
-version = "2"
+version = 1
 
-analyzers:
-  # PHPStan - статический анализатор PHP
-  phpstan:
-    enabled: true
-    checks:
-      - "phpstan/phpstan": "^2.1" # Версия, указанная в composer.json
-    config_file: "phpstan.neon" # Создайте этот файл (см. ниже)
+[[analyzers]]
+name = "php"
 
-  # PHPCS - проверка стиля кода
-  phpcs:
-    enabled: true
-    checks:
-      - "squizlabs/php_codesniffer": "^3.11" # Версия, указанная в composer.json
-    config_file: "phpcs.xml" # Создайте этот файл (см. ниже)
+  [analyzers.meta]
+  bootstrap_files = ["artisan"]
 
-  # Security analysis - анализ безопасности зависимостей
-  security:
-    enabled: true
-    checks:
-      - "sensiolabs/security-checker": "^7.0"
-      - "roave/security-advisories": "dev-master"
-
-filters:
-  paths:
-    exclude:
-      - "vendor/*" # Исключить зависимости Composer
-      - "storage/*" # Исключить временные файлы Laravel
-      - "bootstrap/cache/*" # Исключить кэш Laravel
-      - "node_modules/*" # Исключить зависимости Node.js
+[[transformers]]
+name = "php-cs-fixer"
