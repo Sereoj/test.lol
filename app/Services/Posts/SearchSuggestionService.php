@@ -31,6 +31,7 @@ class SearchSuggestionService
             foreach ($queries as $preparedQuery) {
                 // Посты
                 $postSuggestions = Post::query()
+                    ->published()
                     ->where('title', 'like', "%{$preparedQuery}%")
                     ->select('title as text', DB::raw("'post' as type"), DB::raw('100 as relevance_score'))
                     ->take($limit)

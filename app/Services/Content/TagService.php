@@ -30,6 +30,7 @@ class TagService
                 if (!isset($tagCounts[$tagSlug])) {
                     $tagCounts[$tagSlug] = [
                         'name' => $tag->name,
+                        'slug' => $tagSlug,
                         'count' => 0,
                     ];
                 }

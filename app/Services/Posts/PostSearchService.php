@@ -2,21 +2,33 @@
 
 namespace App\Services\Posts;
 
+use App\Models\Content\Tag;
 use App\Models\Posts\Post;
+use App\Models\Users\User;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Log;
 
 class PostSearchService
 {
+    /**
+     * Основной метод для выполнения поиска.
+     */
     public function search(string $query)
     {
+        // Подготовка вариантов поискового запроса
         $queries = $this->prepareSearchQueries($query);
 
+        // Выполнение поиска
         return [
             'posts' => $this->searchPosts($queries),
+            'tags' => $this->searchTags($queries),
+            'users' => $this->searchUsers($queries),
         ];
     }
 
+    /**
+     * Подготовка вариантов поискового запроса.
+     */
     public function prepareSearchQueries(string $query): array
     {
         $variants = TextUtil::generateVariants(str($query)->lower());
@@ -25,7 +37,7 @@ class PostSearchService
         $cleanedVariants = array_unique(array_filter($variants));
 
         foreach ($variants as $key => $value) {
-            if (! empty($value)) {
+            if (!empty($value)) {
                 Log::info("{$key}: {$value}");
             }
         }
@@ -33,6 +45,9 @@ class PostSearchService
         return $cleanedVariants;
     }
 
+    /**
+     * Поиск постов.
+     */
     public function searchPosts(array $queries)
     {
         // Проверяем, что массив запросов не пуст
@@ -41,7 +56,7 @@ class PostSearchService
 
             return [];
         }
-        $baseQuery = Post::query();
+        $baseQuery = Post::query()->published()->withTrashed(false);
 
         $relevanceCase = '
             CASE
@@ -79,5 +94,49 @@ class PostSearchService
             ->orderByRaw('relevance_score DESC')
             ->limit(5)
             ->get();
+    }
+
+    /**
+     * Поиск тегов.
+     */
+    protected function searchTags(array $queries)
+    {
+        return $this->performSearch(Tag::query(), $queries, ['slug']);
+    }
+
+    /**
+     * Поиск пользователей.
+     */
+    protected function searchUsers(array $queries)
+    {
+        return $this->performSearch(User::query(), $queries, ['username', 'description', 'email']);
+    }
+
+    /**
+     * Общий метод для выполнения поиска.
+     */
+    protected function performSearch($queryBuilder, array $queries, array $fields)
+    {
+        if (empty($queries)) {
+            return [];
+        }
+
+        $queryBuilder->where(function ($q) use ($queries, $fields) {
+            $this->buildSearchConditions($q, $queries, $fields);
+        });
+
+        return $queryBuilder->limit(5)->get();
+    }
+
+    /**
+     * Построение условий поиска.
+     */
+    protected function buildSearchConditions($query, array $queries, array $fields)
+    {
+        foreach ($queries as $queryText) {
+            foreach ($fields as $field) {
+                $query->orWhere($field, 'LIKE', '%' . $queryText . '%');
+            }
+        }
     }
 }
