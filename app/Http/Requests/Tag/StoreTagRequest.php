@@ -25,8 +25,8 @@ class StoreTagRequest extends FormRequest
     {
         return [
             'name' => 'required|array',
-            'name.en' => 'required|string|max:255',
-            'name.ru' => 'required|string|max:255',
+            'name.en' => 'required|string|min:3|max:255',
+            'name.ru' => 'required|string|min:3|max:255',
             'meta' => 'nullable|array',
         ];
     }

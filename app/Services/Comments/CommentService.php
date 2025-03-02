@@ -26,6 +26,12 @@ class CommentService
 
     public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
+        if (is_numeric($postId)) {
+            $postId = Post::findOrFail($postId)->id;
+        }else{
+            $postId = Post::where('slug', $postId)->firstOrFail()->id;
+        }
+
         $rawComments = $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
         return new CommentCollection($rawComments);
     }
@@ -54,6 +60,12 @@ class CommentService
 
     public function createComment($postId, array $data)
     {
+        if (is_numeric($postId)) {
+            $postId = Post::findOrFail($postId)->id;
+        }else{
+            $postId = Post::where('slug', $postId)->firstOrFail()->id;
+        }
+
         $parentId = $data['parent_id'] ?? null;
 
         if ($parentId) {

@@ -3,6 +3,7 @@
 namespace App\Services\Content;
 
 use App\Models\Content\Tag;
+use App\Models\Posts\Post;
 use App\Utils\TextUtil;
 
 class TagService
@@ -10,6 +11,38 @@ class TagService
     public function getAllTags()
     {
         return Tag::all();
+    }
+
+    public function getPopularTags(): array
+    {
+        $recentPosts = Post::query()
+            ->latest()
+            ->take(15)
+            ->with('tags')
+            ->get();
+
+        $tagCounts = [];
+
+        foreach ($recentPosts as $post) {
+            foreach ($post->tags as $tag) {
+                $tagSlug = $tag->slug;
+
+                if (!isset($tagCounts[$tagSlug])) {
+                    $tagCounts[$tagSlug] = [
+                        'name' => $tag->name,
+                        'count' => 0,
+                    ];
+                }
+
+                $tagCounts[$tagSlug]['count']++;
+            }
+        }
+
+        uasort($tagCounts, function ($a, $b) {
+            return $b['count'] <=> $a['count'];
+        });
+
+        return array_values(array_slice($tagCounts, 0, 10));
     }
 
     public function getTagById($id)
@@ -20,6 +53,13 @@ class TagService
     public function createTag(array $data)
     {
         $slugPreview = str()->slug($data['name']['en']);
+
+        $existingTag = Tag::query()->where('name->en', $data['name']['en'])->first();
+
+        if ($existingTag) {
+            return $existingTag;
+        }
+
         $count = Tag::query()->where('slug', 'like', '%'.$slugPreview.'%')->count();
         $slug = TextUtil::generateUniqueSlug($slugPreview, $count);
 
@@ -34,13 +74,15 @@ class TagService
     {
         $tag = Tag::query()->find($id);
 
-        if (! $tag) {
+        if (!$tag) {
             return null;
         }
 
-        if ($tag->name !== $data['name']) {
-            $slugPreview = str()->slug($data['name']);
-            $count = Tag::query()->where('name', 'like', '%'.$slugPreview.'%')->count();
+        if ($tag->name['en'] !== $data['name']['en']) {
+            $slugPreview = str()->slug($data['name']['en']);
+            $count = Tag::query()->where('slug', 'like', '%'.$slugPreview.'%')
+                ->where('id', '!=', $id)
+                ->count();
             $slug = TextUtil::generateUniqueSlug($slugPreview, $count);
         } else {
             $slug = $tag->slug;

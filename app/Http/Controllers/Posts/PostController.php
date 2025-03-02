@@ -49,7 +49,7 @@ class PostController extends Controller
     /**
      * Получить пост по ID.
      */
-    public function show(int $id)
+    public function show($id)
     {
         $cacheKey = 'post_'.$id;
 

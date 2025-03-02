@@ -30,16 +30,10 @@ class PostService
         return ThumbMediaResource::collection($posts);
     }
 
-    public function getPost(int $id)
+    public function getPost($id)
     {
         $post = $this->postRepository->getPost($id);
-
-        if (! $post) {
-            return ['message' => 'Post not found.'];
-        }
-
-        $this->statService->incrementViews($post->id);
-
+        Auth::check() ?? $this->statService->incrementViews($post->id);
         return $post;
     }
 

@@ -300,21 +300,31 @@ Route::middleware('auth:api')->group(function () {
 
 // Public posts route
 Route::middleware('guest')->group(function () {
-    Route::get('/init', [InitController::class, 'init'])->name('init');
-
-    Route::get('/posts', [PostController::class, 'index'])->name('posts.index'); // для гостей или авторизированных
-    Route::get('/search', [PostSearchController::class, 'search'])->name('posts.search'); // для гостей
-    Route::get('/search/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest'); // для гостей
+    Route::get('/init', [InitController::class, 'init'])->name('init.public');
 
     // Public routes
     Route::post('/language', [UserLanguageController::class, 'setLanguage'])->name('set.language'); // для гостей или авторизированных
-    Route::post('/register', [AuthController::class, 'register'])->name('register'); // только для гостей
-    Route::post('/login', [AuthController::class, 'login'])->name('login'); // только для гостей
+    Route::post('/register', [AuthController::class, 'register'])->name('register.public'); // только для гостей
+    Route::post('/login', [AuthController::class, 'login'])->name('login.public'); // только для гостей
     Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('refresh-token'); // для авторизированных
     Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode'])->name('send.verification.code'); // для гостей
     Route::post('/verify-email', [EmailVerificationController::class, 'verifyEmail'])->name('verify.email'); // для гостей
     Route::post('/password/reset/email', [PasswordResetController::class, 'sendPasswordResetEmail'])->name('password.reset.email'); // только для гостей
     Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->name('password.reset'); // только для гостей
+
+    Route::prefix('search')->group(function () {
+        Route::get('/', [PostSearchController::class, 'search'])->name('posts.search.public'); // для гостей
+        Route::get('/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest.public'); // для гостей
+    });
+
+    Route::prefix('posts')->group(function () {
+        Route::get('/', [PostController::class, 'index'])->name('posts.index.public');
+        Route::get('/{id}', [PostController::class, 'show'])->name('posts.show.public');
+
+        Route::prefix('{post_id}/comments')->group(function () {
+            Route::get('/', [CommentController::class, 'index'])->name('comments.index.public');
+        });
+    });
 });
 
 Route::fallback(function (Request $request) {

@@ -107,9 +107,16 @@ class PostRepository
         ])->paginate($perPage, ['*'], 'page', $pageOffset + 1);
     }
 
-    public function getPost(int $id)
+    public function getPost($id)
     {
-        $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])->findOrFail($id);
+        if (is_numeric($id)) {
+            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
+                ->findOrFail($id);
+        } else {
+            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
+                ->where('slug', $id)
+                ->firstOrFail();
+        }
 
         return $post;
     }

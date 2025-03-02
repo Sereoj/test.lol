@@ -7,6 +7,7 @@ use App\Models\Comments\Comment;
 use App\Models\Comments\CommentLike;
 use App\Models\Comments\CommentReport;
 use App\Models\Comments\CommentRepost;
+use App\Models\Posts\Post;
 
 class CommentRepository
 {
