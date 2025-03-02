@@ -1,15 +1,17 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Http\Resources\Systems\InitResource;
-use App\Services\Content\TagService;
-use Illuminate\Http\Request;
+use App\Services\InitService;
 
 class InitController extends Controller
 {
+    protected InitService $initService;
+    public function __construct(InitService $initService)
+    {
+        $this->initService = $initService;
+    }
     public function init()
     {
-        return InitResource::make(\request());
+        return response()->json($this->initService->getInfo(), 200);
     }
 }

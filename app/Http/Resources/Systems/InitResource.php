@@ -15,7 +15,7 @@ class InitResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-          'tags' => [],
+          'tags' => $this->tags,
           'hits' => [],
           'backgrounds' => [],
           'language' => app()->getLocale(),
