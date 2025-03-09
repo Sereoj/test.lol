@@ -56,7 +56,7 @@ class PostSearchService
 
             return [];
         }
-        $baseQuery = Post::query()->published()->withTrashed(false);
+        $baseQuery = Post::query();
 
         $relevanceCase = '
             CASE

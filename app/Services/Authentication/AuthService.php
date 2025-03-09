@@ -2,6 +2,7 @@
 
 namespace App\Services\Authentication;
 
+use App\Http\Resources\UserShortResource;
 use App\Models\Users\User;
 use App\Services\Users\TokenService;
 use App\Services\Users\UserService;
@@ -39,7 +40,7 @@ class AuthService
         $token = $this->tokenService->generateTokens($user);
 
         return [
-            'user' => $user,
+            'user' => new UserShortResource($user),
             'token' => $token,
         ];
     }
@@ -52,7 +53,7 @@ class AuthService
         $token = $this->tokenService->generateTokens($user);
 
         return [
-            'user' => $user,
+            'user' => new UserShortResource($user),
             'token' => [...$token],
         ];
     }

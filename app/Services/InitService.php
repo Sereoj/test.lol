@@ -1,9 +1,5 @@
 <?php
-
-declare(strict_types=1);
-
 namespace App\Services;
-
 use App\Services\Content\TagService;
 
 class InitService
@@ -47,7 +43,26 @@ class InitService
 
     private function getHero(): array
     {
-        return ['background1.jpg', 'background2.jpg', 'background3.jpg'];
+        return [
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => '/img/hero/hero-1.png',
+            ],
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 2',
+                        'en' => 'Hero 2',
+                    ]
+                ),
+                'src' => '/img/hero/hero-2.png',
+            ],
+        ];
     }
 
     private function getBackgrounds(): array
