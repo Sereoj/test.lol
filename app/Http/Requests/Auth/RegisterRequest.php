@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Auth;
 
 use App\Rules\NotTempEmail;
+use App\Rules\ValidMxRecord;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -26,8 +27,17 @@ class RegisterRequest extends FormRequest
     {
         return [
             'username' => 'required|string|max:255',
-            'email' => ['required', 'email', 'unique:users,email', new NotTempEmail()],
-            'password' => 'required|string|min:8',
+            'email' => [
+                'required',
+                'email',
+                'regex:/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/',
+                'unique:users,email',
+                'min:3',
+                'max:255',
+                new NotTempEmail(),
+                new ValidMxRecord()
+            ],
+            'password' => 'required|string|min:8|confirmed',
         ];
     }
 
