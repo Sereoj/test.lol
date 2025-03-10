@@ -4,18 +4,23 @@ namespace App\Services\Acquiring;
 
 use App\Models\Billing\Topup;
 
-class TinkoffService
+class TinkoffService implements IAcquiringService
 {
+    protected string $client = 'tinkoff';
     public function processTopup(int $userId, float $amount, string $currency, float $fee)
     {
-        // Логика для Tinkoff
         return Topup::create([
             'user_id' => $userId,
             'amount' => $amount,
             'fee' => $fee,
             'currency' => $currency,
-            'gateway' => 'tinkoff',
+            'gateway' => $this->getGateway(),
             'status' => 'succeeded',
         ]);
+    }
+
+    public function getGateway()
+    {
+        return $this->client;
     }
 }

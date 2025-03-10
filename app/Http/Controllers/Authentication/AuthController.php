@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RefreshTokenRequest;
 use App\Http\Requests\Auth\RegisterRequest;
-use App\Http\Resources\UserLongResource;
+use App\Http\Resources\Users\UserLongResource;
+use App\Http\Resources\Users\UserShortResource;
 use App\Services\Authentication\AuthService;
 use App\Services\Users\UserService;
 use Exception;
@@ -30,7 +31,7 @@ class AuthController extends Controller
             $userData = $request->validated();
             $user = $this->userService->createUser($userData);
 
-            return $this->authService->register($user);
+            return $this->authService->register($user, $request->input('remember_me', false));
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'User registration failed',
@@ -69,8 +70,7 @@ class AuthController extends Controller
 
     public function user(Request $request)
     {
-        $user = new UserLongResource($this->userService->findUserById($request->user()->id));
-
+        $user = new UserShortResource($this->userService->findUserById($request->user()->id));
         return response()->json($user);
     }
 

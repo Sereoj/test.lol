@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Comments;
 
-use App\Http\Resources\UserShortResource;
+use App\Http\Resources\Users\UserShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 

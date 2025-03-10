@@ -4,18 +4,23 @@ namespace App\Services\Acquiring;
 
 use App\Models\Billing\Topup;
 
-class SelectionService
+class SelectionService implements IAcquiringService
 {
+    protected string $client = 'selection';
     public function processTopup(int $userId, float $amount, string $currency, float $fee)
     {
-        // Логика для Selection
         return Topup::create([
             'user_id' => $userId,
             'amount' => $amount,
             'fee' => $fee,
             'currency' => $currency,
-            'gateway' => 'selection',
+            'gateway' => $this->getGateway(),
             'status' => 'succeeded',
         ]);
+    }
+
+    public function getGateway()
+    {
+        return $this->client;
     }
 }

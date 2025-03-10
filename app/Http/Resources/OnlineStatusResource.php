@@ -18,6 +18,7 @@ class OnlineStatusResource extends JsonResource
             'last_activity' => $this->last_activity,
             'device_type' => $this->device_type,
             'ip_address' => $this->ip_address,
+            'is_online' => $this->isOnline(),
         ];
     }
 }

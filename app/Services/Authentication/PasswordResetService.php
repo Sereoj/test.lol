@@ -27,12 +27,9 @@ class PasswordResetService
      */
     public function sendPasswordResetEmail($email)
     {
-        try {
             $locale = app()->getLocale();
             $user = User::query()->where('email', $email)->firstOrFail();
             $token = CodeGenerator::generate(60);
-
-            // Сохраняем токен в базе данных или отправляем его в письме
 
             PasswordReset::create([
                 'email' => $user->email,
@@ -40,45 +37,35 @@ class PasswordResetService
                 'created_at' => now(),
             ]);
 
-            // В данном примере мы просто отправляем токен в письме
-
             Mail::send('emails.resets.'.$locale, ['token' => $token], function ($message) use ($user) {
                 $message->to($user->email)
                     ->subject('Password Reset Request');
             });
-        } catch (Exception $e) {
-            throw new Exception('An error occurred while sending the password reset email.');
-        }
     }
 
     /**
      * Reset the user's password.
      *
-     * @param  string  $email
-     * @param  string  $token
-     * @param  string  $newPassword
+     * @param string $email
+     * @param string $token
+     * @param string $newPassword
      * @return void
+     * @throws Exception
      */
     public function resetPassword($email, $token, $newPassword)
     {
-        try {
-            $user = $this->userService->findUserByEmail($email);
+        $user = $this->userService->findUserByEmail($email);
+        $passwordReset = PasswordReset::query()->where('email', $user->email)
+            ->where('token', $token)
+            ->first();
 
-            // Проверяем токен
-            $passwordReset = PasswordReset::query()->where('email', $user->email)
-                ->where('token', $token)
-                ->first();
-
-            if (! $passwordReset) {
-                throw new Exception('Invalid token.');
-            }
-
-            $user->password = PasswordUtil::hash($newPassword);
-            $user->save();
-
-            PasswordReset::query()->where('email', $user->email)->delete();
-        } catch (Exception $e) {
-            throw new Exception('An error occurred while resetting the password.');
+        if (! $passwordReset) {
+            throw new Exception('Invalid token.');
         }
+
+        $user->password = PasswordUtil::hash($newPassword);
+        $user->save();
+
+        PasswordReset::query()->where('email', $user->email)->delete();
     }
 }

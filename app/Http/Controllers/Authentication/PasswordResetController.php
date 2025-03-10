@@ -10,7 +10,7 @@ use Exception;
 
 class PasswordResetController extends Controller
 {
-    protected $passwordResetService;
+    protected PasswordResetService $passwordResetService;
 
     public function __construct(PasswordResetService $passwordResetService)
     {

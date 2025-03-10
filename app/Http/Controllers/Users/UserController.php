@@ -94,7 +94,7 @@ class UserController extends Controller
             $userData = $request->validated();
             $user = $this->userService->createUser($userData);
 
-            return $this->authService->register($user, false);
+            return response()->json($this->authService->register($user, false), 201);
         } catch (Exception $e) {
             return response()->json([
                 'message' => 'User registration failed',
@@ -179,5 +179,15 @@ class UserController extends Controller
         Cache::forget('users');
 
         return response()->json($updatedUser);
+    }
+
+    public function getUserProfile($slug)
+    {
+        try {
+            $getUserProfile = $this->userService->getUserProfile($slug);
+            return response()->json($getUserProfile);
+        }catch (Exception $e) {
+            return response()->json($e, 500);
+        }
     }
 }

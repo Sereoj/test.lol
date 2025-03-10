@@ -18,6 +18,15 @@ class UserService
         $this->userRepository = $userRepository;
     }
 
+    public function getUserProfile($slug)
+    {
+        if(is_numeric($slug)){
+            return $this->userRepository->findById($slug);
+        }else{
+            return $this->userRepository->findBySlug($slug);
+        }
+    }
+
     public function getAllUsers(array $filters = [])
     {
         return $this->userRepository->getAll($filters);
@@ -25,17 +34,9 @@ class UserService
 
     public function createUser(array $data)
     {
-        try {
             $data['description'] = 'Welcome to '.config('app.name').'!';
             $data['slug'] = TextUtil::generateUniqueSlug($data['username'], $this->userRepository->findBySlugCount(Str::slug($data['username'])));
-
-            $user = $this->userRepository->create($data);
-
-            return $user;
-        } catch (\Exception $e) {
-            Log::error('User creation failed', ['error' => $e->getMessage()]);
-            throw $e;
-        }
+            return $this->userRepository->create($data);
     }
 
     public function findUserByEmail(string $email)
@@ -60,9 +61,7 @@ class UserService
 
     public function changeUserRole(User $user, int $roleId)
     {
-        $role = Role::query()->findOrFail($roleId);
-        $user->update(['role_id' => $roleId]);
-
-        return $user;
+        Role::query()->findOrFail($roleId);
+        return $user->update(['role_id' => $roleId]);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Services\Authentication;
 
-use App\Http\Resources\UserShortResource;
+use App\Http\Resources\Users\UserShortResource;
 use App\Models\Users\User;
 use App\Services\Users\TokenService;
 use App\Services\Users\UserService;
@@ -29,12 +29,12 @@ class AuthService
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             Log::warning('Invalid credentials', ['email' => $credentials['email']]);
-            throw new \Exception('Email or Password is not correct!', 401);
+            return response()->json(['message' => 'Email or Password is not correct!'], 401);
         }
 
         if (! $this->attemptLogin($credentials)) {
             Log::error('Unauthorized login attempt', ['email' => $credentials['email']]);
-            throw new \Exception('Unauthorized', 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         $token = $this->tokenService->generateTokens($user);
@@ -45,10 +45,10 @@ class AuthService
         ];
     }
 
-    public function register(User $user, $isLogin = true)
+    public function register(User $user, $isLogin = true, bool $rememberMe = false)
     {
         if ($isLogin) {
-            Auth::login($user, true);
+            Auth::login($user, $rememberMe);
         }
         $token = $this->tokenService->generateTokens($user);
 

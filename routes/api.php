@@ -74,21 +74,27 @@ Route::middleware('auth:api')->group(function () {
     });
 
     Route::prefix('user')->group(function () {
-        Route::get('/', [AuthController::class, 'user'])->name('user'); // для авторизированных
+        Route::get('/', [AuthController::class, 'user'])->name('user.user'); // для авторизированных
+        Route::get('/{id}', [UserController::class, 'getUserProfile'])->name('user.index'); // для авторизированных
 
         // Баланс
-        Route::get('/balance', [BalanceController::class, 'getBalance']);
-        Route::post('/balance/topup', [BalanceController::class, 'topUpBalance']);
-        Route::post('/balance/withdraw', [BalanceController::class, 'withdrawBalance']);
-        Route::post('/balance/transfer', [BalanceController::class, 'transferBalance']);
+        Route::prefix('balance')->group(function () {
+            Route::get('/', [BalanceController::class, 'getBalance']);
+            Route::post('/topup', [BalanceController::class, 'topUpBalance']);
+            Route::post('/withdraw', [BalanceController::class, 'withdrawBalance']);
+            Route::post('/transfer', [BalanceController::class, 'transferBalance']);
+        });
         // Транзакции
         Route::get('/transactions', [TransactionController::class, 'getTransactions']);
+
         // Покупки
         Route::post('/posts/{postId}/purchase', [PurchaseController::class, 'purchasePost']);
 
-        Route::get('/subscriptions/active', [SubscriptionController::class, 'getActiveSubscription']);
-        Route::post('/subscriptions', [SubscriptionController::class, 'createSubscription']);
-        Route::post('/subscriptions/{subscriptionId}/extend', [SubscriptionController::class, 'extendSubscription']);
+        Route::prefix('subscriptions')->group(function (){
+            Route::post('/', [SubscriptionController::class, 'createSubscription']);
+            Route::get('/active', [SubscriptionController::class, 'getActiveSubscription']);
+            Route::post('/{subscriptionId}/extend', [SubscriptionController::class, 'extendSubscription']);
+        });
 
         Route::prefix('profile')->group(function () {
             Route::get('/', [UserProfileController::class, 'show'])->name('profile.show');
@@ -280,7 +286,7 @@ Route::middleware('auth:api')->group(function () {
 
         Route::middleware(['role:admin'])->group(function () {
             Route::get('/{id}', [BadgeController::class, 'show'])->name('badges.show');
-            Route::post('', [BadgeController::class, 'store'])->name('badges.store');
+            Route::post('/', [BadgeController::class, 'store'])->name('badges.store');
             Route::put('/{id}', [BadgeController::class, 'update'])->name('badges.update');
             Route::delete('/{id}', [BadgeController::class, 'destroy'])->name('badges.destroy');
         });
@@ -315,6 +321,9 @@ Route::middleware('guest')->group(function () {
     Route::prefix('search')->group(function () {
         Route::get('/', [PostSearchController::class, 'search'])->name('posts.search.public'); // для гостей
         Route::get('/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest.public'); // для гостей
+    });
+
+    Route::prefix('user')->group(function () {
     });
 
     Route::prefix('posts')->group(function () {

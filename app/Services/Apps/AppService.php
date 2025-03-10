@@ -27,14 +27,12 @@ class AppService
     public function updateApp($id, array $data): bool
     {
         $app = App::query()->findOrFail($id);
-
         return $app->update($data);
     }
 
     public function deleteApp($id): bool
     {
         $app = App::query()->findOrFail($id);
-
         return $app->delete();
     }
 }

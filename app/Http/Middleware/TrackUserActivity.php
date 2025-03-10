@@ -32,7 +32,7 @@ class TrackUserActivity
                         $request->header('User-Agent'),
                         $request->ip()
                     ));
-                    Cache::put($cacheKey, true, now()->addMinutes(5));
+                    Cache::put($cacheKey, true, now()->addMinutes(2));
                     Log::info("User {$user->id} is active. Route: ".($request->route() ? $request->route()->getName() : 'No route name'));
                 }
             } catch (\Exception $e) {

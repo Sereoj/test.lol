@@ -53,30 +53,24 @@ class EmailVerificationService
      */
     public function verifyEmail(string $email, string $code): array
     {
-        try {
-            $user = $this->userService->findUserByEmail($email);
+        $user = $this->userService->findUserByEmail($email);
 
-            if (! $user) {
-                return ['status' => false, 'message' => 'User not found'];
-            }
-
-            $verification = EmailVerification::query()->where('user_id', $user->id)
-                ->where('code', $code)
-                ->where('expires_at', '>', Carbon::now())
-                ->first();
-
-            if (! $verification) {
-                return ['status' => false, 'message' => 'Invalid or expired code'];
-            }
-
-            $user->email_verified_at = Carbon::now();
-            $user->save();
-
-            $verification->delete();
-
-            return ['status' => true, 'message' => 'Email verified successfully'];
-        } catch (Exception $e) {
-            return ['status' => false, 'message' => 'An error occurred while verifying the email', 'error' => $e->getMessage()];
+        if (! $user) {
+            return ['status' => false, 'message' => 'User not found'];
         }
+
+        $verification = EmailVerification::query()->where('user_id', $user->id)
+            ->where('code', $code)
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+
+        if (! $verification) {
+            return ['status' => false, 'message' => 'Invalid or expired code'];
+        }
+
+        $user->email_verified_at = Carbon::now();
+        $user->save();
+
+        return $verification->delete();
     }
 }

@@ -18,18 +18,13 @@ class BadgeController extends Controller
 
     public function index()
     {
-        // Проверяем кеш для списка бейджей
         $cacheKey = 'badges_list';
         if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные данные
             return response()->json(Cache::get($cacheKey));
         }
 
-        // Если в кеше нет данных, загружаем из базы данных
         $badges = $this->badgeService->getAllBadges();
-
-        // Кешируем результат на 60 минут
-        Cache::put($cacheKey, $badges, now()->addMinutes(60));
+        Cache::put($cacheKey, $badges, now()->addMinutes(5));
 
         return response()->json($badges);
     }

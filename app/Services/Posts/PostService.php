@@ -3,7 +3,7 @@
 namespace App\Services\Posts;
 
 use App\Events\FileDownloaded;
-use App\Http\Resources\ThumbMediaResource;
+use App\Http\Resources\Media\ThumbMediaResource;
 use App\Models\Posts\Post;
 use App\Repositories\PostRepository;
 use Illuminate\Support\Facades\Auth;

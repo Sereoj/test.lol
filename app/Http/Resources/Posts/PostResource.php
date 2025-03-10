@@ -2,11 +2,10 @@
 
 namespace App\Http\Resources\Posts;
 
-use App\Http\Resources\AppResource;
 use App\Http\Resources\Apps\AppShortResource;
-use App\Http\Resources\MediaShortResource;
+use App\Http\Resources\Media\MediaShortResource;
 use App\Http\Resources\Tags\TagShortResource;
-use App\Http\Resources\UserShortResource;
+use App\Http\Resources\Users\UserShortResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
