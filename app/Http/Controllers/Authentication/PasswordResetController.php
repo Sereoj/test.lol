@@ -46,9 +46,10 @@ class PasswordResetController extends Controller
             $token = $request->input('token');
             $newPassword = $request->input('new_password');
 
-            $this->passwordResetService->resetPassword($email, $token, $newPassword);
-
-            return response()->json(['message' => 'Password reset successfully'], 200);
+            if ($this->passwordResetService->resetPassword($email, $token, $newPassword)) {
+                return response()->json(['message' => 'Password reset successfully'], 200);
+            }
+            return response()->json(['message' => 'Invalid token or email'], 400);
         } catch (Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }

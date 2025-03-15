@@ -41,12 +41,12 @@ class UserService
 
     public function findUserByEmail(string $email)
     {
-        return $this->userRepository->findByEmail($email);
+        return $this->userRepository->findByEmail($email) ?: null;
     }
 
     public function findUserById(int $id)
     {
-        return $this->userRepository->findById($id);
+        return $this->userRepository->findById($id) ?: null;
     }
 
     public function updateUser(User $user, array $data): User

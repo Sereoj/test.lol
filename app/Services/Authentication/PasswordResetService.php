@@ -7,8 +7,11 @@ use App\Models\Users\User;
 use App\Services\Users\UserService;
 use App\Utils\CodeGenerator;
 use App\Utils\PasswordUtil;
+use DB;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Mail;
+use Log;
 
 class PasswordResetService
 {
@@ -19,16 +22,14 @@ class PasswordResetService
         $this->userService = $userService;
     }
 
-    /**
-     * Send a password reset email to the user.
-     *
-     * @param  string  $email
-     * @return void
-     */
-    public function sendPasswordResetEmail($email)
+    public function sendPasswordResetEmail(string $email): bool
     {
+        try {
             $locale = app()->getLocale();
             $user = User::query()->where('email', $email)->firstOrFail();
+
+            PasswordReset::query()->where('email', $user->email)->delete();
+
             $token = CodeGenerator::generate(60);
 
             PasswordReset::create([
@@ -37,35 +38,45 @@ class PasswordResetService
                 'created_at' => now(),
             ]);
 
-            Mail::send('emails.resets.'.$locale, ['token' => $token], function ($message) use ($user) {
-                $message->to($user->email)
-                    ->subject('Password Reset Request');
+            Mail::send("emails.resets.$locale", ['token' => $token], function ($message) use ($user) {
+                $message->to($user->email)->subject('Password Reset Request');
             });
+
+            return true;
+        } catch (ModelNotFoundException $e) {
+            Log::warning("Попытка сброса пароля для несуществующего email: $email");
+            return false;
+        } catch (Exception $e) {
+            Log::error("Ошибка при отправке email для сброса пароля: " . $e->getMessage());
+            return false;
+        }
     }
 
-    /**
-     * Reset the user's password.
-     *
-     * @param string $email
-     * @param string $token
-     * @param string $newPassword
-     * @return void
-     * @throws Exception
-     */
-    public function resetPassword($email, $token, $newPassword)
+    public function resetPassword($email, $token, $newPassword): bool
     {
         $user = $this->userService->findUserByEmail($email);
+        if (!$user) {
+            return false;
+        }
+
         $passwordReset = PasswordReset::query()->where('email', $user->email)
             ->where('token', $token)
             ->first();
 
-        if (! $passwordReset) {
-            throw new Exception('Invalid token.');
+        if(!$passwordReset)
+            return false;
+
+        DB::beginTransaction();
+        try {
+            $user->password = PasswordUtil::hash($newPassword);
+            $user->save();
+            PasswordReset::query()->where('email', $user->email)->delete();
+            DB::commit();
+            return true;
+        }catch (Exception $e) {
+            Log::error($e->getMessage());
+            DB::rollBack();
+            return false;
         }
-
-        $user->password = PasswordUtil::hash($newPassword);
-        $user->save();
-
-        PasswordReset::query()->where('email', $user->email)->delete();
     }
 }
