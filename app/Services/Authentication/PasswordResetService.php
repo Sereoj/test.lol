@@ -27,7 +27,6 @@ class PasswordResetService
         try {
             $locale = app()->getLocale();
             $user = User::query()->where('email', $email)->firstOrFail();
-
             PasswordReset::query()->where('email', $user->email)->delete();
 
             $token = CodeGenerator::generate(60);
