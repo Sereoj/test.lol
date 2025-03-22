@@ -14,6 +14,11 @@ use Illuminate\Support\Facades\Cache;
 class PostController extends Controller
 {
     protected PostService $postService;
+    
+    private const CACHE_SECONDS = 30;
+    private const CACHE_SECONDS_POST = 2;
+    private const CACHE_KEY_POSTS = 'posts_';
+    private const CACHE_KEY_POST = 'post_';
 
     public function __construct(PostService $postService)
     {
@@ -26,13 +31,13 @@ class PostController extends Controller
     public function index(Request $request)
     {
         $userId = Auth::check() ? Auth::id() : null;
-        $cacheKey = 'posts_'.md5(json_encode($request->all()).'_'.$userId);
+        $cacheKey = self::CACHE_KEY_POSTS . md5(json_encode($request->all()).'_'.$userId);
 
-        $posts = Cache::remember($cacheKey, now()->addSeconds(30), function () use ($request, $userId) {
+        $posts = $this->getFromCacheOrStore($cacheKey, self::CACHE_SECONDS / 60, function () use ($request, $userId) {
             return $this->postService->getPosts($request->all(), $userId);
         });
 
-        return response()->json($posts);
+        return $this->successResponse($posts);
     }
 
     /**
@@ -41,9 +46,9 @@ class PostController extends Controller
     public function store(StorePostRequest $request)
     {
         $post = $this->postService->createPost($request->validated());
-        Cache::forget('posts_'.md5(json_encode($request->all())));
+        $this->forgetCache(self::CACHE_KEY_POSTS . md5(json_encode($request->all())));
 
-        return response()->json($post, 201);
+        return $this->successResponse($post, 201);
     }
 
     /**
@@ -51,13 +56,13 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        $cacheKey = 'post_'.$id;
+        $cacheKey = self::CACHE_KEY_POST . $id;
 
-        $post = Cache::remember($cacheKey, now()->addSeconds(2), function () use ($id) {
+        $post = $this->getFromCacheOrStore($cacheKey, self::CACHE_SECONDS_POST / 60, function () use ($id) {
             return new PostResource($this->postService->getPost($id));
         });
 
-        return response()->json($post);
+        return $this->successResponse($post);
     }
 
     /**
@@ -66,9 +71,9 @@ class PostController extends Controller
     public function update(UpdatePostRequest $request, int $id)
     {
         $post = $this->postService->updatePost($id, $request->validated());
-        Cache::forget('post_'.$id);
+        $this->forgetCache(self::CACHE_KEY_POST . $id);
 
-        return response()->json($post);
+        return $this->successResponse($post);
     }
 
     /**
@@ -77,9 +82,9 @@ class PostController extends Controller
     public function destroy(int $id)
     {
         $this->postService->deletePost($id);
-        Cache::forget('post_'.$id);
+        $this->forgetCache(self::CACHE_KEY_POST . $id);
 
-        return response()->json(null, 204);
+        return $this->successResponse(null, 204);
     }
 
     /**
@@ -95,9 +100,10 @@ class PostController extends Controller
         } elseif ($action === 'dislike') {
             $post = $this->postService->unlikePost($id);
         }
-        Cache::forget('post_'.$id);
+        
+        $this->forgetCache(self::CACHE_KEY_POST . $id);
 
-        return response()->json($post);
+        return $this->successResponse($post);
     }
 
     /**
@@ -106,15 +112,18 @@ class PostController extends Controller
     public function repost(int $id)
     {
         $post = $this->postService->repostPost($id);
-        Cache::forget('post_'.$id);
+        $this->forgetCache(self::CACHE_KEY_POST . $id);
 
-        return response()->json($post);
+        return $this->successResponse($post);
     }
 
+    /**
+     * Скачать медиа файлы поста
+     */
     public function download(Request $request, int $id)
     {
         $fileResponse = $this->postService->download($id, $request->input('media'));
 
-        return $fileResponse ?? response()->json(['message' => 'No media found'], 404);
+        return $fileResponse ?? $this->errorResponse('No media found', 404);
     }
 }

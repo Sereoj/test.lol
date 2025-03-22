@@ -16,8 +16,12 @@ use Illuminate\Support\Facades\Cache;
 class UserController extends Controller
 {
     protected UserService $userService;
-
     protected AuthService $authService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_USERS = 'users';
+    private const CACHE_KEY_USER = 'user_';
+    private const CACHE_KEY_USER_PROFILE = 'user_profile_';
 
     public function __construct(UserService $userService, AuthService $authService)
     {
@@ -32,23 +36,15 @@ class UserController extends Controller
      */
     public function index()
     {
-        // Попытка получить данные из кеша
-        $users = Cache::get('users');
-
-        // Если кеш пуст, извлекаем данные из базы и сохраняем их в кеш
-        if (! $users) {
-            try {
-                $users = $this->userService->getAllUsers();
-                Cache::put('users', $users, now()->addMinutes(10)); // Кешируем на 10 минут
-            } catch (Exception $e) {
-                return response()->json([
-                    'error' => 'An error occurred while fetching users.',
-                    'message' => $e->getMessage(),
-                ], 500);
-            }
+        try {
+            $users = $this->getFromCacheOrStore(self::CACHE_KEY_USERS, self::CACHE_MINUTES, function () {
+                return $this->userService->getAllUsers();
+            });
+            
+            return $this->successResponse($users);
+        } catch (Exception $e) {
+            return $this->errorResponse('An error occurred while fetching users: ' . $e->getMessage(), 500);
         }
-
-        return response()->json($users);
     }
 
     /**
@@ -59,28 +55,26 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        // Попытка получить данные из кеша
-        $cacheKey = 'user_'.$id;
-        $user = Cache::get($cacheKey);
-
-        if (! $user) {
-            try {
+        try {
+            $cacheKey = self::CACHE_KEY_USER . $id;
+            
+            $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 $user = $this->userService->findUserById($id);
-
-                if (! $user) {
-                    return response()->json(['message' => 'User not found'], 404);
+                
+                if (!$user) {
+                    throw new Exception('User not found', 404);
                 }
-
-                Cache::put($cacheKey, $user, now()->addMinutes(10)); // Кешируем на 10 минут
-            } catch (Exception $e) {
-                return response()->json([
-                    'error' => 'An error occurred while fetching the user.',
-                    'message' => $e->getMessage(),
-                ], 500);
-            }
+                
+                return $user;
+            });
+            
+            return $this->successResponse($user);
+        } catch (Exception $e) {
+            $statusCode = $e->getCode() === 404 ? 404 : 500;
+            $message = $e->getCode() === 404 ? 'User not found' : 'An error occurred while fetching the user: ' . $e->getMessage();
+            
+            return $this->errorResponse($message, $statusCode);
         }
-
-        return response()->json($user);
     }
 
     /**
@@ -93,13 +87,10 @@ class UserController extends Controller
         try {
             $userData = $request->validated();
             $user = $this->userService->createUser($userData);
-
-            return response()->json($this->authService->register($user, false), 201);
+            
+            return $this->successResponse($this->authService->register($user, false), 201);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'User registration failed',
-                'error' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('User registration failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -111,8 +102,8 @@ class UserController extends Controller
     public function update(UpdateUserRequest $request, $id)
     {
         $user = User::find($id);
-        if (! $user) {
-            return response()->json(['message' => 'User not found'], 404);
+        if (!$user) {
+            return $this->errorResponse('User not found', 404);
         }
 
         $user->update([
@@ -121,9 +112,9 @@ class UserController extends Controller
             'password' => $request->password ? PasswordUtil::hash($request->password) : $user->password,
         ]);
 
-        Cache::forget('user_'.$id);
+        $this->forgetCache(self::CACHE_KEY_USER . $id);
 
-        return response()->json($user, 200);
+        return $this->successResponse($user);
     }
 
     /**
@@ -136,58 +127,73 @@ class UserController extends Controller
         try {
             $user = $this->userService->findUserById($id);
 
-            if (! $user) {
-                return response()->json(['message' => 'User not found'], 404);
+            if (!$user) {
+                return $this->errorResponse('User not found', 404);
             }
 
             $this->userService->deleteUser($user);
 
-            // Очистка кеша после удаления пользователя
-            Cache::forget('user_'.$id);
-            Cache::forget('users');
+            $this->forgetCache([
+                self::CACHE_KEY_USER . $id,
+                self::CACHE_KEY_USERS
+            ]);
 
-            return response()->json(['message' => 'User deleted successfully']);
+            return $this->successResponse(['message' => 'User deleted successfully']);
         } catch (Exception $e) {
-            return response()->json([
-                'error' => 'An error occurred while deleting the user.',
-                'message' => $e->getMessage(),
-            ], 500);
+            return $this->errorResponse('Failed to delete user: ' . $e->getMessage(), 500);
         }
     }
 
     /**
-     * Change the role of a user.
+     * Change user role.
      *
-     * @param  int  $userId
      * @return \Illuminate\Http\JsonResponse
      */
     public function changeRole(Request $request, $userId)
     {
-        // Валидация данных
-        $data = $request->validate([
-            'role_id' => 'required|exists:roles,id',
-        ]);
-
-        // Получаем пользователя
-        $user = User::findOrFail($userId);
-
-        // Используем сервис для изменения роли
-        $updatedUser = $this->userService->changeUserRole($user, $data['role_id']);
-
-        // Очистка кеша после изменения роли пользователя
-        Cache::forget('user_'.$userId);
-        Cache::forget('users');
-
-        return response()->json($updatedUser);
+        try {
+            $request->validate(['role_id' => 'required|exists:roles,id']);
+            
+            $user = $this->userService->findUserById($userId);
+            
+            if (!$user) {
+                return $this->errorResponse('User not found', 404);
+            }
+            
+            $this->userService->changeUserRole($user, $request->role_id);
+            
+            $this->forgetCache([
+                self::CACHE_KEY_USER . $userId,
+                self::CACHE_KEY_USERS
+            ]);
+            
+            return $this->successResponse(['message' => 'User role changed successfully']);
+        } catch (Exception $e) {
+            return $this->errorResponse('Failed to change user role: ' . $e->getMessage(), 500);
+        }
     }
 
+    /**
+     * Get user profile.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getUserProfile($slug)
     {
         try {
-            $getUserProfile = $this->userService->getUserProfile($slug);
-            return response()->json($getUserProfile);
-        }catch (Exception $e) {
-            return response()->json($e, 500);
+            $cacheKey = self::CACHE_KEY_USER_PROFILE . $slug;
+            
+            $userProfile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($slug) {
+                return $this->userService->getUserProfile($slug);
+            });
+            
+            if (!$userProfile) {
+                return $this->errorResponse('User profile not found', 404);
+            }
+            
+            return $this->successResponse($userProfile);
+        } catch (Exception $e) {
+            return $this->errorResponse('Failed to get user profile: ' . $e->getMessage(), 500);
         }
     }
 }

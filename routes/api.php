@@ -47,16 +47,6 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-/*Route::post('/oauth/token', [AccessTokenController::class, 'issueToken'])->name('passport.token');
-Route::get('/oauth/authorize', [AuthorizationController::class, 'authorize'])->name('passport.authorizations.authorize');
-Route::post('/oauth/token/refresh', [TransientTokenController::class, 'refresh'])->name('passport.token.refresh');
-Route::get('/oauth/scopes', [ScopeController::class, 'all'])->name('passport.scopes.all');
-Route::get('/oauth/clients', [ClientController::class, 'forUser'])->name('passport.clients.forUser');
-Route::post('/oauth/clients', [ClientController::class, 'store'])->name('passport.clients.store');
-Route::delete('/oauth/clients/{client_id}', [ClientController::class, 'destroy'])->name('passport.clients.destroy');
-Route::post('/oauth/personal-access-tokens', [PersonalAccessTokenController::class, 'store'])->name('passport.personal_tokens.store');
-Route::delete('/oauth/personal-access-tokens/{token_id}', [PersonalAccessTokenController::class, 'destroy'])->name('passport.personal_tokens.destroy');*/
-
 // Socialite routes
 Route::prefix('auth')->middleware('guest')->group(function () {
     Route::get('redirect/{provider}', [SocialiteController::class, 'redirectToProvider'])->name('auth.redirect'); // для гостей

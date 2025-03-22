@@ -12,12 +12,15 @@ use App\Services\Authentication\AuthService;
 use App\Services\Users\UserService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
     protected UserService $userService;
-
     protected AuthService $authService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_USER = 'user_short_';
 
     public function __construct(UserService $userService, AuthService $authService)
     {
@@ -30,13 +33,15 @@ class AuthController extends Controller
         try {
             $userData = $request->validated();
             $user = $this->userService->createUser($userData);
-
-            return $this->authService->register($user, $request->input('remember_me', false));
+            
+            Log::info('User registered successfully', ['user_id' => $user->id]);
+            
+            $result = $this->authService->register($user, $request->input('remember_me', false));
+            
+            return $this->successResponse($result);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'User registration failed',
-                'error' => $e->getMessage(),
-            ], 500);
+            Log::error('User registration failed: ' . $e->getMessage(), ['data' => $request->validated()]);
+            return $this->errorResponse('User registration failed: ' . $e->getMessage(), 500);
         }
     }
 
@@ -44,13 +49,15 @@ class AuthController extends Controller
     {
         try {
             $credentials = $request->validated();
-
-            return $this->authService->login($credentials);
+            
+            $result = $this->authService->login($credentials);
+            
+            Log::info('User logged in successfully', ['email' => $credentials['email']]);
+            
+            return $this->successResponse($result);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'An error occurred during login',
-                'error' => $e->getMessage(),
-            ], 500);
+            Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
+            return $this->errorResponse('An error occurred during login: ' . $e->getMessage(), 500);
         }
     }
 
@@ -58,33 +65,52 @@ class AuthController extends Controller
     {
         try {
             $refreshToken = $request->input('refresh_token');
-
-            return response()->json($this->authService->refreshToken($refreshToken));
+            
+            $result = $this->authService->refreshToken($refreshToken);
+            
+            Log::info('Token refreshed successfully');
+            
+            return $this->successResponse($result);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'An error occurred during token refresh',
-                'error' => $e->getMessage(),
-            ], 500);
+            Log::error('An error occurred during token refresh: ' . $e->getMessage());
+            return $this->errorResponse('An error occurred during token refresh: ' . $e->getMessage(), 500);
         }
     }
 
     public function user(Request $request)
     {
-        $user = new UserShortResource($this->userService->findUserById($request->user()->id));
-        return response()->json($user);
+        try {
+            $userId = $request->user()->id;
+            $cacheKey = self::CACHE_KEY_USER . $userId;
+            
+            $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
+                return new UserShortResource($this->userService->findUserById($userId));
+            });
+            
+            Log::info('User info retrieved successfully', ['user_id' => $userId]);
+            
+            return $this->successResponse($user);
+        } catch (Exception $e) {
+            Log::error('Error retrieving user info: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
+            return $this->errorResponse('Error retrieving user info: ' . $e->getMessage(), 500);
+        }
     }
 
     public function logout(Request $request)
     {
         try {
+            $userId = $request->user()->id;
             $this->authService->logout($request->user());
-
-            return response()->json(['message' => 'Logged out successfully']);
+            
+            $cacheKey = self::CACHE_KEY_USER . $userId;
+            $this->forgetCache($cacheKey);
+            
+            Log::info('User logged out successfully', ['user_id' => $userId]);
+            
+            return $this->successResponse(['message' => 'Logged out successfully']);
         } catch (Exception $e) {
-            return response()->json([
-                'message' => 'An error occurred during logout',
-                'error' => $e->getMessage(),
-            ], 500);
+            Log::error('An error occurred during logout: ' . $e->getMessage(), ['user_id' => $request->user()->id ?? null]);
+            return $this->errorResponse('An error occurred during logout: ' . $e->getMessage(), 500);
         }
     }
 }

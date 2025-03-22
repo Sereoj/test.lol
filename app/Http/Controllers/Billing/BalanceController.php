@@ -8,13 +8,17 @@ use App\Services\Billing\PaymentGatewayService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Exception;
 
 class BalanceController extends Controller
 {
     protected BalanceService $balanceService;
-
     protected PaymentGatewayService $paymentGatewayService;
+    
+    private const CACHE_MINUTES = 5;
+    private const CACHE_KEY_USER_BALANCE = 'user_balance_%s_%s';
 
     public function __construct(BalanceService $balanceService, PaymentGatewayService $paymentGatewayService)
     {
@@ -24,19 +28,36 @@ class BalanceController extends Controller
 
     public function getBalance(Request $request): JsonResponse
     {
-        $currency = $request->input('currency');
+        try {
+            $currency = $request->input('currency');
+            $userId = Auth::id();
 
-        if (! $currency || ! is_string($currency) || strlen($currency) !== 3) {
-            return response()->json(['error' => 'Некорректная или отсутствующая валюта'], 400);
+            if (!$currency || !is_string($currency) || strlen($currency) !== 3) {
+                Log::warning('Invalid currency format', ['currency' => $currency, 'user_id' => $userId]);
+                return $this->errorResponse('Некорректная или отсутствующая валюта', 400);
+            }
+
+            $currency = strtoupper($currency);
+            $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
+            
+            $balance = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId, $currency) {
+                return $this->balanceService->getUserBalance($userId, $currency);
+            });
+
+            if (isset($balance['error'])) {
+                Log::warning('Balance retrieval error', ['currency' => $currency, 'user_id' => $userId, 'error' => $balance['error']]);
+                return $this->errorResponse($balance['error'], 404);
+            }
+            
+            Log::info('Balance retrieved successfully', ['currency' => $currency, 'user_id' => $userId]);
+            return $this->successResponse(['balance' => $balance]);
+        } catch (Exception $e) {
+            Log::error('Error retrieving balance: ' . $e->getMessage(), [
+                'currency' => $request->input('currency'), 
+                'user_id' => Auth::id()
+            ]);
+            return $this->errorResponse('Error retrieving balance: ' . $e->getMessage(), 500);
         }
-
-        $balance = $this->balanceService->getUserBalance(Auth::id(), strtoupper($currency));
-
-        if (isset($balance['error'])) {
-            return response()->json(['error' => $balance['error']], 404);
-        }
-
-        return response()->json(['balance' => $balance]);
     }
 
     public function topUpBalance(Request $request): JsonResponse
@@ -48,17 +69,33 @@ class BalanceController extends Controller
                 'gateway' => 'required|string',
             ]);
 
+            $userId = Auth::id();
+            $currency = strtoupper($validated['currency']);
+            
             $topup = $this->balanceService->topUpBalance(
                 $validated['amount'],
-                strtoupper($validated['currency']),
+                $currency,
                 $validated['gateway']
             );
+            
+            // Очищаем кеш баланса пользователя
+            $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
+            $this->forgetCache($cacheKey);
+            
+            Log::info('Balance topped up successfully', [
+                'user_id' => $userId,
+                'amount' => $validated['amount'],
+                'currency' => $currency,
+                'gateway' => $validated['gateway']
+            ]);
 
-            return response()->json(['success' => true, 'topup' => $topup]);
+            return $this->successResponse(['topup' => $topup]);
         } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            Log::warning('Validation error during balance top-up', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
+            return $this->errorResponse($e->errors(), 422);
+        } catch (Exception $e) {
+            Log::error('Error topping up balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
@@ -71,18 +108,37 @@ class BalanceController extends Controller
                 'currency' => 'required|string|size:3',
             ]);
 
+            $userId = Auth::id();
+            $recipientId = $validated['recipient_id'];
+            $currency = strtoupper($validated['currency']);
+            
             $transfer = $this->balanceService->transferBalance(
-                Auth::id(),
-                $validated['recipient_id'],
+                $userId,
+                $recipientId,
                 $validated['amount'],
-                strtoupper($validated['currency'])
+                $currency
             );
+            
+            // Очищаем кеш баланса отправителя и получателя
+            $this->forgetCache([
+                sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency),
+                sprintf(self::CACHE_KEY_USER_BALANCE, $recipientId, $currency)
+            ]);
+            
+            Log::info('Balance transferred successfully', [
+                'sender_id' => $userId,
+                'recipient_id' => $recipientId,
+                'amount' => $validated['amount'],
+                'currency' => $currency
+            ]);
 
-            return response()->json(['success' => true, 'transfer' => $transfer]);
+            return $this->successResponse(['transfer' => $transfer]);
         } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            Log::warning('Validation error during balance transfer', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
+            return $this->errorResponse($e->errors(), 422);
+        } catch (Exception $e) {
+            Log::error('Error transferring balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 
@@ -94,16 +150,31 @@ class BalanceController extends Controller
                 'currency' => 'required|string|size:3',
             ]);
 
+            $userId = Auth::id();
+            $currency = strtoupper($validated['currency']);
+            
             $withdrawal = $this->balanceService->withdrawBalance(
                 $validated['amount'],
-                strtoupper($validated['currency'])
+                $currency
             );
+            
+            // Очищаем кеш баланса пользователя
+            $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
+            $this->forgetCache($cacheKey);
+            
+            Log::info('Balance withdrawn successfully', [
+                'user_id' => $userId,
+                'amount' => $validated['amount'],
+                'currency' => $currency
+            ]);
 
-            return response()->json(['success' => true, 'withdrawal' => $withdrawal]);
+            return $this->successResponse(['withdrawal' => $withdrawal]);
         } catch (ValidationException $e) {
-            return response()->json(['error' => $e->errors()], 422);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 400);
+            Log::warning('Validation error during balance withdrawal', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
+            return $this->errorResponse($e->errors(), 422);
+        } catch (Exception $e) {
+            Log::error('Error withdrawing balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 }

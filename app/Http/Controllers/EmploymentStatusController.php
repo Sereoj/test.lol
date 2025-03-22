@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Cache;
 class EmploymentStatusController extends Controller
 {
     protected EmploymentStatusService $employmentStatusService;
+    
+    private const CACHE_MINUTES = 60;
+    private const CACHE_KEY_EMPLOYMENT_STATUSES = 'employment_statuses';
 
     public function __construct(EmploymentStatusService $employmentStatusService)
     {
@@ -18,27 +21,22 @@ class EmploymentStatusController extends Controller
 
     public function index()
     {
-        // Кешируем список статусов трудовой занятости
-        $cacheKey = 'employment_statuses';
-        if (Cache::has($cacheKey)) {
-            return response()->json(Cache::get($cacheKey));
-        }
+        $employmentStatuses = $this->getFromCacheOrStore(self::CACHE_KEY_EMPLOYMENT_STATUSES, self::CACHE_MINUTES, function () {
+            return $this->employmentStatusService->getAllEmploymentStatuses();
+        });
 
-        $employmentStatuses = $this->employmentStatusService->getAllEmploymentStatuses();
-
-        Cache::put($cacheKey, $employmentStatuses, now()->addMinutes(60));
-
-        return response()->json($employmentStatuses);
+        return $this->successResponse($employmentStatuses);
     }
 
     public function show($id)
     {
         $employmentStatus = $this->employmentStatusService->getEmploymentStatusById($id);
+        
         if ($employmentStatus) {
-            return response()->json($employmentStatus);
+            return $this->successResponse($employmentStatus);
         }
 
-        return response()->json(['message' => 'EmploymentStatus not found'], 404);
+        return $this->errorResponse('EmploymentStatus not found', 404);
     }
 
     public function store(StoreEmploymentStatusRequest $request)
@@ -46,33 +44,35 @@ class EmploymentStatusController extends Controller
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->createEmploymentStatus($data);
 
-        Cache::forget('employment_statuses');
+        $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 
-        return response()->json($employmentStatus, 201);
+        return $this->successResponse($employmentStatus, 201);
     }
 
     public function update(UpdateEmploymentStatusRequest $request, $id)
     {
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->updateEmploymentStatus($id, $data);
+        
         if ($employmentStatus) {
-            Cache::forget('employment_statuses');
+            $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 
-            return response()->json($employmentStatus);
+            return $this->successResponse($employmentStatus);
         }
 
-        return response()->json(['message' => 'EmploymentStatus not found'], 404);
+        return $this->errorResponse('EmploymentStatus not found', 404);
     }
 
     public function destroy($id)
     {
         $result = $this->employmentStatusService->deleteEmploymentStatus($id);
+        
         if ($result) {
-            Cache::forget('employment_statuses');
+            $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 
-            return response()->json(['message' => 'EmploymentStatus deleted successfully']);
+            return $this->successResponse(['message' => 'EmploymentStatus deleted successfully']);
         }
 
-        return response()->json(['message' => 'EmploymentStatus not found'], 404);
+        return $this->errorResponse('EmploymentStatus not found', 404);
     }
 }

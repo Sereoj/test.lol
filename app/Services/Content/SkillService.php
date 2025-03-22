@@ -38,7 +38,7 @@ class SkillService
             throw new Exception('Skill not found');
         }
 
-        $skill->update($data);
+        return $skill->update($data);
     }
 
     public function deleteSkill(int $id)
@@ -48,7 +48,7 @@ class SkillService
             throw new Exception('Skill not found');
         }
 
-        $skill->delete();
+        return $skill->delete();
     }
 
     public function addSkillToUser($userId, array $skillIds)

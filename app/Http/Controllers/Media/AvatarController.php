@@ -6,12 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Avatar\UploadAvatarRequest;
 use App\Services\Media\AvatarService;
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class AvatarController extends Controller
 {
     protected AvatarService $avatarService;
+
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_USER_AVATARS = 'user_avatars_';
 
     public function __construct(AvatarService $avatarService)
     {
@@ -21,8 +26,8 @@ class AvatarController extends Controller
     /**
      * Upload an avatar for the authenticated user.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @param UploadAvatarRequest $request
+     * @return JsonResponse
      */
     public function uploadAvatar(UploadAvatarRequest $request)
     {
@@ -32,36 +37,38 @@ class AvatarController extends Controller
             $file = $request->file('avatar');
             $avatar = $this->avatarService->uploadAvatar($user->id, $file);
 
-            /*            // Очистка кеша аватаров пользователя после загрузки нового
-                        Cache::forget('user_avatars_' . $user->id);*/
+            $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
 
-            return response()->json(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar], 200);
+            Log::info('Avatar uploaded successfully', ['user_id' => $user->id, 'avatar_id' => $avatar->id]);
+
+            return $this->successResponse(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar]);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            Log::error('Error uploading avatar: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
     /**
      * Get all avatars for the authenticated user.
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getUserAvatars()
     {
         try {
             $user = Auth::user();
-            $cacheKey = 'user_avatars_'.$user->id;
+            $cacheKey = self::CACHE_KEY_USER_AVATARS . $user->id;
 
-            $avatars = Cache::get($cacheKey);
+            $avatars = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
+                return $this->avatarService->getUserAvatars($user->id);
+            });
 
-            if (! $avatars) {
-                $avatars = $this->avatarService->getUserAvatars($user->id);
-                Cache::put($cacheKey, $avatars, now()->addMinutes(10));
-            }
+            Log::info('User avatars retrieved successfully', ['user_id' => $user->id]);
 
-            return response()->json($avatars, 200);
+            return $this->successResponse($avatars);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            Log::error('Error retrieving user avatars: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -69,7 +76,7 @@ class AvatarController extends Controller
      * Delete an avatar for the authenticated user.
      *
      * @param  int  $avatarId
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function deleteAvatar($avatarId)
     {
@@ -77,12 +84,14 @@ class AvatarController extends Controller
             $user = Auth::user();
             $this->avatarService->deleteAvatar($user->id, $avatarId);
 
-            // Очистка кеша аватаров пользователя после удаления
-            Cache::forget('user_avatars_'.$user->id);
+            $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
 
-            return response()->json(['message' => 'Avatar deleted successfully'], 200);
+            Log::info('Avatar deleted successfully', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
+
+            return $this->successResponse(['message' => 'Avatar deleted successfully']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            Log::error('Error deleting avatar: ' . $e->getMessage(), ['user_id' => Auth::id(), 'avatar_id' => $avatarId]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }
