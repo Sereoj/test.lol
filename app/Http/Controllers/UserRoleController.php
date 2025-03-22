@@ -5,11 +5,16 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreRoleRequest;
 use App\Models\Roles\Role;
 use App\Services\Roles\RoleService;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class UserRoleController extends Controller
 {
     protected RoleService $roleService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_ROLES_LIST = 'roles_list';
+    private const CACHE_KEY_ROLE = 'role_';
 
     public function __construct(RoleService $roleService)
     {
@@ -21,12 +26,18 @@ class UserRoleController extends Controller
      */
     public function index()
     {
-        // Кешируем список ролей
-        $roles = Cache::remember('roles_list', now()->addMinutes(10), function () {
-            return Role::all();
-        });
-
-        return response()->json($roles);
+        try {
+            $roles = $this->getFromCacheOrStore(self::CACHE_KEY_ROLES_LIST, self::CACHE_MINUTES, function () {
+                return Role::all();
+            });
+            
+            Log::info('Roles retrieved successfully');
+            
+            return $this->successResponse($roles);
+        } catch (Exception $e) {
+            Log::error('Error retrieving roles: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage(), 500);
+        }
     }
 
     /**
@@ -34,13 +45,19 @@ class UserRoleController extends Controller
      */
     public function store(StoreRoleRequest $request)
     {
-        $data = $request->validated();
-        $role = $this->roleService->createRole($data);
-
-        // После создания новой роли сбрасываем кеш с ролями
-        Cache::forget('roles_list');
-
-        return response()->json($role, 201);
+        try {
+            $data = $request->validated();
+            $role = $this->roleService->createRole($data);
+            
+            Log::info('Role created successfully', ['role_id' => $role->id]);
+            
+            $this->forgetCache(self::CACHE_KEY_ROLES_LIST);
+            
+            return $this->successResponse($role, 201);
+        } catch (Exception $e) {
+            Log::error('Error creating role: ' . $e->getMessage(), ['data' => $request->all()]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
     }
 
     /**
@@ -48,8 +65,18 @@ class UserRoleController extends Controller
      */
     public function show($id)
     {
-        $role = $this->roleService->getRoleById($id);
-
-        return response()->json($role);
+        try {
+            $cacheKey = self::CACHE_KEY_ROLE . $id;
+            $role = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->roleService->getRoleById($id);
+            });
+            
+            Log::info('Role retrieved successfully', ['id' => $id]);
+            
+            return $this->successResponse($role);
+        } catch (Exception $e) {
+            Log::error('Error retrieving role: ' . $e->getMessage(), ['id' => $id]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
     }
 }

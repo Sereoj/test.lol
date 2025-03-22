@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Cache;
 class CategoryController extends Controller
 {
     protected CategoryService $categoryService;
+    
+    private const CACHE_KEY_CATEGORIES_LIST = 'categories_list';
+    private const CACHE_KEY_CATEGORY = 'category_';
+    private const CACHE_MINUTES = 60;
 
     public function __construct(CategoryService $categoryService)
     {
@@ -17,20 +21,11 @@ class CategoryController extends Controller
 
     public function index()
     {
-        // Кешируем список категорий
-        $cacheKey = 'categories_list';
-        if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные данные
-            return response()->json(Cache::get($cacheKey));
-        }
+        $categories = $this->getFromCacheOrStore(self::CACHE_KEY_CATEGORIES_LIST, self::CACHE_MINUTES, function () {
+            return $this->categoryService->getAllCategory();
+        });
 
-        // Если в кеше нет данных, загружаем из базы данных
-        $categories = $this->categoryService->getAllCategory();
-
-        // Кешируем результат на 60 минут
-        Cache::put($cacheKey, $categories, now()->addMinutes(60));
-
-        return response()->json($categories);
+        return $this->successResponse($categories);
     }
 
     public function store(CategoryRequest $request)
@@ -38,28 +33,24 @@ class CategoryController extends Controller
         $data = $request->validated();
         $category = $this->categoryService->createCategory($data);
 
-        // Очистка кеша после добавления новой категории
-        Cache::forget('categories_list');
+        $this->forgetCache(self::CACHE_KEY_CATEGORIES_LIST);
 
-        return response()->json($category, 201);
+        return $this->successResponse($category, 201);
     }
 
     public function show($id)
     {
-        $cacheKey = 'category_'.$id;
-        if (Cache::has($cacheKey)) {
-            return response()->json(Cache::get($cacheKey));
-        }
-
-        $category = $this->categoryService->getCategoryById($id)->id;
+        $cacheKey = self::CACHE_KEY_CATEGORY . $id;
+        
+        $category = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+            return $this->categoryService->getCategoryById($id)->id;
+        });
 
         if ($category) {
-            Cache::put($cacheKey, $category, now()->addMinutes(60));
-
-            return response()->json($category);
+            return $this->successResponse($category);
         }
 
-        return response()->json(['message' => 'Category not found'], 404);
+        return $this->errorResponse('Category not found', 404);
     }
 
     public function update(CategoryRequest $request, $id)
@@ -68,14 +59,15 @@ class CategoryController extends Controller
         $category = $this->categoryService->updateCategory($id, $data);
 
         if ($category) {
-            // Очистка кеша после обновления категории
-            Cache::forget('category_'.$id);
-            Cache::forget('categories_list');
+            $this->forgetCache([
+                self::CACHE_KEY_CATEGORY . $id,
+                self::CACHE_KEY_CATEGORIES_LIST
+            ]);
 
-            return response()->json($category);
+            return $this->successResponse($category);
         }
 
-        return response()->json(['message' => 'Category not found'], 404);
+        return $this->errorResponse('Category not found', 404);
     }
 
     public function destroy($id)
@@ -83,13 +75,14 @@ class CategoryController extends Controller
         $result = $this->categoryService->deleteCategory($id);
 
         if ($result) {
-            // Очистка кеша после удаления категории
-            Cache::forget('category_'.$id);
-            Cache::forget('categories_list');
+            $this->forgetCache([
+                self::CACHE_KEY_CATEGORY . $id,
+                self::CACHE_KEY_CATEGORIES_LIST
+            ]);
 
-            return response()->json(['message' => 'Category deleted successfully']);
+            return $this->successResponse(['message' => 'Category deleted successfully']);
         }
 
-        return response()->json(['message' => 'Category not found'], 404);
+        return $this->errorResponse('Category not found', 404);
     }
 }

@@ -6,12 +6,15 @@ use App\Http\Requests\Source\CreateSourceRequest;
 use App\Http\Requests\Source\UpdateSourceRequest;
 use App\Services\Content\SourceService;
 use Exception;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class SourceController extends Controller
 {
     protected SourceService $sourceService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_SOURCES = 'sources';
+    private const CACHE_KEY_SOURCE = 'source_';
 
     public function __construct(SourceService $sourceService)
     {
@@ -26,23 +29,17 @@ class SourceController extends Controller
     public function index()
     {
         try {
-            // Попытка получить данные из кеша
-            $sources = Cache::get('sources');
+            $sources = $this->getFromCacheOrStore(self::CACHE_KEY_SOURCES, self::CACHE_MINUTES, function () {
+                return $this->sourceService->getAllSources();
+            });
+            
+            Log::info('Sources retrieved successfully');
 
-            // Если кеш пуст, то извлекаем данные из базы и сохраняем их в кеш
-            if (! $sources) {
-                $sources = $this->sourceService->getAllSources();
-                Cache::put('sources', $sources, now()->addMinutes(10)); // Кешируем на 10 минут
-                Log::info('Sources retrieved from database and cached');
-            } else {
-                Log::info('Sources retrieved from cache');
-            }
-
-            return response()->json($sources, 200);
+            return $this->successResponse($sources);
         } catch (Exception $e) {
             Log::error('Error retrieving sources: '.$e->getMessage());
 
-            return response()->json(['message' => 'Failed to retrieve sources. Please try again later.'], 500);
+            return $this->errorResponse('Failed to retrieve sources. Please try again later.', 500);
         }
     }
 
@@ -54,24 +51,18 @@ class SourceController extends Controller
     public function show(int $id)
     {
         try {
-            // Попытка получить данные из кеша для конкретного источника
-            $cacheKey = 'source_'.$id;
-            $source = Cache::get($cacheKey);
+            $cacheKey = self::CACHE_KEY_SOURCE . $id;
+            $source = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->sourceService->getSourceById($id);
+            });
+            
+            Log::info('Source retrieved successfully', ['id' => $id]);
 
-            if (! $source) {
-                // Если данных нет в кеше, извлекаем из базы и кешируем
-                $source = $this->sourceService->getSourceById($id);
-                Cache::put($cacheKey, $source, now()->addMinutes(10)); // Кешируем на 10 минут
-                Log::info('Source retrieved from database and cached', ['id' => $id]);
-            } else {
-                Log::info('Source retrieved from cache', ['id' => $id]);
-            }
-
-            return response()->json($source, 200);
+            return $this->successResponse($source);
         } catch (Exception $e) {
             Log::error('Error retrieving source: '.$e->getMessage(), ['id' => $id]);
 
-            return response()->json(['message' => 'Source not found'], 404);
+            return $this->errorResponse('Source not found', 404);
         }
     }
 
@@ -85,16 +76,15 @@ class SourceController extends Controller
         try {
             $source = $this->sourceService->createSource($request->all());
 
-            // Очистить кеш, так как данные изменились
-            Cache::forget('sources');
+            $this->forgetCache(self::CACHE_KEY_SOURCES);
 
             Log::info('Source created successfully', ['source' => $source]);
 
-            return response()->json($source, 201);
+            return $this->successResponse($source, 201);
         } catch (Exception $e) {
             Log::error('Error creating source: '.$e->getMessage(), ['data' => $request->all()]);
 
-            return response()->json(['message' => 'Failed to create source. Please try again later.'], 500);
+            return $this->errorResponse('Failed to create source. Please try again later.', 500);
         }
     }
 
@@ -108,16 +98,18 @@ class SourceController extends Controller
         try {
             $source = $this->sourceService->updateSource($id, $request->only('name', 'iconUrl'));
 
-            // Очистить кеш для обновленного источника
-            Cache::forget('source_'.$id);
+            $this->forgetCache([
+                self::CACHE_KEY_SOURCE . $id,
+                self::CACHE_KEY_SOURCES
+            ]);
 
             Log::info('Source updated successfully', ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
 
-            return response()->json($source, 200);
+            return $this->successResponse($source);
         } catch (Exception $e) {
             Log::error('Error updating source: '.$e->getMessage(), ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
 
-            return response()->json(['message' => 'Failed to update source. Please try again later.'], 500);
+            return $this->errorResponse('Failed to update source. Please try again later.', 500);
         }
     }
 
@@ -131,17 +123,18 @@ class SourceController extends Controller
         try {
             $this->sourceService->deleteSource($id);
 
-            // Очистить кеш для удаленного источника и список источников
-            Cache::forget('source_'.$id);
-            Cache::forget('sources');
+            $this->forgetCache([
+                self::CACHE_KEY_SOURCE . $id,
+                self::CACHE_KEY_SOURCES
+            ]);
 
             Log::info('Source deleted successfully', ['id' => $id]);
 
-            return response()->json(['message' => 'Source deleted successfully'], 200);
+            return $this->successResponse(['message' => 'Source deleted successfully']);
         } catch (Exception $e) {
             Log::error('Error deleting source: '.$e->getMessage(), ['id' => $id]);
 
-            return response()->json(['message' => 'Failed to delete source. Please try again later.'], 500);
+            return $this->errorResponse('Failed to delete source. Please try again later.', 500);
         }
     }
 }

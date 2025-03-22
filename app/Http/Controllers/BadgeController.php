@@ -6,89 +6,131 @@ use App\Http\Requests\Badge\StoreBadgeRequest;
 use App\Http\Requests\Badge\UpdateBadgeRequest;
 use App\Services\Content\BadgeService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
 
 class BadgeController extends Controller
 {
     protected BadgeService $badgeService;
+    
+    private const CACHE_MINUTES_LIST = 5;
+    private const CACHE_MINUTES_SINGLE = 60;
+    private const CACHE_KEY_BADGES_LIST = 'badges_list';
+    private const CACHE_KEY_BADGE = 'badge_';
+    private const CACHE_KEY_ACTIVE_BADGE = 'active_badge_';
 
     public function __construct(BadgeService $badgeService)
     {
         $this->badgeService = $badgeService;
     }
 
+    /**
+     * Получить список всех бейджей
+     */
     public function index()
     {
-        $cacheKey = 'badges_list';
-        if (Cache::has($cacheKey)) {
-            return response()->json(Cache::get($cacheKey));
-        }
+        $badges = $this->getFromCacheOrStore(self::CACHE_KEY_BADGES_LIST, self::CACHE_MINUTES_LIST, function () {
+            return $this->badgeService->getAllBadges();
+        });
 
-        $badges = $this->badgeService->getAllBadges();
-        Cache::put($cacheKey, $badges, now()->addMinutes(5));
-
-        return response()->json($badges);
+        return $this->successResponse($badges);
     }
 
+    /**
+     * Получить бейдж по ID
+     */
     public function show($id)
     {
-        // Проверяем кеш для конкретного бейджа
-        $cacheKey = 'badge_'.$id;
-        if (Cache::has($cacheKey)) {
-            // Возвращаем кешированные данные
-            return response()->json(Cache::get($cacheKey));
-        }
-
-        // Если в кеше нет данных, загружаем из базы данных
-        $badge = $this->badgeService->getBadgeById($id);
+        $cacheKey = self::CACHE_KEY_BADGE . $id;
+        
+        $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SINGLE, function () use ($id) {
+            return $this->badgeService->getBadgeById($id);
+        });
 
         if ($badge) {
-            // Кешируем результат на 60 минут
-            Cache::put($cacheKey, $badge, now()->addMinutes(60));
-            return response()->json($badge);
+            return $this->successResponse($badge);
         }
 
-        return response()->json(['message' => 'Badge not found'], 404);
+        return $this->errorResponse('Badge not found', 404);
     }
 
+    /**
+     * Создать новый бейдж
+     */
     public function store(StoreBadgeRequest $request)
     {
         $data = $request->validated();
         $badge = $this->badgeService->createBadge($data);
 
-        // Очистка кеша после добавления нового бейджа
-        Cache::forget('badges_list');
+        $this->forgetCache(self::CACHE_KEY_BADGES_LIST);
 
-        return response()->json($badge, 201);
+        return $this->successResponse($badge, 201);
     }
 
+    /**
+     * Обновить существующий бейдж
+     */
     public function update(UpdateBadgeRequest $request, $id)
     {
         $data = $request->validated();
         $badge = $this->badgeService->updateBadge($id, $data);
 
         if ($badge) {
-            // Очистка кеша после обновления бейджа
-            Cache::forget('badge_'.$id);
-            Cache::forget('badges_list');
+            $this->forgetCache([
+                self::CACHE_KEY_BADGE . $id,
+                self::CACHE_KEY_BADGES_LIST
+            ]);
 
-            return response()->json($badge);
+            return $this->successResponse($badge);
         }
 
-        return response()->json(['message' => 'Badge not found'], 404);
+        return $this->errorResponse('Badge not found', 404);
     }
 
+    /**
+     * Удалить бейдж
+     */
     public function destroy($id)
     {
         $result = $this->badgeService->deleteBadge($id);
 
         if ($result) {
-            // Очистка кеша после удаления бейджа
-            Cache::forget('badge_'.$id);
-            Cache::forget('badges_list');
+            $this->forgetCache([
+                self::CACHE_KEY_BADGE . $id,
+                self::CACHE_KEY_BADGES_LIST
+            ]);
 
-            return response()->json(['message' => 'Badge deleted successfully']);
+            return $this->successResponse(['message' => 'Badge deleted successfully']);
         }
 
-        return response()->json(['message' => 'Badge not found'], 404);
+        return $this->errorResponse('Badge not found', 404);
+    }
+    
+    /**
+     * Получить активный бейдж пользователя
+     */
+    public function getActiveBadge()
+    {
+        $userId = auth()->id();
+        $cacheKey = self::CACHE_KEY_ACTIVE_BADGE . $userId;
+        
+        $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SINGLE, function () use ($userId) {
+            return $this->badgeService->getActiveBadge($userId);
+        });
+        
+        return $this->successResponse($badge);
+    }
+    
+    /**
+     * Установить активный бейдж для пользователя
+     */
+    public function setActiveBadge(Request $request)
+    {
+        $userId = auth()->id();
+        $badgeId = $request->input('badge_id');
+        
+        $result = $this->badgeService->setActiveBadge($userId, $badgeId);
+        $this->forgetCache(self::CACHE_KEY_ACTIVE_BADGE . $userId);
+        
+        return $this->successResponse(['message' => 'Active badge set successfully']);
     }
 }

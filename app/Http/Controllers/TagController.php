@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\Cache;
 class TagController extends Controller
 {
     protected TagService $tagService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_TAGS = 'tags';
+    private const CACHE_KEY_TAG = 'tag_';
 
     public function __construct(TagService $tagService)
     {
@@ -23,16 +27,11 @@ class TagController extends Controller
      */
     public function index()
     {
-        // Попытка получить данные из кеша
-        $tags = Cache::get('tags');
+        $tags = $this->getFromCacheOrStore(self::CACHE_KEY_TAGS, self::CACHE_MINUTES, function () {
+            return $this->tagService->getAllTags();
+        });
 
-        // Если кеш пуст, извлекаем данные из базы и сохраняем их в кеш
-        if (! $tags) {
-            $tags = $this->tagService->getAllTags();
-            Cache::put('tags', $tags, now()->addMinutes(10)); // Кешируем на 10 минут
-        }
-
-        return response()->json($tags);
+        return $this->successResponse($tags);
     }
 
     /**
@@ -44,10 +43,9 @@ class TagController extends Controller
     {
         $tag = $this->tagService->createTag($request->all());
 
-        // Очистка кеша после добавления нового тега
-        Cache::forget('tags');
+        $this->forgetCache(self::CACHE_KEY_TAGS);
 
-        return response()->json($tag, 201);
+        return $this->successResponse($tag, 201);
     }
 
     /**
@@ -58,17 +56,13 @@ class TagController extends Controller
      */
     public function show($id)
     {
-        // Попытка получить данные из кеша
-        $cacheKey = 'tag_'.$id;
-        $tag = Cache::get($cacheKey);
+        $cacheKey = self::CACHE_KEY_TAG . $id;
+        
+        $tag = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+            return $this->tagService->getTagById($id);
+        });
 
-        if (! $tag) {
-            // Если кеш пуст, извлекаем данные из базы и сохраняем в кеш
-            $tag = $this->tagService->getTagById($id);
-            Cache::put($cacheKey, $tag, now()->addMinutes(10)); // Кешируем на 10 минут
-        }
-
-        return response()->json($tag);
+        return $this->successResponse($tag);
     }
 
     /**
@@ -80,11 +74,12 @@ class TagController extends Controller
     {
         $tag = $this->tagService->updateTag($id, $request->all());
 
-        // Очистка кеша после обновления тега
-        Cache::forget('tags');
-        Cache::forget('tag_'.$id);
+        $this->forgetCache([
+            self::CACHE_KEY_TAGS,
+            self::CACHE_KEY_TAG . $id
+        ]);
 
-        return response()->json($tag);
+        return $this->successResponse($tag);
     }
 
     /**
@@ -97,10 +92,11 @@ class TagController extends Controller
     {
         $this->tagService->deleteTag($id);
 
-        // Очистка кеша после удаления тега
-        Cache::forget('tags');
-        Cache::forget('tag_'.$id);
+        $this->forgetCache([
+            self::CACHE_KEY_TAGS,
+            self::CACHE_KEY_TAG . $id
+        ]);
 
-        return response()->json(null, 204);
+        return $this->successResponse(null, 204);
     }
 }

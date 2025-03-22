@@ -29,7 +29,6 @@ class MakeRepositoryCommand extends Command
 
         $namespace = str_replace('/', '\\', ucfirst($path));
 
-        // Шаблон сервисного класса
         $template = <<<CLASS
 <?php
 

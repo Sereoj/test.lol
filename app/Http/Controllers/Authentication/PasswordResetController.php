@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\ResetPasswordRequest;
 use App\Http\Requests\Auth\SendPasswordResetRequest;
 use App\Services\Authentication\PasswordResetService;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class PasswordResetController extends Controller
 {
@@ -27,10 +28,13 @@ class PasswordResetController extends Controller
         try {
             $email = $request->input('email');
             $this->passwordResetService->sendPasswordResetEmail($email);
+            
+            Log::info('Password reset email sent successfully', ['email' => $email]);
 
-            return response()->json(['message' => 'Password reset email sent successfully'], 200);
+            return $this->successResponse(['message' => 'Password reset email sent successfully']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            Log::error('Error sending password reset email: ' . $e->getMessage(), ['email' => $request->input('email')]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -47,11 +51,15 @@ class PasswordResetController extends Controller
             $newPassword = $request->input('new_password');
 
             if ($this->passwordResetService->resetPassword($email, $token, $newPassword)) {
-                return response()->json(['message' => 'Password reset successfully'], 200);
+                Log::info('Password reset successfully', ['email' => $email]);
+                return $this->successResponse(['message' => 'Password reset successfully']);
             }
-            return response()->json(['message' => 'Invalid token or email'], 400);
+            
+            Log::warning('Invalid token or email for password reset', ['email' => $email]);
+            return $this->errorResponse('Invalid token or email', 400);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            Log::error('Error resetting password: ' . $e->getMessage(), ['email' => $request->input('email')]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }

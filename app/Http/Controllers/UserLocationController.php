@@ -5,26 +5,19 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Location\StoreLocationRequest;
 use App\Services\Locations\LocationService;
 use Exception;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class UserLocationController extends Controller
 {
     protected LocationService $locationService;
+    
+    private const CACHE_MINUTES = 60;
+    private const CACHE_KEY_LOCATIONS_ALL = 'locations_all';
+    private const CACHE_KEY_LOCATION = 'location_';
 
     public function __construct(LocationService $locationService)
     {
         $this->locationService = $locationService;
-    }
-
-    /**
-     * Обработчик ошибок и логирование
-     */
-    protected function handleError(Exception $e, string $message)
-    {
-        Log::error($message.': '.$e->getMessage());
-
-        return response()->json(['message' => $e->getMessage()], 500);
     }
 
     /**
@@ -33,16 +26,16 @@ class UserLocationController extends Controller
     public function index()
     {
         try {
-            $cacheKey = 'locations_all';
-            $locations = Cache::remember($cacheKey, now()->addMinutes(60), function () {
+            $locations = $this->getFromCacheOrStore(self::CACHE_KEY_LOCATIONS_ALL, self::CACHE_MINUTES, function () {
                 return $this->locationService->getAllLocations();
             });
 
-            Log::info('Locations retrieved successfully from cache');
+            Log::info('Locations retrieved successfully');
 
-            return response()->json($locations, 200);
+            return $this->successResponse($locations);
         } catch (Exception $e) {
-            return $this->handleError($e, 'Error retrieving locations');
+            Log::error('Error retrieving locations: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -52,16 +45,17 @@ class UserLocationController extends Controller
     public function show(int $id)
     {
         try {
-            $cacheKey = 'location_'.$id;
-            $location = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($id) {
+            $cacheKey = self::CACHE_KEY_LOCATION . $id;
+            $location = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 return $this->locationService->getLocationById($id);
             });
 
-            Log::info('Location retrieved successfully from cache', ['id' => $id]);
+            Log::info('Location retrieved successfully', ['id' => $id]);
 
-            return response()->json($location, 200);
+            return $this->successResponse($location);
         } catch (Exception $e) {
-            return $this->handleError($e, 'Error retrieving location');
+            Log::error('Error retrieving location: ' . $e->getMessage(), ['id' => $id]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -71,7 +65,6 @@ class UserLocationController extends Controller
     public function store(StoreLocationRequest $request)
     {
         try {
-            // Сохранение нового местоположения
             $location = $this->locationService->storeLocation($request->all());
             Log::info('Location stored successfully', [
                 'location_id' => $location->id,
@@ -79,12 +72,12 @@ class UserLocationController extends Controller
                 'timestamp' => now(),
             ]);
 
-            // Очистка кеша после создания нового местоположения
-            Cache::forget('locations_all');
+            $this->forgetCache(self::CACHE_KEY_LOCATIONS_ALL);
 
-            return response()->json(['message' => 'Location stored successfully', 'location' => $location], 201);
+            return $this->successResponse(['message' => 'Location stored successfully', 'location' => $location], 201);
         } catch (Exception $e) {
-            return $this->handleError($e, 'Error storing location');
+            Log::error('Error storing location: ' . $e->getMessage(), ['data' => $request->all()]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -94,23 +87,23 @@ class UserLocationController extends Controller
     public function update(StoreLocationRequest $request, int $id)
     {
         try {
-            // Валидация запроса
             $request->validate([
                 'name' => 'required|string|max:255',
                 'address' => 'required|string',
             ]);
 
-            // Обновление местоположения
             $location = $this->locationService->updateLocation($id, $request->all());
             Log::info('Location updated successfully', ['id' => $id, 'data' => $request->all()]);
 
-            // Очистка кеша после обновления местоположения
-            Cache::forget('location_'.$id);
-            Cache::forget('locations_all');
+            $this->forgetCache([
+                self::CACHE_KEY_LOCATION . $id,
+                self::CACHE_KEY_LOCATIONS_ALL
+            ]);
 
-            return response()->json(['message' => 'Location updated successfully', 'location' => $location], 200);
+            return $this->successResponse(['message' => 'Location updated successfully', 'location' => $location]);
         } catch (Exception $e) {
-            return $this->handleError($e, 'Error updating location');
+            Log::error('Error updating location: ' . $e->getMessage(), ['id' => $id, 'data' => $request->all()]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
@@ -123,13 +116,15 @@ class UserLocationController extends Controller
             $this->locationService->deleteLocation($id);
             Log::info('Location deleted successfully', ['id' => $id]);
 
-            // Очистка кеша после удаления местоположения
-            Cache::forget('location_'.$id);
-            Cache::forget('locations_all');
+            $this->forgetCache([
+                self::CACHE_KEY_LOCATION . $id,
+                self::CACHE_KEY_LOCATIONS_ALL
+            ]);
 
-            return response()->json(['message' => 'Location deleted successfully'], 200);
+            return $this->successResponse(['message' => 'Location deleted successfully']);
         } catch (Exception $e) {
-            return $this->handleError($e, 'Error deleting location');
+            Log::error('Error deleting location: ' . $e->getMessage(), ['id' => $id]);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }

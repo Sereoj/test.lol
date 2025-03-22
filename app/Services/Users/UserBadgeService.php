@@ -54,10 +54,16 @@ class UserBadgeService
         return $userBadge;
     }
 
-    public function setActiveBadge($badgeId)
+    /**
+     * Устанавливает значок как активный для указанного пользователя
+     *
+     * @param int $userId ID пользователя
+     * @param int $badgeId ID значка, который нужно сделать активным
+     * @return UserBadge|array Активированный значок или сообщение об ошибке
+     * @throws Exception Если произошла ошибка при установке активного значка
+     */
+    public function setActiveBadgeForUser($userId, $badgeId)
     {
-        $userId = Auth::id();
-
         try {
             DB::beginTransaction();
 
@@ -82,16 +88,24 @@ class UserBadgeService
             return $userBadge;
         } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Error setting active badge: '.$e->getMessage());
+            Log::error('Error setting active badge: '.$e->getMessage(), [
+                'user_id' => $userId,
+                'badge_id' => $badgeId
+            ]);
             throw $e;
         }
     }
 
-    public function getActiveBadge()
+    /**
+     * Получает активный значок для указанного пользователя
+     *
+     * @param int $userId ID пользователя
+     * @return UserBadge|null Активный значок пользователя или null, если его нет
+     */
+    public function getActiveBadgeForUser($userId)
     {
-        $userId = Auth::id();
-
-        return UserBadge::query()->where('user_id', $userId)
+        return UserBadge::query()
+            ->where('user_id', $userId)
             ->active()
             ->first();
     }

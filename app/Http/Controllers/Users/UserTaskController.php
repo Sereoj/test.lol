@@ -7,11 +7,16 @@ use App\Services\Users\UserTaskService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 
 class UserTaskController extends Controller
 {
     protected UserTaskService $userTaskService;
+    
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_USER_TASKS = 'user_tasks_';
+    private const CACHE_KEY_COMPLETED_TASKS = 'user_completed_tasks_';
+    private const CACHE_KEY_IN_PROGRESS_TASKS = 'user_in_progress_tasks_';
+    private const CACHE_KEY_NOT_STARTED_TASKS = 'user_not_started_tasks_';
 
     public function __construct(UserTaskService $userTaskService)
     {
@@ -24,9 +29,9 @@ class UserTaskController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $cacheKey = 'user_tasks_'.$user->id.'_'.md5($request->fullUrl());
+        $cacheKey = self::CACHE_KEY_USER_TASKS . $user->id . '_' . md5($request->fullUrl());
 
-        $tasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user, $request) {
+        $tasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user, $request) {
             $filters = [
                 'period' => $request->input('period'),
                 'type' => $request->input('type'),
@@ -37,7 +42,7 @@ class UserTaskController extends Controller
             return $this->userTaskService->getUserTasks($user, $filters);
         });
 
-        return response()->json($tasks);
+        return $this->successResponse($tasks);
     }
 
     /**
@@ -46,14 +51,13 @@ class UserTaskController extends Controller
     public function completedTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_completed_tasks_'.$user->id;
+        $cacheKey = self::CACHE_KEY_COMPLETED_TASKS . $user->id;
 
-        // Проверяем кеш
-        $completedTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
+        $completedTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
             return $this->userTaskService->getCompletedTasks($user);
         });
 
-        return response()->json($completedTasks);
+        return $this->successResponse($completedTasks);
     }
 
     /**
@@ -62,14 +66,13 @@ class UserTaskController extends Controller
     public function inProgressTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_in_progress_tasks_'.$user->id;
+        $cacheKey = self::CACHE_KEY_IN_PROGRESS_TASKS . $user->id;
 
-        // Проверяем кеш
-        $inProgressTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
+        $inProgressTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
             return $this->userTaskService->getInProgressTasks($user);
         });
 
-        return response()->json($inProgressTasks);
+        return $this->successResponse($inProgressTasks);
     }
 
     /**
@@ -78,14 +81,13 @@ class UserTaskController extends Controller
     public function notStartedTasks()
     {
         $user = Auth::user();
-        $cacheKey = 'user_not_started_tasks_'.$user->id;
+        $cacheKey = self::CACHE_KEY_NOT_STARTED_TASKS . $user->id;
 
-        // Проверяем кеш
-        $notStartedTasks = Cache::remember($cacheKey, now()->addMinutes(10), function () use ($user) {
+        $notStartedTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
             return $this->userTaskService->getNotStartedTasks($user);
         });
 
-        return response()->json($notStartedTasks);
+        return $this->successResponse($notStartedTasks);
     }
 
     /**
@@ -101,12 +103,16 @@ class UserTaskController extends Controller
 
         try {
             $this->userTaskService->updateTaskProgress($user, $taskId, $request->progress);
-            Cache::forget('user_tasks_'.$user->id);
-            Cache::forget('user_in_progress_tasks_'.$user->id);
-
-            return response()->json(['message' => 'Task progress updated successfully']);
+            $this->forgetCache([
+                self::CACHE_KEY_USER_TASKS . $user->id,
+                self::CACHE_KEY_IN_PROGRESS_TASKS . $user->id,
+                self::CACHE_KEY_COMPLETED_TASKS . $user->id,
+                self::CACHE_KEY_NOT_STARTED_TASKS . $user->id
+            ]);
+            
+            return $this->successResponse(['message' => 'Task progress updated successfully']);
         } catch (Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 400);
+            return $this->errorResponse($e->getMessage(), 400);
         }
     }
 }
