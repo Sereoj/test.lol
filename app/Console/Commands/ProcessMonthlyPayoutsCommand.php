@@ -12,7 +12,7 @@ class ProcessMonthlyPayoutsCommand extends Command
 
     protected $description = 'Process monthly payouts to sellers';
 
-    protected $balanceService;
+    protected BalanceService $balanceService;
 
     public function __construct(BalanceService $balanceService)
     {

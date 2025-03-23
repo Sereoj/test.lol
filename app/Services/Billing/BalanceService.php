@@ -11,6 +11,7 @@ use App\Models\Users\UserBalance;
 use App\Notifications\TransactionNotification;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Log;
 
 class BalanceService
 {
@@ -185,6 +186,66 @@ class BalanceService
             $user->notify(new TransactionNotification($transaction));
 
             return $withdrawal;
+        });
+    }
+
+    /**
+     * Выплата продавцу
+     *
+     * @param int $userId ID пользователя (продавца)
+     *
+     */
+    public function payoutToSeller(int $userId)
+    {
+        Log::info("Начало выплаты продавцу", ['user_id' => $userId]);
+
+        return DB::transaction(function () use ($userId) {
+            // Получаем баланс пользователя
+            $userBalance = UserBalance::where('user_id', $userId)->first();
+
+            if (!$userBalance) {
+                Log::warning("Баланс продавца не найден", ['user_id' => $userId]);
+                throw new \Exception("Баланс продавца не найден");
+            }
+
+            if ($userBalance->pending_balance <= 0) {
+                Log::warning("Нет средств для выплаты", ['user_id' => $userId, 'pending_balance' => $userBalance->pending_balance]);
+                throw new \Exception("Нет средств для выплаты");
+            }
+
+            $amount = $userBalance->pending_balance;
+            $currency = $userBalance->currency;
+
+            // Переводим из ожидающего баланса в основной
+            $userBalance->balance += $amount;
+            $userBalance->pending_balance = 0;
+            $userBalance->save();
+
+            // Создаем запись о транзакции
+            $transaction = Transaction::create([
+                'user_id' => $userId,
+                'type' => 'payout',
+                'amount' => $amount,
+                'currency' => $currency,
+                'status' => 'completed',
+                'metadata' => ['payout_date' => now()],
+            ]);
+
+            // Отправляем уведомление
+            User::find($userId)->notify(new TransactionNotification($transaction));
+
+            Log ("Выплата продавцу успешно выполнена", [
+                'user_id' => $userId,
+                'amount' => $amount,
+                'transaction_id' => $transaction->id
+            ]);
+
+            return [
+                'success' => true,
+                'amount' => $amount,
+                'currency' => $currency,
+                'transaction_id' => $transaction->id
+            ];
         });
     }
 }
