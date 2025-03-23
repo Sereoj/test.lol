@@ -34,7 +34,11 @@ class PostController extends Controller
         $cacheKey = self::CACHE_KEY_POSTS . md5(json_encode($request->all()).'_'.$userId);
 
         $posts = $this->getFromCacheOrStore($cacheKey, self::CACHE_SECONDS / 60, function () use ($request, $userId) {
-            return $this->postService->getPosts($request->all(), $userId);
+            $filters = $request->all();
+            if ($userId) {
+                $filters['user_id'] = $userId;
+            }
+            return $this->postService->getPosts($filters);
         });
 
         return $this->successResponse($posts);
@@ -59,7 +63,7 @@ class PostController extends Controller
         $cacheKey = self::CACHE_KEY_POST . $id;
 
         $post = $this->getFromCacheOrStore($cacheKey, self::CACHE_SECONDS_POST / 60, function () use ($id) {
-            return new PostResource($this->postService->getPost($id));
+            return new PostResource($this->postService->getPost((int)$id));
         });
 
         return $this->successResponse($post);

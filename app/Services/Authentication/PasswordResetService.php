@@ -2,80 +2,185 @@
 
 namespace App\Services\Authentication;
 
-use App\Models\Authentication\PasswordReset;
-use App\Models\Users\User;
+use App\Models\User;
+use App\Models\VerificationToken;
+use App\Notifications\PasswordResetNotification;
+use App\Services\Base\SimpleService;
 use App\Services\Users\UserService;
-use App\Utils\CodeGenerator;
-use App\Utils\PasswordUtil;
-use DB;
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Facades\Mail;
-use Log;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
-class PasswordResetService
+/**
+ * Сервис сброса пароля
+ */
+class PasswordResetService extends SimpleService
 {
+    /**
+     * Сервис для работы с пользователями
+     *
+     * @var UserService
+     */
     protected UserService $userService;
+    
+    /**
+     * Префикс кеша
+     *
+     * @var string
+     */
+    protected string $cachePrefix = 'password_reset';
+    
+    /**
+     * Время хранения кеша в минутах
+     *
+     * @var int
+     */
+    protected int $defaultCacheMinutes = 60;
 
+    /**
+     * Конструктор
+     *
+     * @param UserService $userService
+     */
     public function __construct(UserService $userService)
     {
+        parent::__construct();
         $this->userService = $userService;
+        $this->setLogPrefix('PasswordResetService');
     }
 
-    public function sendPasswordResetEmail(string $email): bool
+    /**
+     * Отправить ссылку для сброса пароля
+     *
+     * @param string $email
+     * @return bool
+     */
+    public function sendResetLink(string $email): bool
     {
-        try {
-            $locale = app()->getLocale();
-            $user = User::query()->where('email', $email)->firstOrFail();
-            PasswordReset::query()->where('email', $user->email)->delete();
-
-            $token = CodeGenerator::generate(60);
-
-            PasswordReset::create([
-                'email' => $user->email,
-                'token' => $token,
-                'created_at' => now(),
-            ]);
-
-            Mail::send("emails.resets.$locale", ['token' => $token], function ($message) use ($user) {
-                $message->to($user->email)->subject('Password Reset Request');
-            });
-
-            return true;
-        } catch (ModelNotFoundException $e) {
-            Log::warning("Попытка сброса пароля для несуществующего email: $email");
-            return false;
-        } catch (Exception $e) {
-            Log::error("Ошибка при отправке email для сброса пароля: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public function resetPassword($email, $token, $newPassword): bool
-    {
+        $this->logInfo('Запрос на сброс пароля', ['email' => $email]);
+        
         $user = $this->userService->findUserByEmail($email);
+
         if (!$user) {
+            $this->logWarning('Пользователь не найден при запросе сброса пароля', ['email' => $email]);
             return false;
         }
 
-        $passwordReset = PasswordReset::query()->where('email', $user->email)
-            ->where('token', $token)
-            ->first();
-
-        if(!$passwordReset)
-            return false;
-
-        DB::beginTransaction();
         try {
-            $user->password = PasswordUtil::hash($newPassword);
-            $user->save();
-            PasswordReset::query()->where('email', $user->email)->delete();
-            DB::commit();
+            $token = $this->createToken($user);
+            $user->notify(new PasswordResetNotification($token));
+            
+            $this->logInfo('Ссылка сброса пароля отправлена', ['user_id' => $user->id, 'email' => $email]);
+            
             return true;
-        }catch (Exception $e) {
-            Log::error($e->getMessage());
-            DB::rollBack();
+        } catch (\Exception $e) {
+            $this->logError('Ошибка при отправке ссылки сброса пароля', [
+                'user_id' => $user->id, 
+                'email' => $email,
+                'error' => $e->getMessage()
+            ], $e);
+            
             return false;
         }
+    }
+
+    /**
+     * Создать токен для сброса пароля
+     *
+     * @param User $user
+     * @return string
+     */
+    protected function createToken(User $user): string
+    {
+        $this->logInfo('Создание токена сброса пароля', ['user_id' => $user->id]);
+        
+        return $this->transaction(function () use ($user) {
+            // Удаляем старые токены
+            $user->verificationTokens()->where('type', 'password_reset')->delete();
+            
+            // Создаем новый токен
+            $token = Str::random(64);
+            $expiresAt = Carbon::now()->addHours(24);
+            
+            $verificationToken = new VerificationToken([
+                'token' => $token,
+                'type' => 'password_reset',
+                'expires_at' => $expiresAt
+            ]);
+            
+            $user->verificationTokens()->save($verificationToken);
+            
+            $this->logInfo('Токен сброса пароля создан', [
+                'user_id' => $user->id,
+                'expires_at' => $expiresAt
+            ]);
+            
+            return $token;
+        });
+    }
+
+    /**
+     * Проверить токен сброса пароля
+     *
+     * @param string $token
+     * @return User|null
+     */
+    public function validateToken(string $token): ?User
+    {
+        $this->logInfo('Проверка токена сброса пароля', ['token' => $token]);
+        
+        $verificationToken = VerificationToken::where('token', $token)
+            ->where('type', 'password_reset')
+            ->where('expires_at', '>', Carbon::now())
+            ->first();
+        
+        if (!$verificationToken) {
+            $this->logWarning('Недействительный или просроченный токен сброса пароля', ['token' => $token]);
+            return null;
+        }
+        
+        $user = $verificationToken->user;
+        
+        if (!$user) {
+            $this->logWarning('Пользователь не найден для токена сброса пароля', ['token' => $token]);
+            return null;
+        }
+        
+        return $user;
+    }
+
+    /**
+     * Сбросить пароль пользователя
+     *
+     * @param string $token
+     * @param string $password
+     * @return bool
+     */
+    public function resetPassword(string $token, string $password): bool
+    {
+        $this->logInfo('Попытка сброса пароля', ['token' => $token]);
+        
+        return $this->transaction(function () use ($token, $password) {
+            $user = $this->validateToken($token);
+            
+            if (!$user) {
+                return false;
+            }
+            
+            $user->password = Hash::make($password);
+            $result = $user->save();
+            
+            // Удаляем токен после использования
+            VerificationToken::where('token', $token)->delete();
+            
+            if ($result) {
+                $this->logInfo('Пароль успешно сброшен', ['user_id' => $user->id]);
+                
+                // Удаляем все токены доступа пользователя
+                $user->tokens()->delete();
+            }
+            
+            return $result;
+        });
     }
 }

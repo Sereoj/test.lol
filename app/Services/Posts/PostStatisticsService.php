@@ -6,9 +6,130 @@ use App\Models\Interactions\Interaction;
 use App\Models\Posts\PostStatistic;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\Base\SimpleService;
 
-class PostStatisticsService
+/**
+ * Сервис статистики постов
+ */
+class PostStatisticsService extends SimpleService
 {
+    /**
+     * Префикс кеша
+     *
+     * @var string
+     */
+    protected string $cachePrefix = 'post_stats';
+
+    /**
+     * Время хранения кеша в минутах
+     *
+     * @var int
+     */
+    protected int $defaultCacheMinutes = 30;
+
+    /**
+     * Конструктор
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setLogPrefix('PostStatisticsService');
+    }
+
+    /**
+     * Получить самые популярные посты за период
+     *
+     * @param int $days
+     * @param int $limit
+     * @return array
+     */
+    public function getPopularPosts(int $days = 7, int $limit = 10): array
+    {
+        $cacheKey = $this->buildCacheKey('popular_posts', [$days, $limit]);
+        
+        return $this->getFromCacheOrStore($cacheKey, $this->defaultCacheMinutes, function () use ($days, $limit) {
+            $this->logInfo("Получение популярных постов за {$days} дней, лимит: {$limit}");
+            
+            return DB::table('posts')
+                ->select('posts.*', DB::raw('(likes_count + comments_count * 2 + views_count * 0.1) as popularity'))
+                ->where('created_at', '>=', now()->subDays($days))
+                ->where('status', 'active')
+                ->whereNull('deleted_at')
+                ->orderBy('popularity', 'desc')
+                ->limit($limit)
+                ->get()
+                ->toArray();
+        });
+    }
+
+    /**
+     * Получить статистику пользователя по постам
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getUserPostsStats(int $userId): array
+    {
+        $cacheKey = $this->buildCacheKey('user_posts_stats', [$userId]);
+        
+        return $this->getFromCacheOrStore($cacheKey, $this->defaultCacheMinutes, function () use ($userId) {
+            $this->logInfo("Получение статистики постов для пользователя ID: {$userId}");
+            
+            $stats = [];
+            
+            // Общее количество постов
+            $stats['total_posts'] = DB::table('posts')
+                ->where('user_id', $userId)
+                ->where('is_repost', false)
+                ->count();
+                
+            // Количество лайков на постах
+            $stats['total_likes'] = DB::table('posts')
+                ->where('user_id', $userId)
+                ->sum('likes_count');
+                
+            // Количество комментариев на постах
+            $stats['total_comments'] = DB::table('posts')
+                ->where('user_id', $userId)
+                ->sum('comments_count');
+                
+            // Количество просмотров постов
+            $stats['total_views'] = DB::table('posts')
+                ->where('user_id', $userId)
+                ->sum('views_count');
+                
+            // Количество репостов
+            $stats['total_reposts'] = DB::table('posts')
+                ->where('user_id', $userId)
+                ->where('is_repost', true)
+                ->count();
+                
+            // Средняя активность по постам
+            $stats['avg_engagement'] = $stats['total_posts'] > 0
+                ? round(($stats['total_likes'] + $stats['total_comments'] * 2) / $stats['total_posts'], 2)
+                : 0;
+                
+            return $stats;
+        });
+    }
+
+    /**
+     * Очистить кеш статистики
+     *
+     * @param int|null $userId
+     * @return bool
+     */
+    public function clearStatsCache(?int $userId = null): bool
+    {
+        $this->logInfo('Очистка кеша статистики постов' . ($userId ? " для пользователя ID: {$userId}" : ''));
+        
+        if ($userId) {
+            return $this->forgetCache($this->buildCacheKey('user_posts_stats', [$userId]));
+        }
+        
+        return $this->flushCacheByTags([$this->cachePrefix]);
+    }
+
     public function getSummaryStatistics($userId, array $filters = [], $groupBy = 'day'): array
     {
         if (! $userId) {

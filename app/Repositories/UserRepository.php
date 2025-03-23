@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 
 class UserRepository
 {
-    private AvatarRepository $avatarRepository;
+    protected AvatarRepository $avatarRepository;
 
     private RoleService $roleService;
 

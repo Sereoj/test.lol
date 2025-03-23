@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Models\Users\User;
 use App\Services\Authentication\AuthService;
 use App\Services\Users\UserService;
+use App\Services\Users\UserProfileService;
 use App\Utils\PasswordUtil;
 use Exception;
 use Illuminate\Http\Request;
@@ -17,16 +18,18 @@ class UserController extends Controller
 {
     protected UserService $userService;
     protected AuthService $authService;
+    protected UserProfileService $userProfileService;
     
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USERS = 'users';
     private const CACHE_KEY_USER = 'user_';
     private const CACHE_KEY_USER_PROFILE = 'user_profile_';
 
-    public function __construct(UserService $userService, AuthService $authService)
+    public function __construct(UserService $userService, AuthService $authService, UserProfileService $userProfileService)
     {
         $this->userService = $userService;
         $this->authService = $authService;
+        $this->userProfileService = $userProfileService;
     }
 
     /**
@@ -184,7 +187,7 @@ class UserController extends Controller
             $cacheKey = self::CACHE_KEY_USER_PROFILE . $slug;
             
             $userProfile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($slug) {
-                return $this->userService->getUserProfile($slug);
+                return $this->userProfileService->getUserProfile($slug);
             });
             
             if (!$userProfile) {

@@ -65,7 +65,6 @@ Route::middleware('auth:api')->group(function () {
 
     Route::prefix('user')->group(function () {
         Route::get('/', [AuthController::class, 'user'])->name('user.user'); // для авторизированных
-        Route::get('/{id}', [UserController::class, 'getUserProfile'])->name('user.index'); // для авторизированных
 
         // Баланс
         Route::prefix('balance')->group(function () {
@@ -134,6 +133,8 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/followers', [UserFollowController::class, 'followers'])->name('followers');
             Route::get('/following', [UserFollowController::class, 'following'])->name('following');
         });
+
+        Route::get('/{id}', [UserController::class, 'getUserProfile'])->name('user.index'); // для авторизированных
     });
 
     // Avatars routes

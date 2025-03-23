@@ -1,10 +1,10 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
 parameters:
     level: 5
     paths:
         - app
-        - database
-        - config
-        - routes
 
     # Исключить папки или файлы, которые не нужно анализировать
     excludePaths:

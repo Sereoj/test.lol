@@ -4,20 +4,38 @@ namespace App\Services\Users;
 
 use App\Models\Users\User;
 use App\Notifications\UserFollowedNotification;
-use App\Services\BaseService;
+use App\Services\Base\SimpleService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
-use Throwable;
 
 /**
  * Сервис для работы с подписками пользователей
  */
-class UserFollowService extends BaseService
+class UserFollowService extends SimpleService
 {
     /**
+     * Префикс кеша
+     *
      * @var string
      */
     protected string $cachePrefix = 'user_follow';
-    
+
+    /**
+     * Время хранения кеша в минутах
+     *
+     * @var int
+     */
+    protected int $defaultCacheMinutes = 60;
+
+    /**
+     * Конструктор
+     */
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setLogPrefix('UserFollowService');
+    }
+
     /**
      * Подписать пользователя на другого пользователя
      *
@@ -28,47 +46,53 @@ class UserFollowService extends BaseService
     public function followUser(int $followerId, int $followingId): bool
     {
         if ($followerId === $followingId) {
-            $this->logWarning('User cannot follow themselves', ['user_id' => $followerId]);
+            $this->logWarning('Пользователь не может подписаться на самого себя', ['user_id' => $followerId]);
             return false;
         }
-        
-        return $this->safeTransaction(function () use ($followerId, $followingId) {
-            $follower = User::find($followerId);
-            $following = User::find($followingId);
 
-            if (!$follower || !$following) {
-                $this->logWarning('User not found when following', [
-                    'follower_id' => $followerId,
-                    'following_id' => $followingId,
-                    'follower_exists' => (bool) $follower,
-                    'following_exists' => (bool) $following
-                ]);
-                return false;
-            }
+        return $this->transaction(function () use ($followerId, $followingId) {
+            try {
+                $follower = User::find($followerId);
+                $following = User::find($followingId);
 
-            if ($follower->following()->where('following_id', $followingId)->exists()) {
-                $this->logInfo('User already follows this user', [
+                if (!$follower || !$following) {
+                    $this->logWarning('Пользователь не найден при попытке подписки', [
+                        'follower_id' => $followerId,
+                        'following_id' => $followingId,
+                        'follower_exists' => (bool) $follower,
+                        'following_exists' => (bool) $following
+                    ]);
+                    return false;
+                }
+
+                if ($follower->following()->where('following_id', $followingId)->exists()) {
+                    $this->logInfo('Пользователь уже подписан', [
+                        'follower_id' => $followerId,
+                        'following_id' => $followingId
+                    ]);
+                    return true;
+                }
+
+                $follower->following()->attach($followingId);
+                $following->notify(new UserFollowedNotification($follower));
+
+                $this->clearFollowCache($followerId, $followingId);
+
+                $this->logInfo('Пользователь успешно подписался', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
+
                 return true;
+            } catch (Exception $e) {
+                $this->logError('Ошибка при подписке на пользователя', [
+                    'follower_id' => $followerId,
+                    'following_id' => $followingId
+                ], $e);
+
+                return false;
             }
-
-            $follower->following()->attach($followingId);
-            $following->notify(new UserFollowedNotification($follower));
-
-            $this->clearFollowCache($followerId, $followingId);
-
-            $this->logInfo('User followed successfully', [
-                'follower_id' => $followerId,
-                'following_id' => $followingId
-            ]);
-
-            return true;
-        }, false, 'Follow user operation', [
-            'follower_id' => $followerId,
-            'following_id' => $followingId
-        ]);
+        });
     }
 
     /**
@@ -81,45 +105,51 @@ class UserFollowService extends BaseService
     public function unfollowUser(int $followerId, int $followingId): bool
     {
         if ($followerId === $followingId) {
-            $this->logWarning('User cannot unfollow themselves', ['user_id' => $followerId]);
+            $this->logWarning('Пользователь не может отписаться от самого себя', ['user_id' => $followerId]);
             return false;
         }
-        
-        return $this->safeTransaction(function () use ($followerId, $followingId) {
-            $follower = User::find($followerId);
-            $following = User::find($followingId);
 
-            if (!$follower || !$following) {
-                $this->logWarning('User not found when unfollowing', [
-                    'follower_id' => $followerId,
-                    'following_id' => $followingId,
-                    'follower_exists' => (bool) $follower,
-                    'following_exists' => (bool) $following
-                ]);
-                return false;
-            }
+        return $this->transaction(function () use ($followerId, $followingId) {
+            try {
+                $follower = User::find($followerId);
+                $following = User::find($followingId);
 
-            if (!$follower->following()->where('following_id', $followingId)->exists()) {
-                $this->logInfo('User does not follow this user', [
+                if (!$follower || !$following) {
+                    $this->logWarning('Пользователь не найден при попытке отписки', [
+                        'follower_id' => $followerId,
+                        'following_id' => $followingId,
+                        'follower_exists' => (bool) $follower,
+                        'following_exists' => (bool) $following
+                    ]);
+                    return false;
+                }
+
+                if (!$follower->following()->where('following_id', $followingId)->exists()) {
+                    $this->logInfo('Пользователь не подписан', [
+                        'follower_id' => $followerId,
+                        'following_id' => $followingId
+                    ]);
+                    return false;
+                }
+
+                $follower->following()->detach($followingId);
+                $this->clearFollowCache($followerId, $followingId);
+
+                $this->logInfo('Пользователь успешно отписался', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
+
+                return true;
+            } catch (Exception $e) {
+                $this->logError('Ошибка при отписке от пользователя', [
+                    'follower_id' => $followerId,
+                    'following_id' => $followingId
+                ], $e);
+
                 return false;
             }
-
-            $follower->following()->detach($followingId);
-            $this->clearFollowCache($followerId, $followingId);
-
-            $this->logInfo('User unfollowed successfully', [
-                'follower_id' => $followerId,
-                'following_id' => $followingId
-            ]);
-
-            return true;
-        }, false, 'Unfollow user operation', [
-            'follower_id' => $followerId,
-            'following_id' => $followingId
-        ]);
+        });
     }
 
     /**
@@ -130,43 +160,51 @@ class UserFollowService extends BaseService
      */
     public function getFollowers(int $userId)
     {
-        $cacheKey = $this->cachePrefix . '_followers_' . $userId;
-        
+        $cacheKey = $this->buildCacheKey('followers', [$userId]);
+
         return $this->getFromCacheOrStore($cacheKey, $this->defaultCacheMinutes, function () use ($userId) {
-            $user = User::find($userId);
-            
-            if (!$user) {
-                $this->logWarning('User not found when getting followers', ['user_id' => $userId]);
+            $this->logInfo('Получение подписчиков пользователя', ['user_id' => $userId]);
+
+            try {
+                $user = User::find($userId);
+
+                if (!$user) {
+                    $this->logWarning('Пользователь не найден при получении подписчиков', ['user_id' => $userId]);
+                    return collect();
+                }
+
+                $followers = $user->followers;
+
+                $this->logInfo('Получены подписчики пользователя', [
+                    'user_id' => $userId,
+                    'count' => $followers->count()
+                ]);
+
+                return $followers;
+            } catch (Exception $e) {
+                $this->logError('Ошибка при получении подписчиков', ['user_id' => $userId], $e);
                 return collect();
             }
-            
-            $followers = $user->followers;
-            
-            $this->logInfo('Retrieved user followers', [
-                'user_id' => $userId,
-                'count' => $followers->count()
-            ]);
-            
-            return $followers;
         });
     }
 
     /**
-     * Получить подписки авторизованного пользователя
+     * Получить подписки текущего пользователя
      *
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Support\Collection
      */
     public function getFollowing()
     {
-        $userId = Auth::id();
-        if (!$userId) {
-            $this->logWarning('No authenticated user when getting following');
+        $user = Auth::user();
+
+        if (!$user) {
+            $this->logWarning('Попытка получить подписки без авторизации');
             return collect();
         }
-        
-        return $this->getFollowingByUserId($userId);
+
+        return $this->getFollowingByUserId($user->id);
     }
-    
+
     /**
      * Получить подписки пользователя по ID
      *
@@ -175,92 +213,105 @@ class UserFollowService extends BaseService
      */
     public function getFollowingByUserId(int $userId)
     {
-        $cacheKey = $this->cachePrefix . '_following_' . $userId;
-        
+        $cacheKey = $this->buildCacheKey('following', [$userId]);
+
         return $this->getFromCacheOrStore($cacheKey, $this->defaultCacheMinutes, function () use ($userId) {
-            $user = User::find($userId);
-            
-            if (!$user) {
-                $this->logWarning('User not found when getting following', ['user_id' => $userId]);
+            $this->logInfo('Получение подписок пользователя', ['user_id' => $userId]);
+
+            try {
+                $user = User::find($userId);
+
+                if (!$user) {
+                    $this->logWarning('Пользователь не найден при получении подписок', ['user_id' => $userId]);
+                    return collect();
+                }
+
+                $following = $user->following;
+
+                $this->logInfo('Получены подписки пользователя', [
+                    'user_id' => $userId,
+                    'count' => $following->count()
+                ]);
+
+                return $following;
+            } catch (Exception $e) {
+                $this->logError('Ошибка при получении подписок', ['user_id' => $userId], $e);
                 return collect();
             }
-            
-            $following = $user->following;
-            
-            $this->logInfo('Retrieved user following', [
-                'user_id' => $userId,
-                'count' => $following->count()
-            ]);
-            
-            return $following;
         });
     }
-    
+
     /**
-     * Проверить, подписан ли пользователь на другого пользователя
-     * 
+     * Проверить, подписан ли один пользователь на другого
+     *
      * @param int $followerId ID подписчика
-     * @param int $followingId ID пользователя, на которого могут быть подписаны
-     * @return bool true, если $followerId подписан на $followingId, иначе false
+     * @param int $followingId ID пользователя, на которого может быть подписка
+     * @return bool
      */
     public function isFollowing(int $followerId, int $followingId): bool
     {
         if ($followerId === $followingId) {
-            $this->logInfo('User cannot follow themselves', ['user_id' => $followerId]);
             return false;
         }
-        
-        $cacheKey = $this->cachePrefix . '_is_following_' . $followerId . '_' . $followingId;
-        
+
+        $cacheKey = $this->buildCacheKey('is_following', [$followerId, $followingId]);
+
         return $this->getFromCacheOrStore($cacheKey, $this->defaultCacheMinutes, function () use ($followerId, $followingId) {
-            // Проверка существования подписчика
-            $follower = User::find($followerId);
-            if (!$follower) {
-                $this->logWarning('Follower not found when checking isFollowing', [
-                    'follower_id' => $followerId, 
-                    'following_id' => $followingId
-                ]);
-                return false;
-            }
-            
-            // Проверка существования пользователя, на которого подписываются
-            $following = User::find($followingId);
-            if (!$following) {
-                $this->logWarning('Following user not found when checking isFollowing', [
-                    'follower_id' => $followerId, 
-                    'following_id' => $followingId
-                ]);
-                return false;
-            }
-            
-            // Проверка наличия связи в таблице подписок
-            $isFollowing = $follower->following()
-                ->where('following_id', $followingId)
-                ->exists();
-            
-            $this->logInfo('Checked if user is following another user', [
+            $this->logInfo('Проверка подписки', [
                 'follower_id' => $followerId,
-                'following_id' => $followingId,
-                'is_following' => $isFollowing
+                'following_id' => $followingId
             ]);
-                
-            return $isFollowing;
+
+            try {
+                $follower = User::find($followerId);
+
+                if (!$follower) {
+                    $this->logWarning('Пользователь не найден при проверке подписки', ['user_id' => $followerId]);
+                    return false;
+                }
+
+                $isFollowing = $follower->following()
+                    ->where('following_id', $followingId)
+                    ->exists();
+
+                $this->logInfo('Результат проверки подписки', [
+                    'follower_id' => $followerId,
+                    'following_id' => $followingId,
+                    'is_following' => $isFollowing
+                ]);
+
+                return $isFollowing;
+            } catch (Exception $e) {
+                $this->logError('Ошибка при проверке подписки', [
+                    'follower_id' => $followerId,
+                    'following_id' => $followingId
+                ], $e);
+
+                return false;
+            }
         });
     }
-    
+
     /**
-     * Очистить кеш связанный с подписками пользователя
+     * Очистить кеш подписок
      *
      * @param int $followerId ID подписчика
-     * @param int $followingId ID пользователя, на которого подписываются
-     * @return void
+     * @param int $followingId ID пользователя, на которого подписаны
      */
     protected function clearFollowCache(int $followerId, int $followingId): void
     {
-        $this->forgetCache([
-            $this->cachePrefix . '_followers_' . $followingId,
-            $this->cachePrefix . '_following_' . $followerId,
-            $this->cachePrefix . '_is_following_' . $followerId . '_' . $followingId
+        $this->logInfo('Очистка кеша подписок', [
+            'follower_id' => $followerId,
+            'following_id' => $followingId
         ]);
+
+        // Очистка кеша подписчиков
+        $this->forgetCache($this->buildCacheKey('followers', [$followingId]));
+
+        // Очистка кеша подписок
+        $this->forgetCache($this->buildCacheKey('following', [$followerId]));
+
+        // Очистка кеша проверки подписки
+        $this->forgetCache($this->buildCacheKey('is_following', [$followerId, $followingId]));
     }
 }

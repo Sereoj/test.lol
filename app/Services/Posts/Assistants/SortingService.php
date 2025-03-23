@@ -2,29 +2,71 @@
 
 namespace App\Services\Posts\Assistants;
 
+use App\Services\Base\SimpleService;
 use App\Strategies\Posts\DefaultSortingStrategy;
 use App\Strategies\Posts\DownloadsSortingStrategy;
 use App\Strategies\Posts\LikesSortingStrategy;
 use App\Strategies\Posts\PopularitySortingStrategy;
+use Exception;
 
-class SortingService
+/**
+ * Сервис для сортировки постов
+ */
+class SortingService extends SimpleService
 {
     /**
-     * Применение стратегии сортировки
+     * Стратегии сортировки
+     *
+     * @var array
      */
-    public function apply($query, string $strategyName)
+    protected array $strategies;
+    
+    /**
+     * Конструктор
+     */
+    public function __construct()
     {
-        $strategies = [
+        parent::__construct();
+        $this->setLogPrefix('SortingService');
+        
+        $this->strategies = [
             'popularity' => new PopularitySortingStrategy(),
             'downloads' => new DownloadsSortingStrategy(),
             'likes' => new LikesSortingStrategy(),
             'default' => new DefaultSortingStrategy(),
         ];
-
-        if (isset($strategies[$strategyName])) {
-            $strategies[$strategyName]->applySorting($query);
-        } else {
-            $strategies['default']->applySorting($query);
+    }
+    
+    /**
+     * Применение стратегии сортировки
+     *
+     * @param mixed $query
+     * @param string $strategyName
+     * @return void
+     */
+    public function apply($query, string $strategyName)
+    {
+        $this->logInfo('Применение стратегии сортировки', [
+            'strategy' => $strategyName
+        ]);
+        
+        try {
+            if (isset($this->strategies[$strategyName])) {
+                $strategy = $this->strategies[$strategyName];
+                $this->logInfo('Используется стратегия сортировки', ['strategy' => $strategyName]);
+            } else {
+                $strategy = $this->strategies['default'];
+                $this->logWarning('Стратегия сортировки не найдена, используется по умолчанию', ['requested_strategy' => $strategyName]);
+            }
+            
+            $strategy->applySorting($query);
+        } catch (Exception $e) {
+            $this->logError('Ошибка при применении стратегии сортировки', [
+                'strategy' => $strategyName
+            ], $e);
+            
+            // Применяем сортировку по умолчанию при ошибке
+            $this->strategies['default']->applySorting($query);
         }
     }
 }

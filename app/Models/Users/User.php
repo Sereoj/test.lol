@@ -192,6 +192,21 @@ class User extends Authenticatable
         return $this->hasOne(UserOnlineStatus::class);
     }
 
+    /**
+     * Проверяет, имеет ли пользователь указанную роль
+     *
+     * @param string $roleName Название роли
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        if (!$this->role) {
+            return false;
+        }
+        
+        return $this->role->type === $roleName;
+    }
+
     protected static function boot()
     {
         parent::boot();

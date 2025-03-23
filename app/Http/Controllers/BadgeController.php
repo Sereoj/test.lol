@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 class BadgeController extends Controller
 {
     protected BadgeService $badgeService;
-    
+
     private const CACHE_MINUTES_LIST = 5;
     private const CACHE_MINUTES_SINGLE = 60;
     private const CACHE_KEY_BADGES_LIST = 'badges_list';
@@ -37,11 +37,12 @@ class BadgeController extends Controller
 
     /**
      * Получить бейдж по ID
+     * @throws \Exception
      */
     public function show($id)
     {
         $cacheKey = self::CACHE_KEY_BADGE . $id;
-        
+
         $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SINGLE, function () use ($id) {
             return $this->badgeService->getBadgeById($id);
         });
@@ -55,6 +56,7 @@ class BadgeController extends Controller
 
     /**
      * Создать новый бейдж
+     * @throws \Exception
      */
     public function store(StoreBadgeRequest $request)
     {
@@ -68,6 +70,7 @@ class BadgeController extends Controller
 
     /**
      * Обновить существующий бейдж
+     * @throws \Exception
      */
     public function update(UpdateBadgeRequest $request, $id)
     {
@@ -88,6 +91,7 @@ class BadgeController extends Controller
 
     /**
      * Удалить бейдж
+     * @throws \Exception
      */
     public function destroy($id)
     {
@@ -104,7 +108,7 @@ class BadgeController extends Controller
 
         return $this->errorResponse('Badge not found', 404);
     }
-    
+
     /**
      * Получить активный бейдж пользователя
      */
@@ -112,14 +116,14 @@ class BadgeController extends Controller
     {
         $userId = auth()->id();
         $cacheKey = self::CACHE_KEY_ACTIVE_BADGE . $userId;
-        
+
         $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SINGLE, function () use ($userId) {
             return $this->badgeService->getActiveBadge($userId);
         });
-        
+
         return $this->successResponse($badge);
     }
-    
+
     /**
      * Установить активный бейдж для пользователя
      */
@@ -127,10 +131,10 @@ class BadgeController extends Controller
     {
         $userId = auth()->id();
         $badgeId = $request->input('badge_id');
-        
+
         $result = $this->badgeService->setActiveBadge($userId, $badgeId);
         $this->forgetCache(self::CACHE_KEY_ACTIVE_BADGE . $userId);
-        
+
         return $this->successResponse(['message' => 'Active badge set successfully']);
     }
 }

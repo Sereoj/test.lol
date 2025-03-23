@@ -3,29 +3,47 @@
 namespace App\Repositories;
 
 use App\Models\Content\Source;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class SourceRepository
 {
+
+
+    /**
+     * Найти запись по ID с указанными отношениями
+     *
+     * @param int $id
+     * @param array $columns
+     * @param array $relations
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function find(int $id, array $columns = ['*'], array $relations = []): ?\Illuminate\Database\Eloquent\Model
+    {
+        $this->logInfo("Поиск источника с ID: {$id}");
+        return $this->model->with($relations)->find($id, $columns);
+    }
+
     /**
      * Get all sources.
      *
-     * @return \Illuminate\Database\Eloquent\Collection|static[]
+     * @return Collection|Builder[]
      */
-    public function getAllSources()
+    public function getAllSources(): Collection|array
     {
-        return Source::all();
+        return $this->getAll();
     }
 
     /**
      * Get a source by ID.
      *
-     * @param  int  $id
-     * @return Source
+     * @param int $id
+     * @return \Illuminate\Database\Eloquent\Model
+     *
      */
-    public function getSourceById($id)
+    public function getSourceById($id): \Illuminate\Database\Eloquent\Model
     {
-        return Source::findOrFail($id);
-
+        return $this->findById($id);
     }
 
     /**
@@ -35,7 +53,7 @@ class SourceRepository
      */
     public function createSource(array $data)
     {
-        return Source::create([
+        return $this->create([
             'name' => json_encode($data['name']),
             'iconUrl' => $data['iconUrl'],
             'created_at' => now(),
@@ -47,18 +65,16 @@ class SourceRepository
      * Update an existing source.
      *
      * @param  int  $id
-     * @return Source
+     * @return \Illuminate\Database\Eloquent\Model
      */
     public function updateSource($id, array $data)
     {
-        $source = Source::findOrFail($id);
-        $source->update([
+        $source = $this->findById($id);
+        return $this->update($source, [
             'name' => json_encode($data['name']),
             'iconUrl' => $data['iconUrl'],
             'updated_at' => now(),
         ]);
-
-        return $source;
     }
 
     /**
@@ -69,8 +85,7 @@ class SourceRepository
      */
     public function deleteSource($id)
     {
-        $source = Source::findOrFail($id);
-
-        return $source->delete();
+        $source = $this->findById($id);
+        return $this->delete($source);
     }
 }
