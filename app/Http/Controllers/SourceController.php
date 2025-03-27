@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class SourceController extends Controller
 {
     protected SourceService $sourceService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_SOURCES = 'sources';
     private const CACHE_KEY_SOURCE = 'source_';
@@ -30,9 +30,9 @@ class SourceController extends Controller
     {
         try {
             $sources = $this->getFromCacheOrStore(self::CACHE_KEY_SOURCES, self::CACHE_MINUTES, function () {
-                return $this->sourceService->getAllSources();
+                return $this->sourceService->getAll();
             });
-            
+
             Log::info('Sources retrieved successfully');
 
             return $this->successResponse($sources);
@@ -53,9 +53,9 @@ class SourceController extends Controller
         try {
             $cacheKey = self::CACHE_KEY_SOURCE . $id;
             $source = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
-                return $this->sourceService->getSourceById($id);
+                return $this->sourceService->getById($id);
             });
-            
+
             Log::info('Source retrieved successfully', ['id' => $id]);
 
             return $this->successResponse($source);
@@ -74,7 +74,7 @@ class SourceController extends Controller
     public function store(CreateSourceRequest $request)
     {
         try {
-            $source = $this->sourceService->createSource($request->all());
+            $source = $this->sourceService->create($request->all());
 
             $this->forgetCache(self::CACHE_KEY_SOURCES);
 
@@ -96,7 +96,7 @@ class SourceController extends Controller
     public function update(UpdateSourceRequest $request, int $id)
     {
         try {
-            $source = $this->sourceService->updateSource($id, $request->only('name', 'iconUrl'));
+            $source = $this->sourceService->update($id, $request->only('name', 'iconUrl'));
 
             $this->forgetCache([
                 self::CACHE_KEY_SOURCE . $id,
@@ -121,7 +121,7 @@ class SourceController extends Controller
     public function destroy(int $id)
     {
         try {
-            $this->sourceService->deleteSource($id);
+            $this->sourceService->delete($id);
 
             $this->forgetCache([
                 self::CACHE_KEY_SOURCE . $id,

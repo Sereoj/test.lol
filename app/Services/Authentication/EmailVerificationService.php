@@ -22,7 +22,7 @@ class EmailVerificationService
     {
         $locale = app()->getLocale();
         try {
-            $user = $this->userService->findUserByEmail($email);
+            $user = $this->userService->getByEmail($email);
 
             if (! $user) {
                 return ['status' => false, 'message' => 'User not found'];
@@ -53,7 +53,7 @@ class EmailVerificationService
      */
     public function verifyEmail(string $email, string $code): array
     {
-        $user = $this->userService->findUserByEmail($email);
+        $user = $this->userService->getByEmail($email);
 
         if (! $user) {
             return ['status' => false, 'message' => 'User not found'];

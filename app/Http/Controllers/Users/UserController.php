@@ -17,11 +17,10 @@ class UserController extends Controller
 {
     protected UserService $userService;
     protected AuthService $authService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USERS = 'users';
     private const CACHE_KEY_USER = 'user_';
-    private const CACHE_KEY_USER_PROFILE = 'user_profile_';
 
     public function __construct(UserService $userService, AuthService $authService)
     {
@@ -38,9 +37,9 @@ class UserController extends Controller
     {
         try {
             $users = $this->getFromCacheOrStore(self::CACHE_KEY_USERS, self::CACHE_MINUTES, function () {
-                return $this->userService->getAllUsers();
+                return $this->userService->getAll();
             });
-            
+
             return $this->successResponse($users);
         } catch (Exception $e) {
             return $this->errorResponse('An error occurred while fetching users: ' . $e->getMessage(), 500);
@@ -57,22 +56,22 @@ class UserController extends Controller
     {
         try {
             $cacheKey = self::CACHE_KEY_USER . $id;
-            
+
             $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
-                $user = $this->userService->findUserById($id);
-                
+                $user = $this->userService->getById($id);
+
                 if (!$user) {
                     throw new Exception('User not found', 404);
                 }
-                
+
                 return $user;
             });
-            
+
             return $this->successResponse($user);
         } catch (Exception $e) {
             $statusCode = $e->getCode() === 404 ? 404 : 500;
             $message = $e->getCode() === 404 ? 'User not found' : 'An error occurred while fetching the user: ' . $e->getMessage();
-            
+
             return $this->errorResponse($message, $statusCode);
         }
     }
@@ -86,11 +85,11 @@ class UserController extends Controller
     {
         try {
             $userData = $request->validated();
-            $user = $this->userService->createUser($userData);
-            
+            $user = $this->userService->create($userData);
+
             return $this->successResponse($this->authService->register($user, false), 201);
         } catch (Exception $e) {
-            return $this->errorResponse('User registration failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage(),500);
         }
     }
 
@@ -107,7 +106,7 @@ class UserController extends Controller
         }
 
         $user->update([
-            'name' => $request->name ?? $user->name,
+            'name' => $request->username ?? $user->username,
             'email' => $request->email ?? $user->email,
             'password' => $request->password ? PasswordUtil::hash($request->password) : $user->password,
         ]);
@@ -125,7 +124,7 @@ class UserController extends Controller
     public function destroy(int $id)
     {
         try {
-            $user = $this->userService->findUserById($id);
+            $user = $this->userService->getById($id);
 
             if (!$user) {
                 return $this->errorResponse('User not found', 404);
@@ -140,7 +139,7 @@ class UserController extends Controller
 
             return $this->successResponse(['message' => 'User deleted successfully']);
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to delete user: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -153,47 +152,23 @@ class UserController extends Controller
     {
         try {
             $request->validate(['role_id' => 'required|exists:roles,id']);
-            
-            $user = $this->userService->findUserById($userId);
-            
+
+            $user = $this->userService->getById($userId);
+
             if (!$user) {
                 return $this->errorResponse('User not found', 404);
             }
-            
+
             $this->userService->changeUserRole($user, $request->role_id);
-            
+
             $this->forgetCache([
                 self::CACHE_KEY_USER . $userId,
                 self::CACHE_KEY_USERS
             ]);
-            
+
             return $this->successResponse(['message' => 'User role changed successfully']);
         } catch (Exception $e) {
-            return $this->errorResponse('Failed to change user role: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Get user profile.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getUserProfile($slug)
-    {
-        try {
-            $cacheKey = self::CACHE_KEY_USER_PROFILE . $slug;
-            
-            $userProfile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($slug) {
-                return $this->userService->getUserProfile($slug);
-            });
-            
-            if (!$userProfile) {
-                return $this->errorResponse('User profile not found', 404);
-            }
-            
-            return $this->successResponse($userProfile);
-        } catch (Exception $e) {
-            return $this->errorResponse('Failed to get user profile: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 }

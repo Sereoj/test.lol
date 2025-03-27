@@ -6,6 +6,7 @@ use App\Http\Resources\Users\UserShortResource;
 use App\Models\Users\User;
 use App\Services\Users\TokenService;
 use App\Services\Users\UserService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -24,17 +25,17 @@ class AuthService
 
     public function login(array $credentials)
     {
-        $user = $this->userService->findUserByEmail($credentials['email']);
+        $user = $this->userService->getByEmail($credentials['email']);
         Log::info('Login attempt', ['email' => $credentials['email']]);
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             Log::warning('Invalid credentials', ['email' => $credentials['email']]);
-            return response()->json(['message' => 'Email or Password is not correct!'], 401);
+            throw new Exception('Email or Password is not correct!', 400);
         }
 
         if (! $this->attemptLogin($credentials)) {
             Log::error('Unauthorized login attempt', ['email' => $credentials['email']]);
-            return response()->json(['message' => 'Unauthorized'], 401);
+            throw new Exception('Unauthorized', 401);
         }
 
         $token = $this->tokenService->generateTokens($user);

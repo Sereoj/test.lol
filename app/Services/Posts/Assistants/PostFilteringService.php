@@ -18,10 +18,7 @@ class PostFilteringService
      */
     public function applyFiltersAndSorting($query, array $filters, ?string $userPreferences)
     {
-        // Применение фильтрации по временному диапазону
         $this->timeFrameFilter->apply($query, $filters['time_frame'] ?? null);
-
-        // Применение стратегии сортировки
-        $this->sortingService->applySorting($query, $userPreferences ?? 'default');
+        $this->sortingService->apply($query, $userPreferences ?? 'default');
     }
 }

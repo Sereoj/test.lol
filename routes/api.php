@@ -85,11 +85,6 @@ Route::middleware('auth:api')->group(function () {
             Route::post('/{subscriptionId}/extend', [SubscriptionController::class, 'extendSubscription']);
         });
 
-        Route::prefix('profile')->group(function () {
-            Route::get('/', [UserProfileController::class, 'show'])->name('profile.show');
-            Route::put('/', [UserProfileController::class, 'update'])->name('profile.update');
-        });
-
         Route::prefix('employment-status')->group(function () {
             Route::post('/assign', [UserEmploymentStatusController::class, 'assignEmploymentStatus'])->name('employment.status.assign');
             Route::delete('/remove', [UserEmploymentStatusController::class, 'removeEmploymentStatus'])->name('employment.status.remove');
@@ -133,8 +128,11 @@ Route::middleware('auth:api')->group(function () {
             Route::get('/followers', [UserFollowController::class, 'followers'])->name('followers');
             Route::get('/following', [UserFollowController::class, 'following'])->name('following');
         });
+    });
 
-        Route::get('/{id}', [UserController::class, 'getUserProfile'])->name('user.index'); // для авторизированных
+    Route::prefix('profile')->middleware('guest')->group(function () {
+        Route::get('/{slug}', [UserProfileController::class, 'show'])->name('profile.show'); // авторизированный
+        Route::put('/', [UserProfileController::class, 'update'])->name('profile.update');
     });
 
     // Avatars routes
@@ -301,8 +299,11 @@ Route::middleware('guest')->group(function () {
 
     // Public routes
     Route::post('/language', [UserLanguageController::class, 'setLanguage'])->name('set.language'); // для гостей или авторизированных
-    Route::post('/register', [AuthController::class, 'register'])->name('register.public'); // только для гостей
-    Route::post('/login', [AuthController::class, 'login'])->name('login.public'); // только для гостей
+
+    Route::prefix('auth')->group(function () {
+        Route::post('/register', [AuthController::class, 'register'])->name('register.public'); // только для гостей
+        Route::post('/login', [AuthController::class, 'login'])->name('login.public'); // только для гостей
+    });
     Route::post('/refresh-token', [AuthController::class, 'refreshToken'])->name('refresh-token'); // для авторизированных
     Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode'])->name('send.verification.code'); // для гостей
     Route::post('/verify-email', [EmailVerificationController::class, 'verifyEmail'])->name('verify.email'); // для гостей
@@ -314,7 +315,8 @@ Route::middleware('guest')->group(function () {
         Route::get('/suggest', [PostSearchController::class, 'suggest'])->name('posts.suggest.public'); // для гостей
     });
 
-    Route::prefix('user')->group(function () {
+    Route::prefix('profile')->middleware('guest')->group(function () {
+        Route::get('/{slug}', [UserProfileController::class, 'show'])->name('profile.show.public');
     });
 
     Route::prefix('posts')->group(function () {

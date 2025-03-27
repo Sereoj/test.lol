@@ -5,6 +5,7 @@ namespace App\Models\Billing;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use InvalidArgumentException;
 
 class Subscription extends Model
 {
@@ -18,6 +19,10 @@ class Subscription extends Model
         'currency',
         'started_at',
         'expires_at',
+    ];
+    protected $casts = [
+      'started_at' => 'datetime',
+      'expires_at' => 'datetime',
     ];
 
     // Отношение с пользователем
@@ -36,5 +41,25 @@ class Subscription extends Model
     public function isExpired(): bool
     {
         return $this->expires_at <= now();
+    }
+
+    public function extendSubscription($duration)
+    {
+        // Проверяем, что duration является числом
+        if (!is_numeric($duration) || $duration <= 0) {
+            throw new InvalidArgumentException('Duration must be a positive number.');
+        }
+
+        // Продлеваем подписку
+        $this->expires_at = $this->expires_at->addDays($duration);
+        $this->save();
+    }
+
+    public function updateStatus(): void
+    {
+        if ($this->isExpired()) {
+            $this->status = 'expired';
+            $this->save();
+        }
     }
 }

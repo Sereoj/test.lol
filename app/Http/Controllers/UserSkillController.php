@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Log;
 class UserSkillController extends Controller
 {
     protected SkillService $skillService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_SKILLS_LIST = 'skills_list';
     private const CACHE_KEY_USER_SKILLS = 'user_skills_';
@@ -92,7 +92,7 @@ class UserSkillController extends Controller
             $user = Auth::user();
             $this->skillService->addSkillToUser($user->id, $request->input('skill_ids'));
             Log::info('Skill added to user', ['user_id' => $user->id, 'skill_ids' => $request->input('skill_ids')]);
-            
+
             $this->forgetCache(self::CACHE_KEY_USER_SKILLS . $user->id);
 
             return $this->successResponse(['message' => 'Skill added successfully']);
@@ -114,7 +114,7 @@ class UserSkillController extends Controller
             $user = Auth::user();
             $this->skillService->removeSkillFromUser($user->id, $request->input('skill_id'));
             Log::info('Skill removed from user', ['user_id' => $user->id, 'skill_id' => $request->input('skill_id')]);
-            
+
             $this->forgetCache(self::CACHE_KEY_USER_SKILLS . $user->id);
 
             return $this->successResponse(['message' => 'Skill removed successfully']);
@@ -179,7 +179,7 @@ class UserSkillController extends Controller
     public function destroy(int $id)
     {
         try {
-            $this->skillService->deleteSkill($id);
+            $this->skillService->delete($id);
             Log::info('Skill deleted successfully', ['skill_id' => $id]);
 
             $this->forgetCache(self::CACHE_KEY_SKILLS_LIST);

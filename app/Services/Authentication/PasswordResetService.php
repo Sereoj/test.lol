@@ -53,7 +53,7 @@ class PasswordResetService
 
     public function resetPassword($email, $token, $newPassword): bool
     {
-        $user = $this->userService->findUserByEmail($email);
+        $user = $this->userService->getByEmail($email);
         if (!$user) {
             return false;
         }

@@ -3,16 +3,17 @@
 namespace App\Services\Content;
 
 use App\Models\Categories\Category;
+use App\Services\BaseService;
 use App\Utils\TextUtil;
 
-class CategoryService
+class CategoryService extends BaseService
 {
-    public function getAllCategory()
+    public function getAll()
     {
         return Category::all();
     }
 
-    public function createCategory(array $data)
+    public function create(array $data)
     {
         $count = Category::query()->where('name', $data['name'])->count();
 
@@ -26,12 +27,12 @@ class CategoryService
         ]);
     }
 
-    public function getCategoryById($id)
+    public function getById($id)
     {
         return Category::query()->findOrFail($id);
     }
 
-    public function updateCategory($id, array $data)
+    public function update($id, array $data)
     {
         $artwork = Category::query()->findOrFail($id);
         $artwork->update($data);
@@ -39,7 +40,7 @@ class CategoryService
         return $artwork;
     }
 
-    public function deleteCategory($id)
+    public function delete($id)
     {
         $artwork = Category::query()->findOrFail($id);
 

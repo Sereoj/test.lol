@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-class UserTaskHelper
+class TaskHelper
 {
     public static function calculatePeriodEnd($task, $periodStart)
     {

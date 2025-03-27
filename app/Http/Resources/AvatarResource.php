@@ -15,7 +15,7 @@ class AvatarResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'path' => $this->path,
+            'path' => 'http://test/public/storage/'.$this->path,
         ];
     }
 }

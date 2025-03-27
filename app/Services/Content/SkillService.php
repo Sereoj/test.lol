@@ -17,7 +17,7 @@ class SkillService
         }
     }
 
-    public function storeSkill(array $data)
+        public function store(array $data)
     {
         return Skill::create($data);
     }
@@ -31,7 +31,7 @@ class SkillService
         }
     }
 
-    public function updateSkill(int $id, array $data)
+    public function update(int $id, array $data)
     {
         $skill = Skill::find($id);
         if (! $skill) {
@@ -41,7 +41,7 @@ class SkillService
         return $skill->update($data);
     }
 
-    public function deleteSkill(int $id)
+    public function delete(int $id)
     {
         $skill = Skill::find($id);
         if (! $skill) {

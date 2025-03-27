@@ -101,8 +101,6 @@ class TagService
     public function deleteTag($id)
     {
         $tag = Tag::find($id);
-        if ($tag) {
-            $tag->delete();
-        }
+        $tag?->delete();
     }
 }

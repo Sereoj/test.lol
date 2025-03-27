@@ -18,7 +18,7 @@ class AuthController extends Controller
 {
     protected UserService $userService;
     protected AuthService $authService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER = 'user_short_';
 
@@ -32,12 +32,12 @@ class AuthController extends Controller
     {
         try {
             $userData = $request->validated();
-            $user = $this->userService->createUser($userData);
-            
+            $user = $this->userService->create($userData);
+
             Log::info('User registered successfully', ['user_id' => $user->id]);
-            
+
             $result = $this->authService->register($user, $request->input('remember_me', false));
-            
+
             return $this->successResponse($result);
         } catch (Exception $e) {
             Log::error('User registration failed: ' . $e->getMessage(), ['data' => $request->validated()]);
@@ -49,15 +49,15 @@ class AuthController extends Controller
     {
         try {
             $credentials = $request->validated();
-            
+
             $result = $this->authService->login($credentials);
-            
+
             Log::info('User logged in successfully', ['email' => $credentials['email']]);
-            
+
             return $this->successResponse($result);
         } catch (Exception $e) {
             Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
-            return $this->errorResponse('An error occurred during login: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -65,15 +65,15 @@ class AuthController extends Controller
     {
         try {
             $refreshToken = $request->input('refresh_token');
-            
+
             $result = $this->authService->refreshToken($refreshToken);
-            
+
             Log::info('Token refreshed successfully');
-            
+
             return $this->successResponse($result);
         } catch (Exception $e) {
             Log::error('An error occurred during token refresh: ' . $e->getMessage());
-            return $this->errorResponse('An error occurred during token refresh: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -82,17 +82,17 @@ class AuthController extends Controller
         try {
             $userId = $request->user()->id;
             $cacheKey = self::CACHE_KEY_USER . $userId;
-            
+
             $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
-                return new UserShortResource($this->userService->findUserById($userId));
+                return new UserShortResource($this->userService->getById($userId));
             });
-            
+
             Log::info('User info retrieved successfully', ['user_id' => $userId]);
-            
+
             return $this->successResponse($user);
         } catch (Exception $e) {
             Log::error('Error retrieving user info: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
-            return $this->errorResponse('Error retrieving user info: ' . $e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage());
         }
     }
 
@@ -101,12 +101,12 @@ class AuthController extends Controller
         try {
             $userId = $request->user()->id;
             $this->authService->logout($request->user());
-            
+
             $cacheKey = self::CACHE_KEY_USER . $userId;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('User logged out successfully', ['user_id' => $userId]);
-            
+
             return $this->successResponse(['message' => 'Logged out successfully']);
         } catch (Exception $e) {
             Log::error('An error occurred during logout: ' . $e->getMessage(), ['user_id' => $request->user()->id ?? null]);

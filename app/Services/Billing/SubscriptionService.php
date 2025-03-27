@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 class SubscriptionService
 {
     // Получить текущую активную подписку пользователя
-    public function getActiveSubscription()
+    public function getActiveSubscription(): Subscription
     {
         return Subscription::where('user_id', Auth::id())
             ->where('status', 'active')
@@ -48,7 +48,7 @@ class SubscriptionService
         }
     }
 
-    public function checkAndUpdateSubscriptionStatus()
+    public function checkAndUpdateSubscriptionStatus(): void
     {
         $subscription = $this->getActiveSubscription();
         if ($subscription) {

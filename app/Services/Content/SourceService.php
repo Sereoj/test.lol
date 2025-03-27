@@ -4,9 +4,10 @@ namespace App\Services\Content;
 
 use App\Models\Content\Source;
 use App\Repositories\SourceRepository;
+use App\Services\BaseService;
 use Exception;
 
-class SourceService
+class SourceService extends BaseService
 {
     private SourceRepository $sourceRepository;
 
@@ -20,7 +21,7 @@ class SourceService
      *
      * @return \Illuminate\Database\Eloquent\Collection|static[]
      */
-    public function getAllSources()
+    public function getAll()
     {
         try {
             return $this->sourceRepository->getAllSources();
@@ -35,7 +36,7 @@ class SourceService
      * @param  int  $id
      * @return Source
      */
-    public function getSourceById($id)
+    public function getById($id)
     {
         try {
             return $this->sourceRepository->getSourceById($id);
@@ -49,7 +50,7 @@ class SourceService
      *
      * @return Source
      */
-    public function createSource(array $data)
+    public function create(array $data)
     {
         try {
             return $this->sourceRepository->createSource($data);
@@ -63,7 +64,7 @@ class SourceService
      *
      * @return Source
      */
-    public function updateSource(int $id, array $data)
+    public function update(int $id, array $data)
     {
         try {
             return $this->sourceRepository->updateSource($id, $data);
@@ -78,7 +79,7 @@ class SourceService
      * @param  int  $id
      * @return bool
      */
-    public function deleteSource($id)
+    public function delete($id)
     {
         try {
             return $this->sourceRepository->deleteSource($id);

@@ -47,13 +47,6 @@ class User extends Authenticatable
         'password',
         'provider',
         'provider_id',
-        'level_id',
-        'role_id',
-        'userSettings_id',
-        'usingApps_id',
-        'status_id',
-        'location_id',
-        'employment_status_id',
     ];
 
     public function isProfileComplete(): bool
@@ -191,7 +184,6 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserOnlineStatus::class);
     }
-
     protected static function boot()
     {
         parent::boot();
