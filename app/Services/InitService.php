@@ -25,15 +25,36 @@ class InitService
 
     private function getOptions(): array
     {
-        return array_map(function (int $index) {
-            return [
+        return [
+             [
+                 'label' => [
+                     'ru' => 'Видео',
+                     'en' => 'Videos'
+                 ],
+                 'name' => 'videos',
+             ],
+             [
                 'label' => [
-                    'ru' => 'Метка ' . ($index + 1),
-                    'en' => 'Label ' . ($index + 1),
+                    'ru' => 'Картинки',
+                    'en' => 'Images'
                 ],
-                'value' => 'value-' . ($index + 1),
-            ];
-        }, range(0, 3));
+                'name' => 'images',
+             ],
+             [
+                'label' => [
+                    'ru' => 'Гифки',
+                    'en' => 'Gifs'
+                ],
+                'name' => 'gifs',
+             ],
+             [
+                'label' => [
+                    'ru' => 'Гифки123',
+                    'en' => 'Gifs123'
+                ],
+                'name' => 'gifs123',
+             ],
+        ];
     }
 
     private function getHits(): array

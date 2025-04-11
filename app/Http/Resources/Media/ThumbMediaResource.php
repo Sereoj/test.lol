@@ -28,7 +28,12 @@ class ThumbMediaResource extends JsonResource
             'is_free' => $this->is_free,
             'has_copyright' => $this->has_copyright,
             'user' => UserShortResource::make($this->whenLoaded('user')),
-            'media' => MediaShortResource::groupMedia($filteredMedia)
+            'media' => MediaShortResource::groupMedia($filteredMedia),
+            'likes_count' => '',
+            'views_count' => '',
+            'comments_count' => '',
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }

@@ -1,17 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRoleRequest;
 use App\Models\Roles\Role;
 use App\Services\Roles\RoleService;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class UserRoleController extends Controller
 {
     protected RoleService $roleService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_ROLES_LIST = 'roles_list';
     private const CACHE_KEY_ROLE = 'role_';
@@ -30,9 +31,9 @@ class UserRoleController extends Controller
             $roles = $this->getFromCacheOrStore(self::CACHE_KEY_ROLES_LIST, self::CACHE_MINUTES, function () {
                 return Role::all();
             });
-            
+
             Log::info('Roles retrieved successfully');
-            
+
             return $this->successResponse($roles);
         } catch (Exception $e) {
             Log::error('Error retrieving roles: ' . $e->getMessage());
@@ -48,11 +49,11 @@ class UserRoleController extends Controller
         try {
             $data = $request->validated();
             $role = $this->roleService->createRole($data);
-            
+
             Log::info('Role created successfully', ['role_id' => $role->id]);
-            
+
             $this->forgetCache(self::CACHE_KEY_ROLES_LIST);
-            
+
             return $this->successResponse($role, 201);
         } catch (Exception $e) {
             Log::error('Error creating role: ' . $e->getMessage(), ['data' => $request->all()]);
@@ -70,9 +71,9 @@ class UserRoleController extends Controller
             $role = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 return $this->roleService->getRoleById($id);
             });
-            
+
             Log::info('Role retrieved successfully', ['id' => $id]);
-            
+
             return $this->successResponse($role);
         } catch (Exception $e) {
             Log::error('Error retrieving role: ' . $e->getMessage(), ['id' => $id]);

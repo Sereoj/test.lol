@@ -13,6 +13,8 @@ use App\Models\Content\Task;
 use App\Models\Employment\EmploymentStatus;
 use App\Models\Locations\Location;
 use App\Models\Media\Avatar;
+use App\Models\NotificationSettings;
+use App\Models\Posts\Post;
 use App\Models\Roles\Role;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -113,6 +115,14 @@ class User extends Authenticatable
         return $this->belongsTo(UserSetting::class, 'userSettings_id');
     }
 
+    /**
+     * Получить настройки уведомлений пользователя
+     */
+    public function notificationSettings()
+    {
+        return $this->hasOne(NotificationSettings::class);
+    }
+
     public function specializations()
     {
         return $this->belongsToMany(Specialization::class, 'user_specialization');
@@ -175,6 +185,11 @@ class User extends Authenticatable
         return $this->hasMany(Avatar::class);
     }
 
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
     public function currentAvatar()
     {
         return $this->hasOne(Avatar::class)->latest();
@@ -184,6 +199,18 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserOnlineStatus::class);
     }
+
+    /**
+     * Проверяет, имеет ли пользователь указанную роль
+     *
+     * @param string $roleName Название роли для проверки
+     * @return bool
+     */
+    public function hasRole(string $roleName): bool
+    {
+        return $this->role && $this->role->type === $roleName;
+    }
+
     protected static function boot()
     {
         parent::boot();

@@ -5,6 +5,7 @@ namespace App\Services\Posts;
 use App\Events\FileDownloaded;
 use App\Http\Resources\Media\ThumbMediaResource;
 use App\Models\Posts\Post;
+use App\Models\Users\User;
 use App\Repositories\PostRepository;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +36,11 @@ class PostService
         $post = $this->postRepository->getPost($id);
         Auth::check() ?? $this->statService->incrementViews($post->id);
         return $post;
+    }
+
+    public function getPostsByUser(User $user)
+    {
+        return $user->posts()->with(['media', 'user'])->published()->get();
     }
 
     public function createPost(array $data)

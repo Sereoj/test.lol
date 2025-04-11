@@ -32,10 +32,14 @@ class UserRepository
     {
         Log::info('Starting user creation', ['data' => $data]);
 
+        //
+
         $userSettings = UserSetting::query()->create([
             'is_online' => true,
             'is_preferences_feed' => false,
             'preferences_feed' => 'default',
+            'is_private' => false,
+            'enable_two_factor' => false,
         ]);
 
         $role = $this->roleService->getRoleByType('user');

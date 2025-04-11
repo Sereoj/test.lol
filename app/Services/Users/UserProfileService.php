@@ -3,8 +3,10 @@
 namespace App\Services\Users;
 
 use App\Events\ProfileComplected;
+use App\Http\Resources\AvatarResource;
 use App\Models\Users\User;
 use Auth;
+use Illuminate\Support\Facades\Log;
 
 class UserProfileService
 {
@@ -20,7 +22,12 @@ class UserProfileService
         $authUser = Auth::user();
         $user = User::where('slug', $slug)->firstOrFail();
 
+        Log::info('Auth user ID', ['auth_user_id' => $authUser?->id]);
+        Log::info('User ID from DB', ['user_id_from_db' => $user->id]);
+
         $isMyProfile = $authUser && $authUser->id === $user->id;
+
+        Log::info('Is my profile', ['is_my_profile' => $isMyProfile]);
 
         $followersCount = $this->userFollowService->getFollowers($user->id)->count();
         $followingCount = $this->userFollowService->getFollowing()->count();
@@ -39,7 +46,7 @@ class UserProfileService
                 'id' => $user->id,
                 'username' => $user->username,
                 'slug' => $user->slug,
-                'avatars' => $user->avatars,
+                'avatars' => AvatarResource::collection($user->avatars),
                 'online' => $user->onlineStatus,
                 'description' => $user->description,
                 'verification' => $user->verification,

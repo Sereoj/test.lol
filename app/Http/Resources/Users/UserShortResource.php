@@ -16,10 +16,15 @@ class UserShortResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'username' => $this->username,
+            'email' => $this->when($request->user() && $request->user()->id === $this->id, $this->email),
             'slug' => $this->slug,
             'verification' => $this->verification,
             'avatar' => new AvatarResource($this->currentAvatar),
+            'wallet' => $this->when($request->user() && $request->user()->id === $this->id, [
+                'balance' => ShortUserBalance::collection($this->userBalance)
+            ]),
         ];
     }
 }

@@ -11,49 +11,32 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckRole
 {
     /**
-     * Проверяет, имеет ли пользователь доступ к запрашиваемому ресурсу на основе его роли.
+     * Проверяет, имеет ли аутентифицированный пользователь указанную роль.
      *
-     * @param  \Illuminate\Http\Request  $request Объект запроса
-     * @param  \Closure  $next Следующий middleware в цепочке
-     * @param  string  ...$roles Список допустимых ролей для доступа
-     * @return \Symfony\Component\HttpFoundation\Response Ответ приложения
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Closure  $next
+     * @param  string  $role
+     * @return mixed
      */
-    public function handle(Request $request, Closure $next, ...$roles): Response
+    public function handle(Request $request, Closure $next, $role)
     {
-        $user = Auth::user();
-        $userRole = null;
-        $userId = null;
-
-        if ($user) {
-            $userId = $user->id;
-            if (isset($user->role->type)) {
-                $userRole = $user->role->type;
-            }
-        }
-
-        // Проверяем, что у пользователя есть необходимая роль
-        if (!$user || !$userRole || !in_array($userRole, $roles)) {
-            Log::warning('Access denied: User does not have required role', [
-                'user_id' => $userId,
-                'user_role' => $userRole,
-                'required_roles' => $roles,
-                'ip' => $request->ip(),
-                'url' => $request->fullUrl(),
-                'method' => $request->method()
-            ]);
-
+        if (!Auth::check()) {
             return response()->json([
                 'success' => false,
-                'message' => 'У вас нет прав доступа к этому ресурсу'
-            ], 403);
+                'message' => 'Unauthorized',
+            ], 401);
         }
 
-        Log::info('User role check passed', [
-            'user_id' => $userId,
-            'user_role' => $userRole,
-            'required_roles' => $roles,
-            'url' => $request->path()
-        ]);
+        $user = Auth::user();
+        
+        // Проверка на роль администратора
+        // Этот метод нужно реализовать в модели User
+        if (!$user->hasRole($role)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Access denied. You do not have the required permissions.',
+            ], 403);
+        }
 
         return $next($request);
     }

@@ -42,7 +42,11 @@ class AuthService
 
         return [
             'user' => new UserShortResource($user),
-            'token' => $token,
+            'token' => [
+                'access_token' => $token['access_token'],
+                'refresh_token' => $token['refresh_token'],
+                'expires_in' => $token['expires_at']
+            ],
         ];
     }
 
@@ -55,13 +59,23 @@ class AuthService
 
         return [
             'user' => new UserShortResource($user),
-            'token' => [...$token],
+            'token' => [
+                'access_token' => $token['access_token'],
+                'refresh_token' => $token['refresh_token'],
+                'expires_in' => $token['expires_at']
+            ],
         ];
     }
 
     public function refreshToken(string $refreshToken)
     {
-        return $this->tokenService->refreshToken($refreshToken);
+        $token = $this->tokenService->refreshToken($refreshToken);
+
+        return [
+            'access_token' => $token['access_token'],
+            'refresh_token' => $token['refresh_token'],
+            'expires_in' => $token['expires_at']
+        ];
     }
 
     public function attemptLogin($credentials): bool

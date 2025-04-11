@@ -15,6 +15,8 @@ return new class () extends Migration {
             $table->boolean('is_online')->default(false);
             $table->boolean('is_preferences_feed')->default(false);
             $table->enum('preferences_feed', ['popularity', 'downloads', 'likes', 'default'])->default('default');
+            $table->boolean('is_private')->default(false);
+            $table->boolean('enable_two_factor')->default(false);
             $table->timestamps();
         });
     }

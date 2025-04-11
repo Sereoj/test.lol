@@ -13,6 +13,7 @@
 
     <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/theme-default.style.css" media="screen">
     <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/theme-default.print.css" media="print">
+    <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/custom.css">
 
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
 
@@ -41,6 +42,7 @@
 @endif
 
     <script src="{{ u::getVersionedAsset($assetPathPrefix.'js/theme-default.js') }}"></script>
+    <script src="{!! $assetPathPrefix !!}js/theme-toggle.js"></script>
 
 </head>
 

@@ -12,10 +12,11 @@ class Role extends Model
 
     protected $table = 'roles';
 
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'type'];
 
     protected $casts = [
         'name' => 'json',
+        'type' => 'string',
     ];
 
     public function users()

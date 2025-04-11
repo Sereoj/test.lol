@@ -26,6 +26,27 @@ class PostSearchService
         ];
     }
 
+    public function searchInTags(string $query)
+    {
+        // Подготовка вариантов поискового запроса
+        $queries = $this->prepareSearchQueries($query);
+        return $this->searchTags($queries);
+    }
+
+    public function searchInPosts(string $query)
+    {
+        // Подготовка вариантов поискового запроса
+        $queries = $this->prepareSearchQueries($query);
+        return $this->searchPosts($queries);
+    }
+
+    public function searchInUsers(string $query)
+    {
+        // Подготовка вариантов поискового запроса
+        $queries = $this->prepareSearchQueries($query);
+        return $this->searchUsers($queries);
+    }
+
     /**
      * Подготовка вариантов поискового запроса.
      */
@@ -99,7 +120,7 @@ class PostSearchService
     /**
      * Поиск тегов.
      */
-    protected function searchTags(array $queries)
+    protected function searchTags(array $queries): mixed
     {
         return $this->performSearch(Tag::query(), $queries, ['slug']);
     }

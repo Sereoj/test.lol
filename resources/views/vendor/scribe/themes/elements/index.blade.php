@@ -8,11 +8,16 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="description" content="">
     <title>{!! $metadata['title'] !!}</title>
 
     <link href="https://fonts.googleapis.com/css?family=PT+Sans&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/theme-elements.style.css" media="screen">
+    <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/theme-elements.print.css" media="print">
+    <link rel="stylesheet" href="{!! $assetPathPrefix !!}css/custom.css">
+
+    <link rel="icon" href="{!! $assetPathPrefix !!}images/favicon.png" type="image/png"/>
 
     <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
 
@@ -25,13 +30,15 @@
         window.CodeJar = CodeJar;
     </script>
 
+    <script src="{!! $assetPathPrefix !!}js/theme-elements.js"></script>
+    <script src="{!! $assetPathPrefix !!}js/theme-toggle.js"></script>
     @if($tryItOut['enabled'] ?? true)
         <script>
             var tryItOutBaseUrl = "{{ $tryItOut['base_url'] ?? $baseUrl }}";
-            var useCsrf = Boolean({{ $tryItOut['use_csrf'] ?? null }});
-            var csrfUrl = "{{ $tryItOut['csrf_url'] ?? null }}";
+            var useCsrf = Boolean({{ $tryItOut['use_csrf'] ?? 'false' }});
+            var csrfUrl = "{{ $tryItOut['csrf_url'] ?? '' }}";
         </script>
-        <script src="{{ u::getVersionedAsset($assetPathPrefix.'js/tryitout.js') }}"></script>
+        <script src="{!! $assetPathPrefix !!}js/tryitout.js"></script>
         <style>
             .code-editor, .response-content {
                 color: whitesmoke;
@@ -160,25 +167,67 @@
         </script>
     @endif
 
+    @stack('scripts')
 </head>
 
-<body>
-
-@if($metadata['example_languages'])
-    <script>
-        function switchExampleLanguage(lang) {
-            document.querySelectorAll(`.example-request`).forEach(el => el.style.display = 'none');
-            document.querySelectorAll(`.example-request-${lang}`).forEach(el => el.style.display = 'initial');
-            document.querySelectorAll(`.example-request-lang-toggle`).forEach(el => el.value = lang);
-        }
-    </script>
-@endif
+<body id="elements-page" class="sid-open ui-element-page">
+<!-- START #MAIN-SLIDER -->
+<div id="sid-main">
+    <div class="sid-container sid-juicy clear">
+        <div class="sid-left">
+            @include("scribe::themes.elements.sidebar")
+        </div>
+        <div id="sid-right" class="sid-right">
+            <div class="sid-header">
+                <span class="sid-menu__opener"></span>
+                <span class="sid-search">
+                    <input type="text" placeholder="Search" id="searchInput" class="sid-search-input">
+                    <button class="sid-search-input-clear">
+                        <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 511.999 511.999" style="enable-background:new 0 0 511.999 511.999;" xml:space="preserve">
+                            <path d="M509.212,490.624l-77.98-77.98c-3.289-3.289-7.826-4.849-12.260-4.251c43.348-52.088,40.412-129.805-8.845-179.061
+			c-26.722-26.722-62.223-41.427-99.976-41.427s-73.253,14.706-99.976,41.427c-55.106,55.107-55.106,144.845,0,199.951
+			c26.722,26.722,62.223,41.427,99.976,41.427c32.841,0,63.872-11.407,88.519-32.432c-0.947,4.816,0.993,9.841,4.645,13.165
+			l77.98,77.98c2.645,2.645,6.116,3.968,9.587,3.968s6.942-1.323,9.588-3.968l8.742-8.742
+			C514.503,504.509,514.503,495.916,509.212,490.624z M249.959,364.008c-54.395,0-98.687-44.293-98.687-98.687
+			S195.563,166.633,249.959,166.633s98.687,44.293,98.687,98.687S304.354,364.008,249.959,364.008z"/>
+                        </svg>
+                    </button>
+                </span>
+            </div>
+            <div class="sid-content sid-content-post">
+                <div class="sid-content-left">
+                    <div class="sid-elements">
+                            <div class="sid-element-wrapper sid-element-divider">
+                                {!! $intro !!}
+                            </div>
+                            <div class="sid-element-wrapper sid-element-divider">
+                                {!! $auth !!}
+                            </div>
+                            @include("scribe::themes.elements.groups")
+                            <div class="sid-element-wrapper sid-element-divider">
+                                {!! $append !!}
+                            </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sid-footer">
+                    <div class="sid-content-container">
+                        <div class="sid-copyright-wrapper">
+                            <p class="sid-copyright">Documentation powered by <a href="https://scribe.knuckles.wtf">Scribe</a>.
+                            </p>
+                        </div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-    function switchExampleResponse(endpointId, index) {
-        document.querySelectorAll(`.example-response-${endpointId}`).forEach(el => el.style.display = 'none');
-        document.querySelectorAll(`.example-response-${endpointId}-${index}`).forEach(el => el.style.display = 'initial');
-        document.querySelectorAll(`.example-response-${endpointId}-toggle`).forEach(el => el.value = index);
+    function switchExampleLanguage(lang) {
+        document.querySelectorAll(`.example-request`).forEach(el => el.style.display = 'none');
+        document.querySelectorAll(`.example-request-${lang}`).forEach(el => el.style.display = 'initial');
+        document.querySelectorAll(`.example-request-lang-toggle`).forEach(el => el.value = lang);
     }
 
 
@@ -276,47 +325,6 @@
 
     addEventListener('hashchange', highlightSidebarItem);
 </script>
-
-<div class="sl-elements sl-antialiased sl-h-full sl-text-base sl-font-ui sl-text-body sl-flex sl-inset-0">
-
-    @include("scribe::themes.elements.sidebar")
-
-    <div class="sl-overflow-y-auto sl-flex-1 sl-w-full sl-px-16 sl-bg-canvas sl-py-16" style="max-width: 1500px;">
-
-        <div class="sl-mb-10">
-            <div class="sl-mb-4">
-                <h1 class="sl-text-5xl sl-leading-tight sl-font-prose sl-font-semibold sl-text-heading">
-                    {!! $metadata['title'] !!}
-                </h1>
-                @if($metadata['postman_collection_url'])
-                    <a title="Download Postman collection" class="sl-mx-1"
-                       href="{!! $metadata['postman_collection_url'] !!}" target="_blank">
-                        <small>Postman collection →</small>
-                    </a>
-                @endif
-                @if($metadata['openapi_spec_url'])
-                    <a title="Download OpenAPI spec" class="sl-mx-1"
-                       href="{!! $metadata['openapi_spec_url'] !!}" target="_blank">
-                        <small>OpenAPI spec →</small>
-                    </a>
-                @endif
-            </div>
-
-            <div class="sl-prose sl-markdown-viewer sl-my-4">
-                {!! $intro !!}
-
-                {!! $auth !!}
-            </div>
-        </div>
-
-        @include("scribe::themes.elements.groups")
-
-        <div class="sl-prose sl-markdown-viewer sl-my-5">
-            {!! $append !!}
-        </div>
-    </div>
-
-</div>
 
 <template id="expand-chevron">
     <svg aria-hidden="true" focusable="false" data-prefix="fas"

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Users;
 
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Location\StoreLocationRequest;
 use App\Services\Locations\LocationService;
 use Exception;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 class UserLocationController extends Controller
 {
     protected LocationService $locationService;
-    
+
     private const CACHE_MINUTES = 60;
     private const CACHE_KEY_LOCATIONS_ALL = 'locations_all';
     private const CACHE_KEY_LOCATION = 'location_';

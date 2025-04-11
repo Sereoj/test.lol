@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Media;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Avatar\UploadAvatarRequest;
+use App\Http\Resources\AvatarResource;
 use App\Services\Media\AvatarService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -35,7 +36,7 @@ class AvatarController extends Controller
             $user = Auth::user();
 
             $file = $request->file('avatar');
-            $avatar = $this->avatarService->uploadAvatar($user->id, $file);
+            $avatar = new AvatarResource($this->avatarService->uploadAvatar($user->id, $file));
 
             $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
 

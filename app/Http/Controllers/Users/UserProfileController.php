@@ -36,7 +36,6 @@ class UserProfileController extends Controller
             $user = $this->userService->getBySlug($slug);
             $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
-                //return $this->userProfileService->getUserProfile($user->slug);
                 return new UserProfileResource($this->userProfileService->getUserProfile($user->slug));
             });
 
