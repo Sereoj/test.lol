@@ -1,16 +1,23 @@
 <?php
 
 use App\Http\Controllers\Admin\AnalyticsController;
-use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\MediaController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\TagController;
-use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\UserReportController;
 use App\Http\Controllers\Admin\ContentReportController;
+use App\Http\Controllers\Apps\AppController;
+use App\Http\Controllers\BadgeController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\EmploymentStatusController;
+use App\Http\Controllers\SourceController;
+use App\Http\Controllers\Users\UserController;
+use App\Http\Controllers\Users\UserLevelController;
+use App\Http\Controllers\Users\UserLocationController;
+use App\Http\Controllers\Users\UserSkillController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,11 +29,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function () {
+Route::middleware(['auth:api', 'role:admin'])->group(function () {
     // Дашборд
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('admin.dashboard');
-    
+
     // Аналитика
     Route::prefix('analytics')->group(function () {
         Route::get('/users', [AnalyticsController::class, 'users'])
@@ -42,23 +49,63 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
     // Управление пользователями
     Route::prefix('users')->group(function () {
         Route::get('/', [UserController::class, 'index'])
-            ->name('admin.users.index');
+            ->name('users.index'); // для администраторов
         Route::get('/{id}', [UserController::class, 'show'])
-            ->name('admin.users.show');
+            ->name('users.show'); // для администраторов
         Route::post('/', [UserController::class, 'store'])
-            ->name('admin.users.store');
-        Route::patch('/{id}', [UserController::class, 'update'])
-            ->name('admin.users.update');
+            ->name('users.store'); // для администраторов
+        Route::put('/{id}', [UserController::class, 'update'])
+            ->name('users.update'); // для администраторов
         Route::delete('/{id}', [UserController::class, 'destroy'])
-            ->name('admin.users.destroy');
-        Route::patch('/{id}/ban', [UserController::class, 'ban'])
-            ->name('admin.users.ban');
-        Route::patch('/{id}/unban', [UserController::class, 'unban'])
-            ->name('admin.users.unban');
-        Route::patch('/{id}/verify', [UserController::class, 'verify'])
-            ->name('admin.users.verify');
-        Route::patch('/{id}/unverify', [UserController::class, 'unverify'])
-            ->name('admin.users.unverify');
+            ->name('users.destroy'); // для администраторов
+        Route::put('/{userId}/change-role', [UserController::class, 'changeRole'])
+            ->name('users.change-role'); // для администраторов
+    });
+
+    Route::prefix('sources')->group(function () {
+        Route::get('/', [SourceController::class, 'index'])
+            ->name('sources.index'); // для администраторов
+        Route::post('/', [SourceController::class, 'store'])
+            ->name('sources.store'); // для администраторов
+        Route::get('/{source}', [SourceController::class, 'show'])
+            ->name('sources.index'); // для администраторов
+        Route::put('/{id}', [SourceController::class, 'update'])
+            ->name('sources.update'); // для администраторов
+        Route::delete('/{id}', [SourceController::class, 'destroy'])
+            ->name('sources.destroy'); // для администраторов
+    });
+
+    Route::prefix('skills')->group(function () {
+        Route::middleware(['role:admin'])->group(function () {
+            Route::post('/', [UserSkillController::class, 'store'])->name('skills.store'); // для администраторов
+            Route::get('/{id}', [UserSkillController::class, 'show'])->name('skills.show'); // для администраторов
+            Route::put('/{id}', [UserSkillController::class, 'update'])->name('skills.update'); // для администраторов
+            Route::delete('/{id}', [UserSkillController::class, 'destroy'])->name('skills.destroy'); // для администраторов
+        });
+    });
+
+    Route::prefix('locations')->group(function () {
+        Route::post('/', [UserLocationController::class, 'store'])->name('locations.store');
+        Route::put('/{id}', [UserLocationController::class, 'update'])->name('locations.update');
+        Route::delete('/{id}', [UserLocationController::class, 'destroy'])->name('locations.destroy');
+    });
+
+    Route::prefix('badges')->group(function () {
+        Route::get('/{id}', [BadgeController::class, 'show'])->name('badges.show');
+        Route::post('', [BadgeController::class, 'store'])->name('badges.store');
+        Route::put('/{id}', [BadgeController::class, 'update'])->name('badges.update');
+        Route::delete('/{id}', [BadgeController::class, 'destroy'])->name('badges.destroy');
+    });
+
+    Route::prefix('employment-statuses')->group(function () {
+        Route::get('/{id}', [EmploymentStatusController::class, 'show'])
+            ->name('employment-statuses.show');
+        Route::post('/', [EmploymentStatusController::class, 'store'])
+            ->name('employment-statuses.store');
+        Route::put('/{id}', [EmploymentStatusController::class, 'update'])
+            ->name('employment-statuses.update');
+        Route::delete('/{id}', [EmploymentStatusController::class, 'destroy'])
+            ->name('employment-statuses.destroy');
     });
 
     // Управление ролями
@@ -101,32 +148,39 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
             ->name('admin.posts.unfeature');
     });
 
-    // Управление категориями
     Route::prefix('categories')->group(function () {
-        Route::get('/', [CategoryController::class, 'index'])
-            ->name('admin.categories.index');
-        Route::get('/{id}', [CategoryController::class, 'show'])
-            ->name('admin.categories.show');
         Route::post('/', [CategoryController::class, 'store'])
-            ->name('admin.categories.store');
-        Route::patch('/{id}', [CategoryController::class, 'update'])
-            ->name('admin.categories.update');
-        Route::delete('/{id}', [CategoryController::class, 'destroy'])
-            ->name('admin.categories.destroy');
+            ->name('categories.store'); // для администраторов
+        Route::put('/{category}', [CategoryController::class, 'update'])
+            ->name('categories.update'); // для администраторов
+        Route::delete('/{category}', [CategoryController::class, 'destroy'])
+            ->name('categories.destroy'); // для администраторов
+    });
+
+    Route::prefix('apps')->group(function () {
+        Route::get('/', [AppController::class, 'index'])
+            ->name('apps.index'); // для администраторов
+        Route::post('/', [AppController::class, 'store'])
+            ->name('apps.store'); // для администраторов
+        Route::get('/{id}', [AppController::class, 'show'])
+            ->name('apps.show'); // для администраторов
+        Route::put('/{id}', [AppController::class, 'update'])
+            ->name('apps.update'); // для администраторов
+        Route::delete('/{id}', [AppController::class, 'destroy'])
+            ->name('apps.destroy'); // для администраторов
+    });
+
+    Route::prefix('levels')->group(function () {
+        Route::get('/', [UserLevelController::class, 'index'])
+            ->name('admin.levels.index'); // для администраторов
+        Route::post('/', [UserLevelController::class, 'store'])
+            ->name('admin.levels.store'); // для администраторов
     });
 
     // Управление тегами
     Route::prefix('tags')->group(function () {
-        Route::get('/', [TagController::class, 'index'])
-            ->name('admin.tags.index');
-        Route::get('/{id}', [TagController::class, 'show'])
-            ->name('admin.tags.show');
-        Route::post('/', [TagController::class, 'store'])
-            ->name('admin.tags.store');
-        Route::patch('/{id}', [TagController::class, 'update'])
-            ->name('admin.tags.update');
-        Route::delete('/{id}', [TagController::class, 'destroy'])
-            ->name('admin.tags.destroy');
+        Route::delete('/{tag}', [TagController::class, 'destroy'])
+            ->name('tags.destroy'); // для администраторов
     });
 
     // Управление медиа файлами
@@ -174,4 +228,4 @@ Route::middleware(['auth:api', 'role:admin'])->prefix('admin')->group(function (
         Route::patch('/{id}/dismiss', [ContentReportController::class, 'dismiss'])
             ->name('admin.reports.content.dismiss');
     });
-}); 
+});

@@ -4,6 +4,7 @@ use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\EmailVerificationController;
 use App\Http\Controllers\Authentication\PasswordResetController;
 use App\Http\Controllers\Authentication\SocialiteController;
+use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\InitController;
 use App\Http\Controllers\Posts\PostController;
@@ -41,14 +42,15 @@ Route::middleware('guest')->group(function () {
 
         Route::post('/forgot-password', [PasswordResetController::class, 'sendPasswordResetEmail'])
             ->name('forgot-password.email');
-        Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])
+        Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])
             ->name('reset.password');
+
+        // Управление токенами и подтверждение email
+        Route::post('/refresh-token', [AuthController::class, 'refreshToken'])
+            ->name('refresh-token');
     });
 
-    // Управление токенами и подтверждение email
-    Route::post('/refresh-token', [AuthController::class, 'refreshToken'])
-        ->name('refresh-token');
-    Route::post('/forgot-password', [EmailVerificationController::class, 'sendVerificationCode'])
+    Route::post('/send-verification-code', [EmailVerificationController::class, 'sendVerificationCode'])
         ->name('send.verification.code');
     Route::post('/verify-email', [EmailVerificationController::class, 'verifyEmail'])
         ->name('verify.email');
@@ -57,6 +59,11 @@ Route::middleware('guest')->group(function () {
         Route::prefix('{user}/posts')->group(function () {
             Route::get('/', [UserPostController::class, 'index'])->name('posts.index.public');
         });
+    });
+
+    Route::prefix('challenges')->group(function () {
+       Route::get('/', [ChallengeController::class, 'index'])
+           ->name('challenges.index.public');
     });
 });
 
@@ -97,4 +104,14 @@ Route::prefix('posts')->group(function () {
 Route::prefix('profile')->group(function () {
     Route::get('/{slug}', [UserProfileController::class, 'show'])
         ->name('profile.show.public');
+});
+
+// Публичные маршруты для челленджей
+Route::prefix('challenges')->group(function () {
+    Route::get('/', [ChallengeController::class, 'index'])
+        ->name('challenges.index.public');
+    Route::get('/active', [ChallengeController::class, 'getActiveChallenges'])
+        ->name('challenges.active.public');
+    Route::get('/{id}', [ChallengeController::class, 'show'])
+        ->name('challenges.show.public');
 });

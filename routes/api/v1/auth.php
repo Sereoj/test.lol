@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\StepController;
 use App\Http\Controllers\BadgeController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Billing\SubscriptionController;
 use App\Http\Controllers\Billing\TransactionController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\EmploymentStatusController;
 use App\Http\Controllers\Media\AvatarController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
@@ -28,6 +30,7 @@ use App\Http\Controllers\Users\UserSettingsController;
 use App\Http\Controllers\Users\UserSkillController;
 use App\Http\Controllers\Users\UserSourceController;
 use App\Http\Controllers\Users\UserTaskController;
+use App\Http\Controllers\ChallengeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -221,6 +224,10 @@ Route::middleware('auth:api')->group(function () {
             ->name('avatars.delete');
     });
 
+    Route::prefix('employment-statuses')->group(function () {
+        Route::get('/', [EmploymentStatusController::class, 'index'])->name('employment-statuses.index');
+    });
+
     // Медиафайлы
     Route::prefix('media')->group(function () {
         Route::post('/', [MediaController::class, 'store'])
@@ -325,5 +332,27 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('badges')->group(function () {
         Route::get('/', [BadgeController::class, 'index'])
             ->name('badges.index');
+    });
+
+    // Челленджи
+    Route::prefix('challenges')->group(function () {
+        Route::get('/', [ChallengeController::class, 'index'])
+            ->name('challenges.index');
+        Route::post('/', [ChallengeController::class, 'store'])
+            ->name('challenges.store');
+        Route::get('/active', [ChallengeController::class, 'getActiveChallenges'])
+            ->name('challenges.active');
+        Route::get('/user', [ChallengeController::class, 'getUserChallenges'])
+            ->name('challenges.user');
+        Route::get('/{id}', [ChallengeController::class, 'show'])
+            ->name('challenges.show');
+        Route::put('/{id}', [ChallengeController::class, 'update'])
+            ->name('challenges.update');
+        Route::delete('/{id}', [ChallengeController::class, 'destroy'])
+            ->name('challenges.destroy');
+        Route::post('/{id}/join', [ChallengeController::class, 'join'])
+            ->name('challenges.join');
+        Route::post('/{id}/leave', [ChallengeController::class, 'leave'])
+            ->name('challenges.leave');
     });
 });
