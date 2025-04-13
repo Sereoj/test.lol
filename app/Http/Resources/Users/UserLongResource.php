@@ -36,7 +36,7 @@ class UserLongResource extends JsonResource
             'achievements' => AchievementResource::collection($this->achievements),
             'role' => new RoleResource($this->role),
             'badges' => BadgeResource::collection($this->badges),
-            'using_app' => new AppResource($this->usingApps),
+            'using_app' => AppResource::collection($this->usingApps),
             'user_setting' => new UserSettingResource($this->userSettings),
             'status' => new StatusResource($this->status),
             'employment_status' => new EmploymentStatusResource($this->employmentStatus),

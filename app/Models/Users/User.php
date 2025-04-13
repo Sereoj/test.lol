@@ -4,6 +4,7 @@ namespace App\Models\Users;
 
 use App\Models\Apps\App;
 use App\Models\Billing\Transaction;
+use App\Models\Categories\Category;
 use App\Models\Content\Achievement;
 use App\Models\Content\Badge;
 use App\Models\Content\Skill;
@@ -13,9 +14,10 @@ use App\Models\Content\Task;
 use App\Models\Employment\EmploymentStatus;
 use App\Models\Locations\Location;
 use App\Models\Media\Avatar;
-use App\Models\NotificationSettings;
+use App\Models\NotificationSetting;
 use App\Models\Posts\Post;
 use App\Models\Roles\Role;
+use App\Models\Interactions\Interaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -39,6 +41,8 @@ class User extends Authenticatable
         'seo_meta',
         'slug',
         'description',
+        'cover',
+        'website',
         'email',
         'email_verified_at',
         'verification',
@@ -49,6 +53,8 @@ class User extends Authenticatable
         'password',
         'provider',
         'provider_id',
+        'role_id',
+        'userSettings_id',
     ];
 
     public function isProfileComplete(): bool
@@ -107,7 +113,7 @@ class User extends Authenticatable
 
     public function usingApps()
     {
-        return $this->belongsTo(App::class, 'usingApps_id');
+        return $this->belongsToMany(App::class, 'user_app');
     }
 
     public function userSettings()
@@ -120,7 +126,7 @@ class User extends Authenticatable
      */
     public function notificationSettings()
     {
-        return $this->hasOne(NotificationSettings::class);
+        return $this->hasOne(NotificationSetting::class);
     }
 
     public function specializations()

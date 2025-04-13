@@ -26,8 +26,8 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'nullable|string|min:3|max:255',
-            'content' => 'nullable|string|max:10000',
+            'title' => 'nullable|string|min:3|max:100',
+            'content' => 'nullable|string|max:3000',
             'status' => [
                 'nullable',
                 Rule::in([

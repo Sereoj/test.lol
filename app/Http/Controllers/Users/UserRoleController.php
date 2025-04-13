@@ -48,7 +48,7 @@ class UserRoleController extends Controller
     {
         try {
             $data = $request->validated();
-            $role = $this->roleService->createRole($data);
+            $role = $this->roleService->create($data);
 
             Log::info('Role created successfully', ['role_id' => $role->id]);
 

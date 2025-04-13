@@ -215,7 +215,7 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // Аватары
-    Route::prefix('avatars')->group(function () {
+    Route::prefix('avatar')->group(function () {
         Route::post('/', [AvatarController::class, 'uploadAvatar'])
             ->name('avatars.upload');
         Route::get('/', [AvatarController::class, 'getUserAvatars'])

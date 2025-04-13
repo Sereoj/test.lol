@@ -49,6 +49,8 @@ class UserRepository
             'username' => $data['username'],
             'slug' => $data['slug'],
             'description' => $data['description'],
+            'website' => '',
+            'cover' => '',
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role_id' => $role->id,
@@ -62,40 +64,6 @@ class UserRepository
             'gender' => null,
             'age' => null,
         ]);
-
-        $user->userBalance()->create([
-            'balance' => 0.00,
-            'currency' => 'USD',
-        ]);
-
-        $user->userBalance()->create([
-            'balance' => 0.00,
-            'currency' => 'RUB',
-        ]);
-
-        // Логирование успешного создания пользователя
-        Log::info('User created successfully', ['user_id' => $user->id, 'username' => $user->username]);
-
-        $defaultTasks = Task::all();
-        foreach ($defaultTasks as $task) {
-            $user->tasks()->attach($task->id, ['progress' => 0, 'completed' => false]);
-        }
-
-        // Логирование присвоения заданий пользователю
-        Log::info('Default tasks assigned to user', ['user_id' => $user->id]);
-
-        $achievement = Achievement::first();
-        if ($achievement) {
-            $user->achievements()->syncWithoutDetaching([$achievement->id]);
-            $points = $achievement->points;
-            $user->update(['experience' => $user->experience + $points]);
-
-            // Логирование присвоения достижения и обновления опыта
-            Log::info('Achievement assigned and experience updated', ['user_id' => $user->id, 'achievement_id' => $achievement->id, 'points' => $points]);
-
-            event(new UserExperienceChanged($user));
-        }
-
         // Логирование завершения создания пользователя
         Log::info('User creation completed', ['user_id' => $user->id]);
 

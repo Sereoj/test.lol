@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
-use App\Models\NotificationSettings;
+use App\Models\NotificationSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;

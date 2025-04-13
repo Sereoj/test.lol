@@ -2,6 +2,9 @@
 
 namespace App\Services\Users;
 
+use App\Events\UserExperienceChanged;
+use App\Models\Content\Achievement;
+use App\Models\Content\Task;
 use App\Models\Roles\Role;
 use App\Models\Users\User;
 use App\Repositories\UserRepository;
@@ -26,9 +29,54 @@ class UserService
 
     public function create(array $data)
     {
-            $data['description'] = 'Welcome to '.config('app.name').'!';
-            $data['slug'] = TextUtil::generateUniqueSlug($data['username'], $this->userRepository->findBySlugCount(Str::slug($data['username'])));
-            return $this->userRepository->create($data);
+        $data['description'] = 'Welcome to '.config('app.name').'!';
+        $data['slug'] = TextUtil::generateUniqueSlug($data['username'], $this->userRepository->findBySlugCount(Str::slug($data['username'])));
+
+        $user = $this->userRepository->create($data);
+
+        $user->notificationSettings()->create([
+            'notify_on_new_message' => true,
+            'notify_on_new_follower' => true,
+            'notify_on_post_like' => true,
+            'notify_on_comment' => true,
+            'notify_on_comment_like' => true,
+            'notify_on_mention' => true
+        ]);
+
+        $user->userBalance()->create([
+            'balance' => 0.00,
+            'currency' => 'USD',
+        ]);
+
+        $user->userBalance()->create([
+            'balance' => 0.00,
+            'currency' => 'RUB',
+        ]);
+
+        // Логирование успешного создания пользователя
+        Log::info('User created successfully', ['user_id' => $user->id, 'username' => $user->username]);
+
+        $defaultTasks = Task::all();
+        foreach ($defaultTasks as $task) {
+            $user->tasks()->attach($task->id, ['progress' => 0, 'completed' => false]);
+        }
+
+        // Логирование присвоения заданий пользователю
+        Log::info('Default tasks assigned to user', ['user_id' => $user->id]);
+
+        $achievement = Achievement::first();
+        if ($achievement) {
+            $user->achievements()->syncWithoutDetaching([$achievement->id]);
+            $points = $achievement->points;
+            $user->update(['experience' => $user->experience + $points]);
+
+            // Логирование присвоения достижения и обновления опыта
+            Log::info('Achievement assigned and experience updated', ['user_id' => $user->id, 'achievement_id' => $achievement->id, 'points' => $points]);
+
+            event(new UserExperienceChanged($user));
+        }
+
+        return $user;
     }
 
     public function getByEmail(string $email)

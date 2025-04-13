@@ -14,6 +14,13 @@ class BadgeResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+          'id' => $this->id,
+          'name' => $this->name,
+          'color' => $this->color,
+          'description' => $this->description,
+          'options' => $this->options,
+          'image' => $this->image,
+        ];
     }
 }

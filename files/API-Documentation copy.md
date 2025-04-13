@@ -448,12 +448,10 @@
 
 - **URL**: `/challenges`
 - **Метод**: `GET`
-- **Параметры запроса**: 
-  ```
-  page: number
-  per_page: number
-  status: 'active' | 'upcoming' | 'completed'
-  ```
+- **Параметры запроса**:
+  - `per_page` (необязательно): количество элементов на странице
+  - `status` (необязательно): фильтр по статусу (`active`, `completed`, `draft`, `cancelled`)
+  - `search` (необязательно): поисковый запрос
 - **Ответ**:
   ```json
   {
@@ -476,8 +474,248 @@
         "status": "active",
         "is_participating": false
       }
-    ],
-    "pagination": {...}
+    ]
+  }
+  ```
+
+### Получение деталей челленджа
+
+- **URL**: `/challenges/{id}`
+- **Метод**: `GET`
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": 1,
+      "title": "string",
+      "description": "string",
+      "cover": {
+        "path": "string"
+      },
+      "prize_pool": {
+        "amount": "1000.00",
+        "currency": "USD"
+      },
+      "participants_count": 100,
+      "start_date": "string",
+      "end_date": "string",
+      "status": "active",
+      "is_participating": false,
+      "created_at": "string",
+      "updated_at": "string"
+    }
+  }
+  ```
+
+### Создание челленджа
+
+- **URL**: `/challenges`
+- **Метод**: `POST`
+- **Заголовки**: 
+  ```
+  Authorization: Bearer {access_token}
+  Content-Type: application/json
+  Accept: application/json
+  ```
+- **Требуются данные**:
+  ```json
+  {
+    "title": "string",
+    "description": "string",
+    "cover_path": "string",
+    "prize_amount": "1000.00",
+    "prize_currency": "USD",
+    "start_date": "2024-05-01 00:00:00",
+    "end_date": "2024-06-01 00:00:00",
+    "status": "draft"
+  }
+  ```
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": 1,
+      "title": "string",
+      "description": "string",
+      "cover": {
+        "path": "string"
+      },
+      "prize_pool": {
+        "amount": "1000.00",
+        "currency": "USD"
+      },
+      "participants_count": 0,
+      "start_date": "2024-05-01 00:00:00",
+      "end_date": "2024-06-01 00:00:00",
+      "status": "draft",
+      "is_participating": false,
+      "created_at": "string",
+      "updated_at": "string"
+    }
+  }
+  ```
+
+### Обновление челленджа
+
+- **URL**: `/challenges/{id}`
+- **Метод**: `PUT`
+- **Заголовки**: 
+  ```
+  Authorization: Bearer {access_token}
+  Content-Type: application/json
+  Accept: application/json
+  ```
+- **Требуются данные**:
+  ```json
+  {
+    "title": "string",
+    "description": "string",
+    "cover_path": "string",
+    "prize_amount": "1000.00",
+    "prize_currency": "USD",
+    "start_date": "2024-05-01 00:00:00",
+    "end_date": "2024-06-01 00:00:00",
+    "status": "active"
+  }
+  ```
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": {
+      "id": 1,
+      "title": "string",
+      "description": "string",
+      "cover": {
+        "path": "string"
+      },
+      "prize_pool": {
+        "amount": "1000.00",
+        "currency": "USD"
+      },
+      "participants_count": 0,
+      "start_date": "2024-05-01 00:00:00",
+      "end_date": "2024-06-01 00:00:00",
+      "status": "active",
+      "is_participating": false,
+      "created_at": "string",
+      "updated_at": "string"
+    }
+  }
+  ```
+
+### Удаление челленджа
+
+- **URL**: `/challenges/{id}`
+- **Метод**: `DELETE`
+- **Заголовки**: `Authorization: Bearer {access_token}`
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "message": "Челлендж успешно удален"
+  }
+  ```
+
+### Получение активных челленджей
+
+- **URL**: `/challenges/active`
+- **Метод**: `GET`
+- **Параметры запроса**:
+  - `per_page` (необязательно): количество элементов на странице
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "title": "string",
+        "description": "string",
+        "cover": {
+          "path": "string"
+        },
+        "prize_pool": {
+          "amount": "1000.00",
+          "currency": "USD"
+        },
+        "participants_count": 100,
+        "start_date": "string",
+        "end_date": "string",
+        "status": "active",
+        "is_participating": false
+      }
+    ]
+  }
+  ```
+
+### Получение челленджей пользователя
+
+- **URL**: `/challenges/user`
+- **Метод**: `GET`
+- **Заголовки**: `Authorization: Bearer {access_token}`
+- **Параметры запроса**:
+  - `per_page` (необязательно): количество элементов на странице
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "title": "string",
+        "description": "string",
+        "cover": {
+          "path": "string"
+        },
+        "prize_pool": {
+          "amount": "1000.00",
+          "currency": "USD"
+        },
+        "participants_count": 100,
+        "start_date": "string",
+        "end_date": "string",
+        "status": "active",
+        "is_participating": true
+      }
+    ]
+  }
+  ```
+
+### Присоединение к челленджу
+
+- **URL**: `/challenges/{id}/join`
+- **Метод**: `POST`
+- **Заголовки**: `Authorization: Bearer {access_token}`
+- **Требуются данные** (необязательно):
+  ```json
+  {
+    "submission_data": {
+      "comment": "string",
+      "additional_info": "string"
+    }
+  }
+  ```
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "message": "Вы успешно присоединились к челленджу"
+  }
+  ```
+
+### Выход из челленджа
+
+- **URL**: `/challenges/{id}/leave`
+- **Метод**: `POST`
+- **Заголовки**: `Authorization: Bearer {access_token}`
+- **Ответ**:
+  ```json
+  {
+    "success": true,
+    "message": "Вы успешно покинули челлендж"
   }
   ```
 

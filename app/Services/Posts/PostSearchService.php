@@ -130,7 +130,7 @@ class PostSearchService
      */
     protected function searchUsers(array $queries)
     {
-        return $this->performSearch(User::query(), $queries, ['username', 'description', 'email']);
+        return $this->performSearch(User::query(), $queries, ['username', 'description']);
     }
 
     /**
@@ -146,7 +146,7 @@ class PostSearchService
             $this->buildSearchConditions($q, $queries, $fields);
         });
 
-        return $queryBuilder->limit(5)->get();
+        return $queryBuilder->limit(10)->get();
     }
 
     /**

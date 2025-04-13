@@ -3,7 +3,16 @@
 namespace App\Services\Users;
 
 use App\Events\ProfileComplected;
+use App\Http\Resources\AppResource;
 use App\Http\Resources\AvatarResource;
+use App\Http\Resources\BadgeResource;
+use App\Http\Resources\EmploymentStatusResource;
+use App\Http\Resources\LevelResource;
+use App\Http\Resources\LocationResource;
+use App\Http\Resources\OnlineStatusResource;
+use App\Http\Resources\RoleResource;
+use App\Http\Resources\SpecializationResource;
+use App\Http\Resources\StatusResource;
 use App\Models\Users\User;
 use Auth;
 use Illuminate\Support\Facades\Log;
@@ -47,21 +56,23 @@ class UserProfileService
                 'username' => $user->username,
                 'slug' => $user->slug,
                 'avatars' => AvatarResource::collection($user->avatars),
-                'online' => $user->onlineStatus,
+                'cover' => $user->cover,
+                'website' => $user->website,
                 'description' => $user->description,
                 'verification' => $user->verification,
-                'badges' => $user->badges,
+                'online' => new OnlineStatusResource($user->onlineStatus),
+                'badges' => BadgeResource::collection($user->badges),
                 'gender' => $user->gender,
                 'age' => $user->age,
                 'language' => $user->language,
                 'experience' => $user->experience,
-                'level' => $user->level,
-                'roles' => $user->role,
-                'status' => $user->status,
-                'location' => $user->location,
-                'employment_status' => $user->employmentStatus,
+                'level' => new LevelResource($user->level),
+                'roles' => new RoleResource($user->role),
+                'status' => new StatusResource($user->status),
+                'location' => new LocationResource($user->location),
+                'employment_status' => new EmploymentStatusResource($user->employmentStatus),
                 'usingApps' => $user->usingApps,
-                'specializations' => $user->specializations,
+                'specializations' => SpecializationResource::collection($user->specializations),
                 'followers_count' => $followersCount,
                 'following_count' => $followingCount,
             ],

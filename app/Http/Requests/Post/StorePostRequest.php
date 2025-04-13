@@ -24,8 +24,8 @@ class StorePostRequest extends FormRequest
     public function rules()
     {
         return [
-            'title' => 'required|string|min:3|max:255',
-            'content' => 'nullable|string|max:10000',
+            'title' => 'required|string|min:3|max:100',
+            'content' => 'nullable|string|max:3000',
             'status' => [
                 'required',
                 Rule::in([

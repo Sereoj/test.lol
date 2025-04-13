@@ -16,6 +16,8 @@ return new class () extends Migration {
             $table->json('seo_meta')->nullable();
             $table->string('slug')->unique();
             $table->string('description')->nullable();
+            $table->string('website')->nullable();
+            $table->string('cover')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('verification')->default(false);
@@ -29,7 +31,7 @@ return new class () extends Migration {
             $table->foreignId('level_id')->nullable()->constrained('levels')->onDelete('cascade');
             $table->foreignId('role_id')->constrained('roles')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('userSettings_id')->constrained('user_settings')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('usingApps_id')->nullable()->constrained('roles')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('usingApps_id')->nullable()->constrained('apps')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('status_id')->nullable()->constrained('statuses')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('location_id')->nullable()->constrained('locations')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('employment_status_id')->nullable()->constrained('employment_statuses')->cascadeOnDelete();

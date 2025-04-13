@@ -25,7 +25,7 @@ class RoleService
         return $role;
     }
 
-    public function createRole($data)
+    public function create($data)
     {
         return Role::query()->create($data);
     }
