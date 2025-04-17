@@ -113,7 +113,7 @@ class UpdateUserProfileRequest extends FormRequest
             'language.required' => 'The language field is required.',
             'age.required' => 'The age field is required.',
         ];
-    }       
+    }
 
     public function attributes(): array
     {
@@ -129,10 +129,5 @@ class UpdateUserProfileRequest extends FormRequest
             'language' => 'The language field',
             'age' => 'The age field',
         ];
-    }   
-
-    public function failedValidation(Validator $validator)
-    {
-        throw new HttpResponseException(response()->json($validator->errors(), 422));
     }
 }
