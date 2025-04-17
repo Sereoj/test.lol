@@ -2,8 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Message\SendMessageRequest;
+use App\Services\Messaging\ConversationService;
+use App\Services\Messaging\MessageService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Сообщения
@@ -12,262 +17,180 @@ use Illuminate\Support\Facades\Auth;
  */
 class MessageController extends Controller
 {
+    protected MessageService $messageService;
+    protected ConversationService $conversationService;
 
-    public function index()
+    public function __construct(MessageService $messageService, ConversationService $conversationService)
     {
-        $response = [
-            'data' => [
-                [
-                    'id' => 1,
-                    'conversation_id' => 123,
-                    'preview' => 'Привет! Как дела?',
-                    'read' => false,
-                    'created_at' => '2023-10-01T14:30:00Z',
-                    'from' => [
-                        'username' => 'user123',
-                        'avatar' => [
-                            'path' => 'https://example.com/avatars/user123.jpg'
-                        ]
-                    ]
-                ],
-                [
-                    'id' => 2,
-                    'conversation_id' => 123,
-                    'preview' => 'Всё отлично, спасибо!',
-                    'read' => true,
-                    'created_at' => '2023-10-01T14:35:00Z',
-                    'from' => [
-                        'username' => 'user456',
-                        'avatar' => [
-                            'path' => 'https://example.com/avatars/user456.jpg'
-                        ]
-                    ]
-                ],
-                [
-                    'id' => 3,
-                    'conversation_id' => 456,
-                    'preview' => 'Напоминаю про встречу завтра.',
-                    'read' => false,
-                    'created_at' => '2023-10-02T09:00:00Z',
-                    'from' => [
-                        'username' => 'user789',
-                        'avatar' => null
-                    ]
-                ]
-            ]
-        ];
-
-        return $response;
+        $this->messageService = $messageService;
+        $this->conversationService = $conversationService;
+        $this->middleware('auth:api');
     }
 
     /**
-     * Получение списка чатов
-     *
-     * Возвращает список чатов (диалогов) текущего пользователя
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @response {
-     *  "success": true,
-     *  "data": [
-     *    {
-     *      "id": 1,
-     *      "user": {
-     *        "id": 2,
-     *        "username": "janedoe",
-     *        "verification": false,
-     *        "avatar": {
-     *          "path": "avatars/user2.png"
-     *        },
-     *        "online": true
-     *      },
-     *      "last_message": {
-     *        "content": "Привет, как дела?",
-     *        "created_at": "2023-03-30T10:15:00Z",
-     *        "is_read": false,
-     *        "is_mine": false
-     *      },
-     *      "unread_count": 3
-     *    }
-     *  ]
-     * }
-     */
-    public function getChats()
-    {
-        // Здесь будет логика получения списка чатов
-        // Возвращаем заглушку в правильном формате
-        return response()->json([
-            'success' => true,
-            'data' => []
-        ]);
-    }
-
-    /**
-     * Получение сообщений чата
-     *
-     * Возвращает историю сообщений с конкретным пользователем
+     * Получить список всех чатов пользователя.
      *
      * @param Request $request
-     * @param int $user_id ID пользователя (собеседника)
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @urlParam user_id required ID пользователя, с которым ведется переписка. Example: 2
-     * @queryParam page integer Номер страницы для пагинации. Example: 1
-     * @queryParam per_page integer Количество сообщений на странице. Example: 20
-     *
-     * @response {
-     *  "success": true,
-     *  "data": {
-     *    "user": {
-     *      "id": 2,
-     *      "username": "janedoe",
-     *      "verification": false,
-     *      "avatar": {
-     *        "path": "avatars/user2.png"
-     *      },
-     *      "online": true,
-     *      "last_seen": "2023-03-30T15:45:00Z"
-     *    },
-     *    "messages": [
-     *      {
-     *        "id": 123,
-     *        "sender_id": 2,
-     *        "content": "Привет, как дела?",
-     *        "is_read": true,
-     *        "created_at": "2023-03-30T10:15:00Z"
-     *      },
-     *      {
-     *        "id": 124,
-     *        "sender_id": 1,
-     *        "content": "Все отлично, спасибо! А у тебя?",
-     *        "is_read": true,
-     *        "created_at": "2023-03-30T10:17:00Z"
-     *      }
-     *    ]
-     *  },
-     *  "pagination": {
-     *    "total": 30,
-     *    "per_page": 20,
-     *    "current_page": 1,
-     *    "last_page": 2
-     *  }
-     * }
+     * @return JsonResponse
      */
-    public function getMessages(Request $request, $user_id)
+    public function index(Request $request): JsonResponse
     {
-        $page = $request->input('page', 1);
-        $perPage = $request->input('per_page', 20);
-
-        // Здесь будет логика получения сообщений
-        // Возвращаем заглушку в правильном формате
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'user' => [
-                    'id' => (int)$user_id,
-                    'username' => 'user_' . $user_id,
-                    'verification' => false,
-                    'avatar' => [
-                        'path' => 'avatars/default.png'
-                    ],
-                    'online' => false,
-                    'last_seen' => now()->toISOString()
-                ],
-                'messages' => []
-            ],
-            'pagination' => [
-                'total' => 0,
-                'per_page' => $perPage,
-                'current_page' => $page,
-                'last_page' => 1
-            ]
-        ]);
+        try {
+            $userId = Auth::id();
+            $conversations = $this->conversationService->getConversationsByUserId($userId);
+            return $this->successResponse($conversations);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при получении списка чатов: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось получить список чатов', 500);
+        }
     }
 
     /**
-     * Отправка сообщения
-     *
-     * Отправка нового сообщения пользователю
+     * Получить список чатов пользователя.
      *
      * @param Request $request
-     * @param int $user_id ID пользователя (получателя)
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @urlParam user_id required ID пользователя, которому отправляется сообщение. Example: 2
-     * @bodyParam content string required Текст сообщения. Example: Привет! Как твои дела?
-     *
-     * @response 201 {
-     *  "success": true,
-     *  "data": {
-     *    "id": 125,
-     *    "sender_id": 1,
-     *    "recipient_id": 2,
-     *    "content": "Привет! Как твои дела?",
-     *    "is_read": false,
-     *    "created_at": "2023-03-30T16:00:00Z"
-     *  },
-     *  "message": "Сообщение успешно отправлено"
-     * }
-     *
-     * @response 422 {
-     *  "success": false,
-     *  "message": "Ошибка валидации",
-     *  "errors": {
-     *    "content": ["Текст сообщения не может быть пустым."]
-     *  }
-     * }
+     * @return JsonResponse
      */
-    public function sendMessage(Request $request, $user_id)
+    public function getChats(Request $request): JsonResponse
     {
-        $request->validate([
-            'content' => 'required|string|max:1000',
-        ]);
+        try {
+            $userId = Auth::id();
+            $conversations = $this->conversationService->getConversationsByUserId($userId);
+            return $this->successResponse($conversations);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при получении списка чатов: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось получить список чатов', 500);
+        }
+    }
 
-        // Здесь будет логика отправки сообщения
-        // Возвращаем заглушку в правильном формате
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => rand(1, 1000),
-                'sender_id' => auth()->id() ?? 1,
-                'recipient_id' => (int)$user_id,
+    /**
+     * Получить сообщения с конкретным пользователем.
+     *
+     * @param int $userId
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getMessages(int $userId, Request $request): JsonResponse
+    {
+        try {
+            $currentUserId = Auth::id();
+            $conversation = $this->conversationService->getAll([
+                'creator_id' => $currentUserId,
+                'recipient_id' => $userId
+            ])->first() ?? $this->conversationService->getAll([
+                'creator_id' => $userId,
+                'recipient_id' => $currentUserId
+            ])->first();
+
+            if (!$conversation) {
+                return $this->errorResponse('Беседа не найдена', 404);
+            }
+
+            $messages = $this->messageService->getMessagesByConversationId($conversation->id);
+            return $this->successResponse($messages);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при получении сообщений: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'recipient_id' => $userId,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось получить сообщения', 500);
+        }
+    }
+
+    /**
+     * Отправить сообщение пользователю.
+     *
+     * @param int $userId
+     * @param SendMessageRequest $request
+     * @return JsonResponse
+     */
+    public function sendMessage(int $userId, SendMessageRequest $request): JsonResponse
+    {
+        try {
+            $currentUserId = Auth::id();
+            $conversation = $this->conversationService->getAll([
+                'creator_id' => $currentUserId,
+                'recipient_id' => $userId
+            ])->first() ?? $this->conversationService->getAll([
+                'creator_id' => $userId,
+                'recipient_id' => $currentUserId
+            ])->first();
+
+            if (!$conversation) {
+                $conversation = $this->conversationService->create([
+                    'creator_id' => $currentUserId,
+                    'recipient_id' => $userId,
+                    'last_message_at' => now()
+                ]);
+            }
+
+            $message = $this->messageService->create([
+                'user_id' => $currentUserId,
+                'conversation_id' => $conversation->id,
                 'content' => $request->input('content'),
-                'is_read' => false,
-                'created_at' => now()->toISOString()
-            ],
-            'message' => 'Сообщение успешно отправлено'
-        ], 201);
+                'read' => false
+            ]);
+
+            // Обновление времени последнего сообщения в беседе
+            $conversation->update(['last_message_at' => now()]);
+
+            return $this->successResponse($message, 201);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при отправке сообщения: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'recipient_id' => $userId,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось отправить сообщение', 500);
+        }
     }
 
     /**
-     * Отметить сообщения как прочитанные
+     * Отметить сообщения с пользователем как прочитанные.
      *
-     * Пометить все непрочитанные сообщения от указанного пользователя как прочитанные
-     *
-     * @param int $user_id ID пользователя (отправителя)
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @urlParam user_id required ID пользователя, сообщения которого нужно отметить прочитанными. Example: 2
-     *
-     * @response {
-     *  "success": true,
-     *  "message": "Сообщения отмечены как прочитанные"
-     * }
+     * @param int $userId
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function markAsRead($user_id)
+    public function markAsRead(int $userId, Request $request): JsonResponse
     {
-        // Здесь будет логика отметки сообщений как прочитанных
-        return response()->json([
-            'success' => true,
-            'message' => 'Сообщения отмечены как прочитанные'
-        ]);
+        try {
+            $currentUserId = Auth::id();
+            $conversation = $this->conversationService->getAll([
+                'creator_id' => $currentUserId,
+                'recipient_id' => $userId
+            ])->first() ?? $this->conversationService->getAll([
+                'creator_id' => $userId,
+                'recipient_id' => $currentUserId
+            ])->first();
+
+            if (!$conversation) {
+                return $this->errorResponse('Беседа не найдена', 404);
+            }
+
+            $messages = $this->messageService->getMessagesByConversationId($conversation->id)
+                ->where('user_id', '!=', $currentUserId)
+                ->where('read', false);
+
+            foreach ($messages as $message) {
+                $this->messageService->markAsRead($message->id);
+            }
+
+            return $this->successResponse(['message' => 'Сообщения отмечены как прочитанные']);
+        } catch (\Exception $e) {
+            Log::error('Ошибка при отметке сообщений как прочитанных: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'recipient_id' => $userId,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось отметить сообщения как прочитанные', 500);
+        }
     }
 }

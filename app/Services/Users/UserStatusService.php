@@ -12,9 +12,9 @@ class UserStatusService
         return UserStatus::all() ?? collect();
     }
 
-    public function assignStatus(User $user, array $data)
+    public function assignStatus(User $user, int $statusId)
     {
-        $user->status()->associate($data['status_id']);
+        $user->status()->associate($statusId);
         $user->save();
         return $user->status;
     }

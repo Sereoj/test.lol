@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Category\CategoryRequest;
+use App\Http\Resources\ShortCategoryResource;
 use App\Services\Content\CategoryService;
 use Illuminate\Support\Facades\Cache;
 
@@ -22,7 +23,7 @@ class CategoryController extends Controller
     public function index()
     {
         $categories = $this->getFromCacheOrStore(self::CACHE_KEY_CATEGORIES_LIST, self::CACHE_MINUTES, function () {
-            return $this->categoryService->getAll();
+            return ShortCategoryResource::collection($this->categoryService->getAll());
         });
 
         return $this->successResponse($categories);

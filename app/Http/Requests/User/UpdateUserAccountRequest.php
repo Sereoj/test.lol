@@ -31,11 +31,11 @@ class UpdateUserAccountRequest extends FormRequest
             'username' => 'sometimes|string|max:255',
             'slug' => 'sometimes|string|max:255|unique:users,slug,' . Auth::id(),
             'description' => 'sometimes|string|max:255',
-            'website' => 'sometimes|string|url|max:255',
-            'gender' => 'sometimes|in:male,female,other',
+            'website' => 'nullable|string|url|max:255',
+            'gender' => 'nullable|in:male,female,other',
             'location_id' => 'sometimes|exists:locations,id',
-            'language' => 'sometimes|string|in:en,ru',
-            'age' => 'sometimes|integer|min:13|max:100'
+            'language' => 'nullable|string|in:en,ru',
+            'age' => 'nullable|integer|min:16|max:100'
         ];
     }
 

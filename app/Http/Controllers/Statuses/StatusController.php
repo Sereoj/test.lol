@@ -7,7 +7,6 @@ use App\Http\Requests\Statuses\StoreStatusRequest;
 use App\Http\Requests\Statuses\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Services\StatusService;
-use Illuminate\Http\Request;
 
 class StatusController extends Controller
 {

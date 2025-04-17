@@ -34,13 +34,12 @@ class MediaController extends Controller
                 'is_public' => true,
             ];
 
-            $media = ShortMediaResource::collection($this->mediaService->upload($files, $options));
-
-            Log::info('Media uploaded successfully', ['media_id' => $media->id ?? 'multiple']);
+            $media = $this->mediaService->upload($files, $options);
+            Log::info($media);
 
             return $this->successResponse($media, 201);
         } catch (Exception $e) {
-            Log::error('Error uploading media: ' . $e->getMessage());
+            Log::error($e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

@@ -9,6 +9,8 @@ use App\Models\Roles\Role;
 use App\Models\Users\User;
 use App\Repositories\UserRepository;
 use App\Services\BaseService;
+use App\Services\UserMessageService;
+use App\Services\UserSettingsService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -16,10 +18,17 @@ use Illuminate\Support\Str;
 class UserService
 {
     protected UserRepository $userRepository;
+    protected UserSettingsService $userSettingsService;
+    protected UserMessageService $userMessageService;
 
-    public function __construct(UserRepository $userRepository)
+    public function __construct(
+        UserRepository $userRepository,
+        UserSettingsService $userSettingsService,
+        UserMessageService $userMessageService)
     {
         $this->userRepository = $userRepository;
+        $this->userSettingsService = $userSettingsService;
+        $this->userMessageService = $userMessageService;
     }
 
     public function getAll(array $filters = [])
@@ -34,49 +43,14 @@ class UserService
 
         $user = $this->userRepository->create($data);
 
-        $user->notificationSettings()->create([
-            'email_enabled' => true,
-            'push_enabled' => true,
-            'notify_on_new_message' => true,
-            'notify_on_new_follower' => true,
-            'notify_on_post_like' => true,
-            'notify_on_comment' => true,
-            'notify_on_comment_like' => true,
-            'notify_on_mention' => true
-        ]);
-
-        $user->userBalance()->create([
-            'balance' => 0.00,
-            'currency' => 'USD',
-        ]);
-
-        $user->userBalance()->create([
-            'balance' => 0.00,
-            'currency' => 'RUB',
-        ]);
+        $this->userSettingsService->createNotification($user);
+        $this->userSettingsService->createBalance($user);
+        $this->userSettingsService->attachTask($user);
+        $this->userSettingsService->attachAchievement($user);
+        $this->userMessageService->sendMessage(1, $user->id);
 
         // Логирование успешного создания пользователя
         Log::info('User created successfully', ['user_id' => $user->id, 'username' => $user->username]);
-
-        $defaultTasks = Task::all();
-        foreach ($defaultTasks as $task) {
-            $user->tasks()->attach($task->id, ['progress' => 0, 'completed' => false]);
-        }
-
-        // Логирование присвоения заданий пользователю
-        Log::info('Default tasks assigned to user', ['user_id' => $user->id]);
-
-        $achievement = Achievement::first();
-        if ($achievement) {
-            $user->achievements()->syncWithoutDetaching([$achievement->id]);
-            $points = $achievement->points;
-            $user->update(['experience' => $user->experience + $points]);
-
-            // Логирование присвоения достижения и обновления опыта
-            Log::info('Achievement assigned and experience updated', ['user_id' => $user->id, 'achievement_id' => $achievement->id, 'points' => $points]);
-
-            event(new UserExperienceChanged($user));
-        }
 
         return $user;
     }

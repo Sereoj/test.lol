@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\NotificationService;
+use App\Http\Resources\User\UserNotificationSettingsResource;
+use App\Http\Resources\UserNotificationResource;
+use App\Services\Messaging\NotificationService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @group Уведомления
@@ -16,240 +19,127 @@ use Illuminate\Support\Facades\Log;
 class NotificationController extends Controller
 {
     protected NotificationService $notificationService;
+
     public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
+        $this->middleware('auth:api');
     }
 
     /**
-     * Получение списка уведомлений
-     *
-     * Возвращает список уведомлений текущего пользователя с пагинацией.
+     * Получить список всех уведомлений пользователя.
      *
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @queryParam page integer Номер страницы для пагинации. Example: 1
-     * @queryParam per_page integer Количество элементов на странице. Example: 15
-     * @queryParam is_read boolean Фильтр по статусу прочтения (true - прочитанные, false - непрочитанные). Example: false
-     *
-     * @response {
-     *  "success": true,
-     *  "data": [
-     *    {
-     *      "id": "1234abcd-5678-efgh-ijkl-9012mnop3456",
-     *      "type": "new_follower",
-     *      "data": {
-     *        "user": {
-     *          "id": 3,
-     *          "username": "alexsmith",
-     *          "verification": true,
-     *          "avatar": {
-     *            "path": "avatars/user3.png"
-     *          }
-     *        }
-     *      },
-     *      "is_read": false,
-     *      "created_at": "2023-03-30T14:25:00Z"
-     *    },
-     *    {
-     *      "id": "7890abcd-1234-efgh-ijkl-5678mnop9012",
-     *      "type": "post_like",
-     *      "data": {
-     *        "user": {
-     *          "id": 2,
-     *          "username": "janedoe",
-     *          "verification": false,
-     *          "avatar": {
-     *            "path": "avatars/user2.png"
-     *          }
-     *        },
-     *        "post": {
-     *          "id": 15,
-     *          "content": "Это мой новый пост!"
-     *        }
-     *      },
-     *      "is_read": false,
-     *      "created_at": "2023-03-29T18:35:00Z"
-     *    }
-     *  ],
-     *  "pagination": {
-     *    "total": 24,
-     *    "per_page": 15,
-     *    "current_page": 1,
-     *    "last_page": 2
-     *  }
-     * }
+     * @return JsonResponse
      */
-    public function index(Request $request)
+    public function index(Request $request): JsonResponse
     {
-        $user = Auth::user();
-
-        $page = $request->input('page', 1);
-        $perPage = $request->input('per_page', 15);
-
         try {
-            $notification = $this->notificationService->allNotification($user, $page, $perPage);
-            return $this->successResponse($notification);
-        } catch (Exception $exception)
-        {
-            Log::error('Ошибка при получении уведомлений: ' . $exception->getMessage(), [
+            $userId = Auth::id();
+            $notifications = $this->notificationService->getNotificationsByUserId($userId);
+            return $this->successResponse(UserNotificationResource::collection($notifications));
+        } catch (Exception $e) {
+            Log::error('Ошибка при получении уведомлений: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
-                'exception' => $exception->getTraceAsString()
+                'exception' => $e->getTraceAsString()
             ]);
             return $this->errorResponse('Не удалось получить уведомления', 500);
         }
-
-  /*      // Здесь будет логика получения уведомлений
-        // Возвращаем заглушку в правильном формате
-        return response()->json([
-            'success' => true,
-            'data' => [
-                [
-                    'id' => 1,
-                    'type' => 'like',
-                    'message' => 'Пользователь user123 лайкнул ваш пост.',
-                    'read' => false,
-                    'created_at' => '2023-10-01T14:30:00Z',
-                    'data' => [
-                        'post_id' => 123,
-                        'comment_id' => null
-                    ],
-                    'from' => [
-                        'username' => 'user123',
-                        'avatar' => [
-                            'path' => 'https://example.com/avatars/user123.jpg'
-                        ]
-                    ]
-                ],
-                [
-                    'id' => 2,
-                    'type' => 'comment',
-                    'message' => 'Пользователь user456 прокомментировал ваш пост.',
-                    'read' => true,
-                    'created_at' => '2023-10-01T14:35:00Z',
-                    'data' => [
-                        'post_id' => 123,
-                        'comment_id' => 456
-                    ],
-                    'from' => [
-                        'username' => 'user456',
-                        'avatar' => [
-                            'path' => 'https://example.com/avatars/user456.jpg'
-                        ]
-                    ]
-                ],
-                [
-                    'id' => 3,
-                    'type' => 'follow',
-                    'message' => 'Пользователь user789 начал следить за вами.',
-                    'read' => false,
-                    'created_at' => '2023-10-02T09:00:00Z',
-                    'data' => [
-                        'post_id' => null,
-                        'comment_id' => null
-                    ],
-                    'from' => [
-                        'username' => 'user789',
-                        'avatar' => null
-                    ]
-                ]
-            ],
-            'pagination' => [
-                'total' => 0,
-                'per_page' => $perPage,
-                'current_page' => $page,
-                'last_page' => 1
-            ]
-        ]);*/
     }
 
     /**
-     * Получение количества непрочитанных уведомлений
+     * Получить список непрочитанных уведомлений пользователя.
      *
-     * Возвращает количество непрочитанных уведомлений текущего пользователя.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @response {
-     *  "success": true,
-     *  "data": {
-     *    "count": 5
-     *  }
-     * }
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function getUnreadCount()
+    public function unread(Request $request): JsonResponse
     {
         try {
-            $user = Auth::user();
-            $notification = $this->notificationService->getUnreadCount($user);
-            return $this->successResponse($notification);
-        }catch (Exception $exception)
-        {
-            Log::error('Ошибка получения непрочитанных сообщений', [
+            $userId = Auth::id();
+            $notifications = $this->notificationService->getNotificationsByUserId($userId)
+                ->whereNull('read_at');
+            return $this->successResponse($notifications);
+        } catch (Exception $e) {
+            Log::error('Ошибка при получении непрочитанных уведомлений: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
-                'exception' => $exception->getTraceAsString()
+                'exception' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse('Ошибка получения непрочитанных сообщений', 500);
+            return $this->errorResponse('Не удалось получить непрочитанные уведомления', 500);
         }
     }
 
     /**
-     * Отметить уведомление как прочитанное
+     * Отметить конкретное уведомление как прочитанное.
      *
-     * Помечает отдельное уведомление как прочитанное.
-     *
-     * @param string $id ID уведомления
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @urlParam id required ID уведомления. Example: 1234abcd-5678-efgh-ijkl-9012mnop3456
-     *
-     * @response {
-     *  "success": true,
-     *  "message": "Уведомление отмечено как прочитанное"
-     * }
-     *
-     * @response 404 {
-     *  "success": false,
-     *  "message": "Уведомление не найдено"
-     * }
+     * @param int $notificationId
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function markAsRead($id)
+    public function markAsRead(int $notificationId, Request $request): JsonResponse
     {
-        // Здесь будет логика отметки уведомления как прочитанного
-        return response()->json([
-            'success' => true,
-            'message' => 'Уведомление отмечено как прочитанное'
-        ]);
+        try {
+            $userId = Auth::id();
+            $notification = $this->notificationService->getById($notificationId);
+
+            if (!$notification || $notification->notifiable_id !== $userId || $notification->notifiable_type !== \App\Models\Users\User::class) {
+                return $this->errorResponse('Уведомление не найдено или доступ запрещен', 404);
+            }
+
+            $this->notificationService->markAsRead($notificationId);
+            return $this->successResponse(['message' => 'Уведомление отмечено как прочитанное']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при отметке уведомления как прочитанного: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'notification_id' => $notificationId,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось отметить уведомление как прочитанное', 500);
+        }
     }
 
     /**
-     * Отметить все уведомления как прочитанные
+     * Отметить все уведомления пользователя как прочитанные.
      *
-     * Помечает все непрочитанные уведомления пользователя как прочитанные.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     *
-     * @authenticated
-     *
-     * @response {
-     *  "success": true,
-     *  "message": "Все уведомления отмечены как прочитанные"
-     * }
+     * @param Request $request
+     * @return JsonResponse
      */
-    public function markAllAsRead()
+    public function markAllAsRead(Request $request): JsonResponse
     {
-        // Здесь будет логика отметки всех уведомлений как прочитанных
-        return response()->json([
-            'success' => true,
-            'message' => 'Все уведомления отмечены как прочитанные'
-        ]);
+        try {
+            $userId = Auth::id();
+            $notifications = $this->notificationService->getNotificationsByUserId($userId)
+                ->whereNull('read_at');
+
+            foreach ($notifications as $notification) {
+                $this->notificationService->markAsRead($notification->id);
+            }
+
+            return $this->successResponse(['message' => 'Все уведомления отмечены как прочитанные']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при отметке всех уведомлений как прочитанных: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось отметить все уведомления как прочитанные', 500);
+        }
+    }
+
+    public function getUnreadCount(): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $notifications = $this->notificationService->getNotificationsByUserId($userId)
+                ->whereNull('read_at');
+            $count = $notifications->count();
+            return $this->successResponse(['count' => $count]);
+        } catch (Exception $e) {
+            Log::error('Ошибка при получении количества непрочитанных уведомлений: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Ошибка получения непрочитанных уведомлений', 500);
+        }
     }
 
     /**
@@ -257,12 +147,12 @@ class NotificationController extends Controller
      *
      * Удаляет конкретное уведомление пользователя.
      *
-     * @param string $id ID уведомления
-     * @return \Illuminate\Http\JsonResponse
+     * @param int $id ID уведомления
+     * @return JsonResponse
      *
      * @authenticated
      *
-     * @urlParam id required ID уведомления. Example: 1234abcd-5678-efgh-ijkl-9012mnop3456
+     * @urlParam id required ID уведомления. Example: 123
      *
      * @response {
      *  "success": true,
@@ -274,12 +164,25 @@ class NotificationController extends Controller
      *  "message": "Уведомление не найдено"
      * }
      */
-    public function destroy($id)
+    public function destroy(int $id): JsonResponse
     {
-        // В реальном приложении здесь будет логика удаления уведомления
-        return response()->json([
-            'success' => true,
-            'message' => 'Уведомление удалено'
-        ]);
+        try {
+            $userId = Auth::id();
+            $notification = $this->notificationService->getById($id);
+
+            if (!$notification || $notification->notifiable_id !== $userId || $notification->notifiable_type !== \App\Models\Users\User::class) {
+                return $this->errorResponse('Уведомление не найдено или доступ запрещен', 404);
+            }
+
+            $this->notificationService->deleteNotification($notification);
+            return $this->successResponse(['message' => 'Уведомление удалено']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при удалении уведомления: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'notification_id' => $id,
+                'exception' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось удалить уведомление', 500);
+        }
     }
 }

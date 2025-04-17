@@ -22,17 +22,6 @@ class AvatarService
 
     public function uploadAvatar($userId, $file)
     {
-        try {
-            $fileHash = md5_file($file->getPathname());
-            $cacheKey = "avatar_upload_{$userId}_{$fileHash}";
-
-            //Убираем дубли повторных загрузок файлов, чтобы не засорять сервер.
-            if (Cache::has($cacheKey)) {
-                \Log::info("Аватар уже загружен: {$fileHash}");
-
-                return Cache::get($cacheKey);
-            }
-
             $fileName = Str::random(15).'.jpg';
             $path = "avatars/{$fileName}";
 
@@ -45,14 +34,7 @@ class AvatarService
                 'user_id' => $userId,
                 'path' => $path,
             ]);
-
-            Cache::put($cacheKey, $avatarData, now()->addHour());
-
             return $avatarData;
-
-        } catch (Exception $e) {
-            throw new Exception('An error occurred while uploading the avatar.');
-        }
     }
 
     public function getUserAvatars($userId)

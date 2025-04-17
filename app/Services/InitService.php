@@ -27,32 +27,32 @@ class InitService
     {
         return [
              [
-                 'label' => [
+                 'id' => 1,
+                 'name' => [
                      'ru' => 'Видео',
                      'en' => 'Videos'
                  ],
-                 'name' => 'videos',
              ],
              [
-                'label' => [
+                'id' => 2,
+                'name' => [
                     'ru' => 'Картинки',
                     'en' => 'Images'
                 ],
-                'name' => 'images',
              ],
              [
-                'label' => [
+                'id' => 2,
+                'name' => [
                     'ru' => 'Гифки',
                     'en' => 'Gifs'
                 ],
-                'name' => 'gifs',
              ],
              [
-                'label' => [
+                'id' => 3,
+                'name' => [
                     'ru' => 'Гифки123',
                     'en' => 'Gifs123'
                 ],
-                'name' => 'gifs123',
              ],
         ];
     }

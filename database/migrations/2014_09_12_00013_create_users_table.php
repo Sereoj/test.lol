@@ -36,6 +36,7 @@ return new class () extends Migration {
             $table->foreignId('location_id')->nullable()->constrained('locations')->cascadeOnUpdate()->nullOnDelete();
             $table->foreignId('employment_status_id')->nullable()->constrained('employment_statuses')->cascadeOnDelete();
             $table->rememberToken();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

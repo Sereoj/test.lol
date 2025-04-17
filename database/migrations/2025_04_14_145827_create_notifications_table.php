@@ -17,7 +17,6 @@ return new class () extends Migration {
             $table->json('data');
             $table->timestamp('read_at')->nullable()->index();
             $table->timestamps();
-            $table->index(['notifiable_type', 'notifiable_id']);
         });
     }
 

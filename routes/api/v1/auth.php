@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Apps\AppController;
+use App\Http\Controllers\Authentication\AccountRecoveryController;
 use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\StepController;
 use App\Http\Controllers\Billing\BalanceController;
@@ -8,6 +9,7 @@ use App\Http\Controllers\Billing\PurchaseController;
 use App\Http\Controllers\Billing\SubscriptionController;
 use App\Http\Controllers\Billing\TransactionController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EmploymentStatusController;
 use App\Http\Controllers\Media\AvatarController;
@@ -19,21 +21,20 @@ use App\Http\Controllers\Posts\PostStatisticController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Users\UserAccountController;
 use App\Http\Controllers\Users\UserAchievementController;
+use App\Http\Controllers\Users\UserBadgeController;
+use App\Http\Controllers\Users\UserCoverController;
 use App\Http\Controllers\Users\UserEmploymentStatusController;
 use App\Http\Controllers\Users\UserFollowController;
+use App\Http\Controllers\Users\UserGenderController;
 use App\Http\Controllers\Users\UserLocationController;
 use App\Http\Controllers\Users\UserNotificationSettingsController;
+use App\Http\Controllers\Users\UserPersonalizationController;
 use App\Http\Controllers\Users\UserPostController;
-use App\Http\Controllers\Users\UserProfileController;
 use App\Http\Controllers\Users\UserSettingsController;
 use App\Http\Controllers\Users\UserSkillController;
 use App\Http\Controllers\Users\UserSourceController;
 use App\Http\Controllers\Users\UserStatusController;
 use App\Http\Controllers\Users\UserTaskController;
-use App\Http\Controllers\ChallengeController;
-use App\Http\Controllers\Users\UserCoverController;
-use App\Http\Controllers\Authentication\AccountRecoveryController;
-use App\Http\Controllers\Users\UserBadgeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -46,6 +47,9 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('auth:api')->group(function () {
+    Route::get('/gender', [UserGenderController::class, 'index'])
+        ->name('gender');
+
     // Маршруты аутентификации
     Route::prefix('auth')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout'])
@@ -187,6 +191,10 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('user/settings')->group(function () {
         Route::patch('/', [UserSettingsController::class, 'update'])
             ->name('user.settings.update');
+    });
+
+    Route::prefix('user/personalization')->group(function (){
+       Route::post('/', [UserPersonalizationController::class, 'update']);
     });
 
     // Настройки уведомлений пользователя

@@ -32,7 +32,7 @@ class UserStatusController extends Controller
     {
         try {
             $user = Auth::user();
-            $status = $this->userStatusService->assignStatus($user, $request->validated());
+            $status = $this->userStatusService->assignStatus($user, $request->input('status_id'));
             return $this->successResponse(
                 [
                     'message' => 'Status assigned successfully',

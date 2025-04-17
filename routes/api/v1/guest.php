@@ -71,7 +71,8 @@ Route::middleware('guest')->group(function () {
 
 // Маршруты, доступные как гостям, так и авторизованным пользователям
 // Установка языка
-Route::post('/language', [UserLanguageController::class, 'setLanguage'])
+Route::get('/languages', [UserLanguageController::class, 'index'])->name('lang.public');
+Route::post('/languages', [UserLanguageController::class, 'switchLanguage'])
     ->name('set.language');
 
 //http://test/public/api/v1/search/tags?query=&page=1&per_page=12
