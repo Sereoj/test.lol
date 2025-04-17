@@ -13,7 +13,7 @@ use Exception;
 class UserEmploymentStatusController extends Controller
 {
     protected UserEmploymentStatusService $userEmploymentStatusService;
-    
+
     private const CACHE_KEY_USER_EMPLOYMENT_STATUS = 'user_employment_status_';
 
     public function __construct(UserEmploymentStatusService $userEmploymentStatusService)
@@ -34,15 +34,15 @@ class UserEmploymentStatusController extends Controller
 
             if ($user) {
                 $this->forgetCache(self::CACHE_KEY_USER_EMPLOYMENT_STATUS . $user->id);
-                
+
                 Log::info('Employment status assigned successfully', [
                     'user_id' => $user->id,
                     'employment_status_id' => $employmentStatusId
                 ]);
 
-                return $this->successResponse($user);
+                return $this->successResponse('Employment status assigned successfully');
             }
-            
+
             Log::warning('User or EmploymentStatus not found', [
                 'user_id' => Auth::id(),
                 'employment_status_id' => $employmentStatusId
@@ -70,12 +70,12 @@ class UserEmploymentStatusController extends Controller
 
             if ($user) {
                 $this->forgetCache(self::CACHE_KEY_USER_EMPLOYMENT_STATUS . $user->id);
-                
+
                 Log::info('Employment status removed successfully', ['user_id' => $user->id]);
 
-                return $this->successResponse($user);
+                return $this->successResponse('Employment status removed successfully');
             }
-            
+
             Log::warning('User not found', ['user_id' => Auth::id()]);
 
             return $this->errorResponse('User not found', 404);

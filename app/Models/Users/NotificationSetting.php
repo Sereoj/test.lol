@@ -1,9 +1,7 @@
 <?php
 
-namespace App\Models;
+namespace App\Models\Users;
 
-use App\Models\Users\User;
-use Database\Factories\NotificationSettingFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,13 +10,16 @@ class NotificationSetting extends Model
 {
     use HasFactory;
 
+    protected $table = 'notification_settings';
+
     /**
      * Атрибуты, которые можно массово присваивать.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
+        'email_enabled',
+        'push_enabled',
         'notify_on_new_message',
         'notify_on_new_follower',
         'notify_on_post_like',
@@ -33,6 +34,8 @@ class NotificationSetting extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'email_enabled' => 'boolean',
+        'push_enabled' => 'boolean',
         'notify_on_new_message' => 'boolean',
         'notify_on_new_follower' => 'boolean',
         'notify_on_post_like' => 'boolean',

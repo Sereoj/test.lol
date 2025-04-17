@@ -2,70 +2,54 @@
 
 namespace App\Http\Controllers\Users;
 
+use App\Events\NotificationSettingsUpdated;
 use App\Http\Controllers\Controller;
-use App\Models\NotificationSetting;
-use Illuminate\Http\Request;
+use App\Http\Requests\User\UpdateNotificationSettingsRequest;
+use App\Http\Resources\User\UserNotificationSettingsResource;
+use App\Services\Users\UserNotificationSettingsService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class UserNotificationSettingsController extends Controller
 {
-    /**
-     * Обновление настроек уведомлений пользователя
-     */
-    public function update(Request $request)
+    protected UserNotificationSettingsService $notificationSettingsService;
+
+    public function __construct(UserNotificationSettingsService $notificationSettingsService)
     {
-        $validator = Validator::make($request->all(), [
-            'notify_on_new_message' => 'sometimes|boolean',
-            'notify_on_new_follower' => 'sometimes|boolean',
-            'notify_on_post_like' => 'sometimes|boolean',
-            'notify_on_comment' => 'sometimes|boolean',
-            'notify_on_comment_like' => 'sometimes|boolean',
-            'notify_on_mention' => 'sometimes|boolean'
-        ]);
+        $this->notificationSettingsService = $notificationSettingsService;
+    }
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
+    public function index()
+    {
+        try {
+            $user = Auth::user();
+            $settings = $this->notificationSettingsService->get($user);
+            return $this->successResponse(new UserNotificationSettingsResource($settings));
+        }catch (Exception $e) {
+            Log::error('Ошибка при получении настроек уведомлений: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
+
+            return $this->errorResponse('Не удалось получить настройки уведомлений', 500);
         }
+    }
 
-        $user = Auth::user();
+    public function update(UpdateNotificationSettingsRequest $request)
+    {
+        try {
+            $user = Auth::user();
+            $settings = $this->notificationSettingsService->updateSettings($user, $request->validated());
+            event(new NotificationSettingsUpdated($user));
+            return $this->successResponse(new UserNotificationSettingsResource($settings));
+        }catch (Exception $e) {
+            Log::error('Ошибка при обновлении настроек уведомлений: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $e->getTraceAsString()
+            ]);
 
-        // Получение или создание настроек уведомлений
-        $settings = $user->notificationSettings ?? $user->notificationSettings()->create([
-            'notify_on_new_message' => true,
-            'notify_on_new_follower' => true,
-            'notify_on_post_like' => true,
-            'notify_on_comment' => true,
-            'notify_on_comment_like' => true,
-            'notify_on_mention' => true
-        ]);
-
-        // Обновление настроек
-        foreach ([
-            'notify_on_new_message', 'notify_on_new_follower', 'notify_on_post_like',
-            'notify_on_comment', 'notify_on_comment_like', 'notify_on_mention'
-        ] as $setting) {
-            if ($request->has($setting)) {
-                $settings->$setting = $request->$setting;
-            }
+            return $this->errorResponse('Не удалось обновить настройки уведомлений', 500);
         }
-
-        $settings->save();
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'notify_on_new_message' => (bool)$settings->notify_on_new_message,
-                'notify_on_new_follower' => (bool)$settings->notify_on_new_follower,
-                'notify_on_post_like' => (bool)$settings->notify_on_post_like,
-                'notify_on_comment' => (bool)$settings->notify_on_comment,
-                'notify_on_comment_like' => (bool)$settings->notify_on_comment_like,
-                'notify_on_mention' => (bool)$settings->notify_on_mention
-            ],
-            'message' => 'Настройки уведомлений успешно обновлены'
-        ]);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Media\MediaRequest;
+use App\Http\Resources\Media\ShortMediaResource;
 use App\Services\Media\MediaService;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Log;
 class MediaController extends Controller
 {
     protected MediaService $mediaService;
-    
+
     private const CACHE_MINUTES = 60;
     private const CACHE_KEY_MEDIA = 'media_';
 
@@ -33,8 +34,8 @@ class MediaController extends Controller
                 'is_public' => true,
             ];
 
-            $media = $this->mediaService->upload($files, $options);
-            
+            $media = ShortMediaResource::collection($this->mediaService->upload($files, $options));
+
             Log::info('Media uploaded successfully', ['media_id' => $media->id ?? 'multiple']);
 
             return $this->successResponse($media, 201);
@@ -48,11 +49,11 @@ class MediaController extends Controller
     {
         try {
             $cacheKey = self::CACHE_KEY_MEDIA . $id;
-            
+
             $media = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 return $this->mediaService->getMediaById($id);
             });
-            
+
             Log::info('Media retrieved successfully', ['media_id' => $id]);
 
             return $this->successResponse($media);
@@ -66,10 +67,10 @@ class MediaController extends Controller
     {
         try {
             $media = $this->mediaService->updateMedia($id, $request->validated());
-            
+
             $cacheKey = self::CACHE_KEY_MEDIA . $id;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('Media updated successfully', ['media_id' => $id]);
 
             return $this->successResponse($media);
@@ -83,10 +84,10 @@ class MediaController extends Controller
     {
         try {
             $this->mediaService->deleteMedia($id);
-            
+
             $cacheKey = self::CACHE_KEY_MEDIA . $id;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('Media deleted successfully', ['media_id' => $id]);
 
             return $this->successResponse(null, 204);

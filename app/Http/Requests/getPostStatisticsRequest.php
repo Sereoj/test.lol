@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;   
 
 class getPostStatisticsRequest extends FormRequest
 {
@@ -36,5 +38,18 @@ class getPostStatisticsRequest extends FormRequest
             'date_range.end_date.date' => 'The end date must be a valid date.',
             'date_range.end_date.after_or_equal' => 'The end date must be after or equal to the start date.',
         ];
+    }   
+
+    public function attributes(): array
+    {
+        return [
+            'date_range.start_date' => 'The start date',
+            'date_range.end_date' => 'The end date',
+        ];
+    }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json($validator->errors(), 422));
     }
 }

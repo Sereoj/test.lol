@@ -35,6 +35,8 @@ class UserService
         $user = $this->userRepository->create($data);
 
         $user->notificationSettings()->create([
+            'email_enabled' => true,
+            'push_enabled' => true,
             'notify_on_new_message' => true,
             'notify_on_new_follower' => true,
             'notify_on_post_like' => true,

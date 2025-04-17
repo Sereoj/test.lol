@@ -2,6 +2,7 @@
 
 namespace App\Services\Users;
 
+use App\Http\Resources\BadgeResource;
 use App\Models\Users\UserBadge;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -10,9 +11,21 @@ use Illuminate\Support\Facades\Log;
 
 class UserBadgeService
 {
-    public function getAllUserBadges()
+    public function getAllUserBadges($userId)
     {
-        return UserBadge::with('badge')->get();
+        $userBadges = UserBadge::with('badge')->where('user_id', $userId)->get();
+        $badges = collect();
+        foreach ($userBadges as $item) {
+            if($item->badge){
+                $badges->put($item->badge->id, $item->badge);
+            }
+        }
+        $activeBadge = $userBadges->firstWhere('is_active', true)?->badge;
+
+        return [
+            'active_badge' => $activeBadge ? new BadgeResource($activeBadge) : [],
+            'badges' => BadgeResource::collection($badges->values()),
+        ];
     }
 
     public function createUserBadge(array $data)

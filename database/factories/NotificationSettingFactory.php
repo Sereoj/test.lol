@@ -2,11 +2,10 @@
 
 namespace Database\Factories;
 
-use App\Models\NotificationSetting;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\NotificationSetting>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Users\NotificationSetting>
  */
 class NotificationSettingFactory extends Factory
 {
@@ -76,4 +75,4 @@ class NotificationSettingFactory extends Factory
             'notify_on_mention' => true,
         ]);
     }
-} 
+}

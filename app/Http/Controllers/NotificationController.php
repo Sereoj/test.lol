@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\NotificationService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 /**
  * @group Уведомления
@@ -12,6 +15,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class NotificationController extends Controller
 {
+    protected NotificationService $notificationService;
+    public function __construct(NotificationService $notificationService)
+    {
+        $this->notificationService = $notificationService;
+    }
+
     /**
      * Получение списка уведомлений
      *
@@ -76,10 +85,24 @@ class NotificationController extends Controller
      */
     public function index(Request $request)
     {
+        $user = Auth::user();
+
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 15);
 
-        // Здесь будет логика получения уведомлений
+        try {
+            $notification = $this->notificationService->allNotification($user, $page, $perPage);
+            return $this->successResponse($notification);
+        } catch (Exception $exception)
+        {
+            Log::error('Ошибка при получении уведомлений: ' . $exception->getMessage(), [
+                'user_id' => Auth::id(),
+                'exception' => $exception->getTraceAsString()
+            ]);
+            return $this->errorResponse('Не удалось получить уведомления', 500);
+        }
+
+  /*      // Здесь будет логика получения уведомлений
         // Возвращаем заглушку в правильном формате
         return response()->json([
             'success' => true,
@@ -140,7 +163,7 @@ class NotificationController extends Controller
                 'current_page' => $page,
                 'last_page' => 1
             ]
-        ]);
+        ]);*/
     }
 
     /**
@@ -161,13 +184,18 @@ class NotificationController extends Controller
      */
     public function getUnreadCount()
     {
-        // В реальном приложении здесь будет логика подсчета непрочитанных уведомлений
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'count' => 0
-            ]
-        ]);
+        try {
+            $user = Auth::user();
+            $notification = $this->notificationService->getUnreadCount($user);
+            return $this->successResponse($notification);
+        }catch (Exception $exception)
+        {
+            Log::error('Ошибка получения непрочитанных сообщений', [
+                'user_id' => Auth::id(),
+                'exception' => $exception->getTraceAsString()
+            ]);
+            return $this->errorResponse('Ошибка получения непрочитанных сообщений', 500);
+        }
     }
 
     /**

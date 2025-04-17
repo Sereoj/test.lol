@@ -14,10 +14,12 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\EmploymentStatusController;
 use App\Http\Controllers\SourceController;
+use App\Http\Controllers\Statuses\StatusController;
 use App\Http\Controllers\Users\UserController;
 use App\Http\Controllers\Users\UserLevelController;
 use App\Http\Controllers\Users\UserLocationController;
 use App\Http\Controllers\Users\UserSkillController;
+use App\Http\Controllers\Users\UserBadgeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -62,6 +64,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
             ->name('users.change-role'); // для администраторов
     });
 
+    // Управление источниками
     Route::prefix('sources')->group(function () {
         Route::get('/', [SourceController::class, 'index'])
             ->name('sources.index'); // для администраторов
@@ -75,6 +78,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
             ->name('sources.destroy'); // для администраторов
     });
 
+    // Управление навыками
     Route::prefix('skills')->group(function () {
         Route::middleware(['role:admin'])->group(function () {
             Route::post('/', [UserSkillController::class, 'store'])->name('skills.store'); // для администраторов
@@ -84,19 +88,42 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
         });
     });
 
+    // Управление локациями
     Route::prefix('locations')->group(function () {
         Route::post('/', [UserLocationController::class, 'store'])->name('locations.store');
         Route::put('/{id}', [UserLocationController::class, 'update'])->name('locations.update');
         Route::delete('/{id}', [UserLocationController::class, 'destroy'])->name('locations.destroy');
     });
 
+    // Управление наградами
     Route::prefix('badges')->group(function () {
-        Route::get('/{id}', [BadgeController::class, 'show'])->name('badges.show');
-        Route::post('', [BadgeController::class, 'store'])->name('badges.store');
-        Route::put('/{id}', [BadgeController::class, 'update'])->name('badges.update');
-        Route::delete('/{id}', [BadgeController::class, 'destroy'])->name('badges.destroy');
+        Route::get('/', [BadgeController::class, 'index'])
+            ->name('admin.badges.index');
+        Route::get('/{id}', [BadgeController::class, 'show'])
+            ->name('admin.badges.show');
+        Route::post('/', [BadgeController::class, 'store'])
+            ->name('admin.badges.store');
+        Route::put('/{id}', [BadgeController::class, 'update'])
+            ->name('admin.badges.update');
+        Route::delete('/{id}', [BadgeController::class, 'destroy'])
+            ->name('admin.badges.destroy');
     });
 
+    // Управление пользовательскими наградами
+    Route::prefix('user-badges')->group(function () {
+        Route::get('/', [UserBadgeController::class, 'index'])
+            ->name('admin.user-badges.index');
+        Route::get('/{id}', [UserBadgeController::class, 'show'])
+            ->name('admin.user-badges.show');
+        Route::post('/', [UserBadgeController::class, 'store'])
+            ->name('admin.user-badges.store');
+        Route::put('/{id}', [UserBadgeController::class, 'update'])
+            ->name('admin.user-badges.update');
+        Route::delete('/{id}', [UserBadgeController::class, 'destroy'])
+            ->name('admin.user-badges.destroy');
+    });
+
+    // Управление статусами занятости
     Route::prefix('employment-statuses')->group(function () {
         Route::get('/{id}', [EmploymentStatusController::class, 'show'])
             ->name('employment-statuses.show');
@@ -148,6 +175,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
             ->name('admin.posts.unfeature');
     });
 
+    // Управление категориями
     Route::prefix('categories')->group(function () {
         Route::post('/', [CategoryController::class, 'store'])
             ->name('categories.store'); // для администраторов
@@ -157,17 +185,31 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
             ->name('categories.destroy'); // для администраторов
     });
 
+    // Управление статусами
+    Route::prefix('statuses')->group(function () {
+        Route::get('/', [StatusController::class, 'index'])
+            ->name('admin.statuses.index'); // Получить все статусы
+        Route::post('/', [StatusController::class, 'store'])
+            ->name('admin.statuses.store'); // Создать новый статус
+        Route::get('/{id}', [StatusController::class, 'show'])
+            ->name('admin.statuses.show'); // Получить статус по ID
+        Route::put('/{id}', [StatusController::class, 'update'])
+            ->name('admin.statuses.update'); // Обновить статус
+        Route::delete('/{id}', [StatusController::class, 'destroy'])
+            ->name('admin.statuses.destroy'); // Удалить статус
+    });
+
     Route::prefix('apps')->group(function () {
         Route::get('/', [AppController::class, 'index'])
-            ->name('apps.index'); // для администраторов
+            ->name('admin.apps.index'); // для администраторов
         Route::post('/', [AppController::class, 'store'])
-            ->name('apps.store'); // для администраторов
+            ->name('admin.apps.store'); // для администраторов
         Route::get('/{id}', [AppController::class, 'show'])
-            ->name('apps.show'); // для администраторов
+            ->name('admin.apps.show'); // для администраторов
         Route::put('/{id}', [AppController::class, 'update'])
-            ->name('apps.update'); // для администраторов
+            ->name('admin.apps.update'); // для администраторов
         Route::delete('/{id}', [AppController::class, 'destroy'])
-            ->name('apps.destroy'); // для администраторов
+            ->name('admin.apps.destroy'); // для администраторов
     });
 
     Route::prefix('levels')->group(function () {

@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\EmploymentStatus\StoreEmploymentStatusRequest;
 use App\Http\Requests\EmploymentStatus\UpdateEmploymentStatusRequest;
+use App\Http\Resources\EmploymentStatusResource;
 use App\Services\Employment\EmploymentStatusService;
 use Illuminate\Support\Facades\Cache;
 
 class EmploymentStatusController extends Controller
 {
     protected EmploymentStatusService $employmentStatusService;
-    
+
     private const CACHE_MINUTES = 60;
     private const CACHE_KEY_EMPLOYMENT_STATUSES = 'employment_statuses';
 
@@ -22,7 +23,7 @@ class EmploymentStatusController extends Controller
     public function index()
     {
         $employmentStatuses = $this->getFromCacheOrStore(self::CACHE_KEY_EMPLOYMENT_STATUSES, self::CACHE_MINUTES, function () {
-            return $this->employmentStatusService->getAllEmploymentStatuses();
+            return EmploymentStatusResource::collection($this->employmentStatusService->getAllEmploymentStatuses());
         });
 
         return $this->successResponse($employmentStatuses);
@@ -31,7 +32,7 @@ class EmploymentStatusController extends Controller
     public function show($id)
     {
         $employmentStatus = $this->employmentStatusService->getEmploymentStatusById($id);
-        
+
         if ($employmentStatus) {
             return $this->successResponse($employmentStatus);
         }
@@ -53,7 +54,7 @@ class EmploymentStatusController extends Controller
     {
         $data = $request->validated();
         $employmentStatus = $this->employmentStatusService->updateEmploymentStatus($id, $data);
-        
+
         if ($employmentStatus) {
             $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 
@@ -66,7 +67,7 @@ class EmploymentStatusController extends Controller
     public function destroy($id)
     {
         $result = $this->employmentStatusService->deleteEmploymentStatus($id);
-        
+
         if ($result) {
             $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 

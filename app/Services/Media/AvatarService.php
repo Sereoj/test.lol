@@ -5,6 +5,7 @@ namespace App\Services\Media;
 use App\Repositories\AvatarRepository;
 use Cache;
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Drivers\Imagick\Encoders\JpegEncoder;
 use Intervention\Image\Laravel\Facades\Image;
@@ -68,12 +69,22 @@ class AvatarService
         try {
             $avatar = $this->avatarRepository->findAvatarByUserIdAndId($userId, $avatarId);
 
+            Log::info("test", [
+                'avatar_id' => $avatarId,
+                'user_id' => $userId,]
+            );
+
             // Удаляем файл аватара из хранилища
             Storage::delete('public/'.$avatar->path);
 
             return $this->avatarRepository->deleteAvatar($avatar);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while deleting the avatar.');
+            Log::error("An error occurred while deleting the user avatar.");
+            throw new Exception($e);
         }
+    }
+
+    public function setActive()
+    {
     }
 }

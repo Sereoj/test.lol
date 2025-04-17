@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SetActiveBadgeRequest;
 use App\Http\Requests\StoreUserBadgeRequest;
 use App\Http\Requests\UpdateUserBadgeRequest;
+use App\Http\Resources\UserBadgeResource;
 use App\Services\Users\UserBadgeService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Cache;
 class UserBadgeController extends Controller
 {
     protected UserBadgeService $userBadgeService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER_BADGES_ALL = 'user_badges_all';
     private const CACHE_KEY_USER_BADGE = 'user_badge_';
@@ -34,11 +35,11 @@ class UserBadgeController extends Controller
         try {
             // Кешируем список наград
             $badges = $this->getFromCacheOrStore(self::CACHE_KEY_USER_BADGES_ALL, self::CACHE_MINUTES, function () {
-                return $this->userBadgeService->getAllUserBadges();
+                return $this->userBadgeService->getAllUserBadges(Auth::id());
             });
-            
+
             Log::info('All user badges retrieved successfully');
-            
+
             return $this->successResponse($badges);
         } catch (Exception $e) {
             Log::error('Error retrieving all user badges: ' . $e->getMessage());
@@ -58,9 +59,9 @@ class UserBadgeController extends Controller
 
             // Очищаем кеш, так как награды могли измениться
             $this->forgetCache(self::CACHE_KEY_USER_BADGES_ALL);
-            
+
             Log::info('User badge created successfully', [
-                'user_id' => $userId, 
+                'user_id' => $userId,
                 'badge_id' => $badge->id
             ]);
 
@@ -79,13 +80,13 @@ class UserBadgeController extends Controller
         try {
             // Кешируем награду по ID
             $cacheKey = self::CACHE_KEY_USER_BADGE . $id;
-            
+
             $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 return $this->userBadgeService->getUserBadgeById($id);
             });
-            
+
             Log::info('User badge retrieved successfully', ['badge_id' => $id]);
-            
+
             return $this->successResponse($badge);
         } catch (Exception $e) {
             Log::error('Error retrieving user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
@@ -105,7 +106,7 @@ class UserBadgeController extends Controller
                 self::CACHE_KEY_USER_BADGE . $id,
                 self::CACHE_KEY_USER_BADGES_ALL
             ]);
-            
+
             Log::info('User badge updated successfully', ['badge_id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse($badge);
@@ -120,17 +121,17 @@ class UserBadgeController extends Controller
         try {
             $badgeId = $request->input('badge_id');
             $userId = Auth::id();
-            
+
             $this->userBadgeService->setActiveBadgeForUser($userId, $badgeId);
-            
+
             $this->forgetCache(self::CACHE_KEY_ACTIVE_BADGE . $userId);
-            
+
             Log::info('Badge set as active successfully', ['badge_id' => $badgeId, 'user_id' => $userId]);
 
             return $this->successResponse(['message' => 'Badge set as active successfully']);
         } catch (Exception $e) {
             Log::error('Error setting active badge: ' . $e->getMessage(), [
-                'badge_id' => $request->input('badge_id'), 
+                'badge_id' => $request->input('badge_id'),
                 'user_id' => Auth::id()
             ]);
             return $this->errorResponse($e->getMessage(), 400);
@@ -142,11 +143,11 @@ class UserBadgeController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_ACTIVE_BADGE . $userId;
-            
+
             $activeBadge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
                 return $this->userBadgeService->getActiveBadgeForUser($userId);
             });
-            
+
             Log::info('Active badge retrieved successfully', ['user_id' => $userId]);
 
             return $this->successResponse($activeBadge);
@@ -170,7 +171,7 @@ class UserBadgeController extends Controller
                 self::CACHE_KEY_USER_BADGE . $id,
                 self::CACHE_KEY_USER_BADGES_ALL
             ]);
-            
+
             Log::info('User badge deleted successfully', ['badge_id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse(['message' => 'Badge deleted successfully']);

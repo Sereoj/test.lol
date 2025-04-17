@@ -109,15 +109,17 @@ class PostRepository
 
     public function getPost($id)
     {
-        if (is_numeric($id)) {
+        \Log::info("Type of $id: " . gettype($id)); // Выводит тип данных
+        \Log::info("Is numeric: " . is_numeric($id)); // Проверяет, является ли $id числом
+
+        $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
+            ->where('slug', $id)
+            ->firstOrFail();
+        if(!$post && is_numeric($id))
+        {
             $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
                 ->findOrFail($id);
-        } else {
-            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
-                ->where('slug', $id)
-                ->firstOrFail();
         }
-
         return $post;
     }
 

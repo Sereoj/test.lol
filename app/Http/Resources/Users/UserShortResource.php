@@ -22,6 +22,7 @@ class UserShortResource extends JsonResource
             'slug' => $this->slug,
             'verification' => $this->verification,
             'avatar' => new AvatarResource($this->currentAvatar),
+            'cover' => $this->cover,
             'wallet' => $this->when($request->user() && $request->user()->id === $this->id, [
                 'balance' => ShortUserBalance::collection($this->userBalance)
             ]),

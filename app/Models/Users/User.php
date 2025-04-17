@@ -4,7 +4,6 @@ namespace App\Models\Users;
 
 use App\Models\Apps\App;
 use App\Models\Billing\Transaction;
-use App\Models\Categories\Category;
 use App\Models\Content\Achievement;
 use App\Models\Content\Badge;
 use App\Models\Content\Skill;
@@ -14,11 +13,10 @@ use App\Models\Content\Task;
 use App\Models\Employment\EmploymentStatus;
 use App\Models\Locations\Location;
 use App\Models\Media\Avatar;
-use App\Models\NotificationSetting;
 use App\Models\Posts\Post;
 use App\Models\Roles\Role;
-use App\Models\Interactions\Interaction;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
@@ -28,8 +26,16 @@ class User extends Authenticatable
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
+    use SoftDeletes;
 
     public $timestamps = true;
+
+    /**
+     * The attributes that should be mutated to dates.
+     *
+     * @var array
+     */
+    protected $dates = ['deleted_at'];
 
     /**
      * The attributes that are mass assignable.
@@ -55,6 +61,10 @@ class User extends Authenticatable
         'provider_id',
         'role_id',
         'userSettings_id',
+        'usingApps_id',
+        'status_id',
+        'employment_status_id',
+        'location_id'
     ];
 
     public function isProfileComplete(): bool
@@ -126,7 +136,7 @@ class User extends Authenticatable
      */
     public function notificationSettings()
     {
-        return $this->hasOne(NotificationSetting::class);
+        return $this->hasOne(NotificationSetting::class)->withDefault();
     }
 
     public function specializations()

@@ -3,7 +3,6 @@
 use App\Http\Controllers\Apps\AppController;
 use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\StepController;
-use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\Billing\BalanceController;
 use App\Http\Controllers\Billing\PurchaseController;
 use App\Http\Controllers\Billing\SubscriptionController;
@@ -29,8 +28,12 @@ use App\Http\Controllers\Users\UserProfileController;
 use App\Http\Controllers\Users\UserSettingsController;
 use App\Http\Controllers\Users\UserSkillController;
 use App\Http\Controllers\Users\UserSourceController;
+use App\Http\Controllers\Users\UserStatusController;
 use App\Http\Controllers\Users\UserTaskController;
 use App\Http\Controllers\ChallengeController;
+use App\Http\Controllers\Users\UserCoverController;
+use App\Http\Controllers\Authentication\AccountRecoveryController;
+use App\Http\Controllers\Users\UserBadgeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -110,24 +113,6 @@ Route::middleware('auth:api')->group(function () {
                 ->name('user.skills.get');
         });
 
-        // Значки пользователя
-        Route::prefix('badges')->group(function () {
-            Route::post('/', [BadgeController::class, 'store'])
-                ->name('user-badges.store');
-            Route::get('/active', [BadgeController::class, 'getActiveBadge'])
-                ->name('user-badges.get-active');
-            Route::post('/active', [BadgeController::class, 'setActiveBadge'])
-                ->name('user-badges.set-active');
-            Route::get('/', [BadgeController::class, 'index'])
-                ->name('user-badges.index');
-            Route::get('/{id}', [BadgeController::class, 'show'])
-                ->name('user-badges.show');
-            Route::put('/{id}', [BadgeController::class, 'update'])
-                ->name('user-badges.update');
-            Route::delete('/{id}', [BadgeController::class, 'destroy'])
-                ->name('user-badges.destroy');
-        });
-
         // Задачи пользователя
         Route::prefix('tasks')->group(function () {
             Route::get('/', [UserTaskController::class, 'index'])
@@ -186,20 +171,16 @@ Route::middleware('auth:api')->group(function () {
             ->name('messages.mark_read');
     });
 
-    // Профиль
-    Route::prefix('profile')->group(function () {
-        Route::get('/{slug}', [UserProfileController::class, 'show'])
-            ->name('profile.show');
-        Route::patch('/', [UserProfileController::class, 'update'])
-            ->name('profile.update');
-    });
-
     // Настройки аккаунта пользователя
     Route::prefix('user/account')->group(function () {
+        Route::get('/', [UserAccountController::class, 'index'])
+            ->name('user.account');
         Route::patch('/', [UserAccountController::class, 'update'])
             ->name('user.account.update');
         Route::delete('/', [UserAccountController::class, 'destroy'])
             ->name('user.account.destroy');
+        Route::post('/restore', [UserAccountController::class, 'restore'])
+            ->name('user.account.restore');
     });
 
     // Настройки пользователя
@@ -209,9 +190,18 @@ Route::middleware('auth:api')->group(function () {
     });
 
     // Настройки уведомлений пользователя
-    Route::prefix('user/notification-settings')->group(function () {
+    Route::prefix('user/notifications')->group(function () {
+        Route::get('/', [UserNotificationSettingsController::class, 'index'])
+            ->name('user.notifications.index');
         Route::patch('/', [UserNotificationSettingsController::class, 'update'])
-            ->name('user.notification_settings.update');
+            ->name('user.notifications.update');
+    });
+
+    // Статусы пользователя
+    Route::prefix('user/statuses')->group(function () {
+        Route::get('/', [UserStatusController::class, 'index'])->name('user.statuses.index'); // Получить все статусы
+        Route::post('/assign', [UserStatusController::class, 'assign'])->name('user.statuses.assign'); // Привязать статус
+        Route::delete('/detach', [UserStatusController::class, 'detach'])->name('user.statuses.detach'); // Отвязать статус
     });
 
     // Аватары
@@ -222,6 +212,18 @@ Route::middleware('auth:api')->group(function () {
             ->name('avatars.get');
         Route::delete('/{avatarId}', [AvatarController::class, 'deleteAvatar'])
             ->name('avatars.delete');
+        Route::post('/{avatarId}/set-active', [AvatarController::class, 'setActive'])
+            ->name('avatars.delete');
+    });
+
+    // Обложки пользователя
+    Route::prefix('cover')->group(function () {
+        Route::get('/', [UserCoverController::class, 'show'])
+            ->name('user.cover.show');
+        Route::post('/', [UserCoverController::class, 'upload'])
+            ->name('user.cover.upload');
+        Route::delete('/', [UserCoverController::class, 'remove'])
+            ->name('user.cover.remove');
     });
 
     Route::prefix('employment-statuses')->group(function () {
@@ -238,6 +240,10 @@ Route::middleware('auth:api')->group(function () {
             ->name('media.update');
         Route::delete('/{id}', [MediaController::class, 'destroy'])
             ->name('media.destroy');
+    });
+
+    Route::prefix('drafts')->group(function () {
+        Route::get('/');
     });
 
     // Посты
@@ -281,7 +287,7 @@ Route::middleware('auth:api')->group(function () {
                 ->name('comments.update');
             Route::delete('/{id}', [CommentController::class, 'destroy'])
                 ->name('comments.destroy');
-            Route::post('/{commentId}/react', [CommentController::class, 'toggleLike'])
+            Route::post('/{commentId}/react', [CommentController::class, 'react'])
                 ->name('comments.react');
             Route::post('/{commentId}/report', [CommentController::class, 'report'])
                 ->name('comments.report');
@@ -300,6 +306,11 @@ Route::middleware('auth:api')->group(function () {
             ->name('tags.store');
         Route::put('/{tag}', [TagController::class, 'update'])
             ->name('tags.update');
+    });
+
+    Route::prefix('apps')->group(function () {
+        Route::get('/', [AppController::class, 'index'])
+            ->name('apps.index');
     });
 
     // Категории
@@ -328,10 +339,16 @@ Route::middleware('auth:api')->group(function () {
             ->name('locations.show');
     });
 
-    // Значки
-    Route::prefix('badges')->group(function () {
-        Route::get('/', [BadgeController::class, 'index'])
-            ->name('badges.index');
+    // Бейджи пользователя
+    Route::prefix('user/badges')->group(function () {
+        Route::get('/', [UserBadgeController::class, 'index'])
+            ->name('user.badges.index');
+        Route::get('/active', [UserBadgeController::class, 'getActiveBadge'])
+            ->name('user.badges.active');
+        Route::post('/active', [UserBadgeController::class, 'setActiveBadge'])
+            ->name('user.badges.set-active');
+        Route::get('/{id}', [UserBadgeController::class, 'show'])
+            ->name('user.badges.show');
     });
 
     // Челленджи
@@ -355,4 +372,14 @@ Route::middleware('auth:api')->group(function () {
         Route::post('/{id}/leave', [ChallengeController::class, 'leave'])
             ->name('challenges.leave');
     });
+});
+
+// Маршруты для восстановления удаленного аккаунта (без аутентификации)
+Route::prefix('account/recovery')->group(function () {
+    Route::post('/request', [AccountRecoveryController::class, 'requestRecovery'])
+        ->name('account.recovery.request');
+    Route::post('/recover', [AccountRecoveryController::class, 'recoverAccount'])
+        ->name('account.recovery.recover');
+    Route::post('/check-status', [AccountRecoveryController::class, 'checkStatus'])
+        ->name('account.recovery.check-status');
 });

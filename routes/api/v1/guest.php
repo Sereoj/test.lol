@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Authentication\AccountRecoveryController;
 use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\EmailVerificationController;
 use App\Http\Controllers\Authentication\PasswordResetController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Posts\PostSearchController;
 use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
 use App\Http\Controllers\Users\UserProfileController;
+use App\Http\Controllers\BadgeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -88,6 +90,14 @@ Route::prefix('search')->group(function () {
         ->name('posts.suggest.public');
 });
 
+// Маршруты для восстановления удаленного аккаунта (без аутентификации)
+Route::prefix('account/recovery')->group(function () {
+    Route::post('/request', [AccountRecoveryController::class, 'requestRecovery'])
+        ->name('account.recovery.request');
+    Route::post('/recover', [AccountRecoveryController::class, 'recoverAccount'])
+        ->name('account.recovery.recover');
+});
+
 // Публичные маршруты для постов
 Route::prefix('posts')->group(function () {
     Route::get('/', [PostController::class, 'index'])
@@ -114,4 +124,12 @@ Route::prefix('challenges')->group(function () {
         ->name('challenges.active.public');
     Route::get('/{id}', [ChallengeController::class, 'show'])
         ->name('challenges.show.public');
+});
+
+// Публичные маршруты для бейджей
+Route::prefix('badges')->group(function () {
+    Route::get('/', [BadgeController::class, 'index'])
+        ->name('badges.index.public');
+    Route::get('/{id}', [BadgeController::class, 'show'])
+        ->name('badges.show.public');
 });

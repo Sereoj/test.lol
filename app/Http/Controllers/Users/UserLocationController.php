@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Location\StoreLocationRequest;
+use App\Http\Resources\LocationResource;
 use App\Services\Locations\LocationService;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class UserLocationController extends Controller
     {
         try {
             $locations = $this->getFromCacheOrStore(self::CACHE_KEY_LOCATIONS_ALL, self::CACHE_MINUTES, function () {
-                return $this->locationService->getAllLocations();
+                return LocationResource::collection($this->locationService->getAllLocations());
             });
 
             Log::info('Locations retrieved successfully');

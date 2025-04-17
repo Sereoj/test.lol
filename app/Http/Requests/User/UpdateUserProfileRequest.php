@@ -98,4 +98,41 @@ class UpdateUserProfileRequest extends FormRequest
             response()->json(['errors' => $errors], 422)
         );
     }
+
+    public function messages(): array
+    {
+        return [
+            'username.required' => 'The username field is required.',
+            'seo_meta.required' => 'The seo_meta field is required.',
+            'slug.required' => 'The slug field is required.',
+            'description.required' => 'The description field is required.',
+            'email.required' => 'The email field is required.',
+            'verification.required' => 'The verification field is required.',
+            'experience.required' => 'The experience field is required.',
+            'gender.required' => 'The gender field is required.',
+            'language.required' => 'The language field is required.',
+            'age.required' => 'The age field is required.',
+        ];
+    }       
+
+    public function attributes(): array
+    {
+        return [
+            'username' => 'The username field',
+            'seo_meta' => 'The seo_meta field',
+            'slug' => 'The slug field',
+            'description' => 'The description field',
+            'email' => 'The email field',
+            'verification' => 'The verification field',
+            'experience' => 'The experience field',
+            'gender' => 'The gender field',
+            'language' => 'The language field',
+            'age' => 'The age field',
+        ];
+    }   
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json($validator->errors(), 422));
+    }
 }

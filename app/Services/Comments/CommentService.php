@@ -26,11 +26,13 @@ class CommentService
 
     public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        if (is_numeric($postId)) {
-            $postId = Post::findOrFail($postId)->id;
-        }else{
-            $postId = Post::where('slug', $postId)->firstOrFail()->id;
+        $post = Post::where('slug', $postId)->firstOrFail();
+
+        if(!$post && is_numeric($postId))
+        {
+            $post = Post::findOrFail($postId);
         }
+        $postId = $post->id;
 
         $rawComments = $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
         return new CommentCollection($rawComments);
@@ -52,20 +54,23 @@ class CommentService
             }
         }
 
-        return $this->commentRepository->updateComment($comment, [
+        $comment = $this->commentRepository->updateComment($comment, [
             'content' => $data['content'],
             'parent_id' => $parentId,
         ]);
+
+        return $comment;
     }
 
     public function createComment($postId, array $data)
     {
-        if (is_numeric($postId)) {
-            $postId = Post::findOrFail($postId)->id;
-        }else{
-            $postId = Post::where('slug', $postId)->firstOrFail()->id;
-        }
+        $post = Post::where('slug', $postId)->firstOrFail();
 
+        if(!$post && is_numeric($postId))
+        {
+            $post = Post::findOrFail($postId);
+        }
+        $postId = $post->id;
         $parentId = $data['parent_id'] ?? null;
 
         if ($parentId) {

@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('notification_settings', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->boolean('email_enabled')->default(true);
+            $table->boolean('push_enabled')->default(true);
             $table->boolean('notify_on_new_message')->default(true);
             $table->boolean('notify_on_new_follower')->default(true);
             $table->boolean('notify_on_post_like')->default(true);

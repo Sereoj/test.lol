@@ -16,9 +16,7 @@ class UserProfileController extends Controller
 {
     protected UserProfileService $userProfileService;
     protected UserService $userService;
-
     private const CACHE_MINUTES_SHOW = 2;
-    private const CACHE_MINUTES_UPDATE = 10;
     private const CACHE_KEY_USER_PROFILE = 'user_profile_';
 
     public function __construct(UserProfileService $userProfileService, UserService $userService)
@@ -34,50 +32,20 @@ class UserProfileController extends Controller
     {
         try {
             $user = $this->userService->getBySlug($slug);
-            $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
+            $cacheKey = self::CACHE_KEY_USER_PROFILE . $user?->id ?? rand(0,10000);
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
-                return new UserProfileResource($this->userProfileService->getUserProfile($user->slug));
+                if($this->userProfileService->checkUser($user))
+                {
+                    Log::info('User profile retrieved successfully', ['user_id' => $user->id]);
+                    return new UserProfileResource($this->userProfileService->getUserProfile($user->slug));
+                }
+                throw new Exception("User profile not found");
             });
-
-            Log::info('User profile retrieved successfully', ['user_id' => $user->id]);
 
             return $this->successResponse($profile);
         } catch (Exception $e) {
             Log::error('Error retrieving user profile: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage());
-        }
-    }
-
-    /**
-     * Обновить профиль пользователя.
-     */
-    public function update(UpdateUserProfileRequest $request)
-    {
-        try {
-            $data = $request->validated();
-            $user = Auth::user();
-
-            $profile = $this->userProfileService->updateUserProfile($user->id, $data);
-
-            if ($profile) {
-                $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
-                $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_UPDATE, function () use ($profile) {
-                    return $profile;
-                }, true);
-
-                Log::info('User profile updated successfully', ['user_id' => $user->id]);
-
-                return $this->successResponse($profile);
-            }
-
-            Log::warning('Unable to update profile', ['user_id' => $user->id]);
-            return $this->errorResponse('Unable to update profile', 400);
-        } catch (Exception $e) {
-            Log::error('Error updating user profile: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'data' => $request->validated()
-            ]);
-            return $this->errorResponse('An error occurred while updating profile: ' . $e->getMessage(), 500);
         }
     }
 }

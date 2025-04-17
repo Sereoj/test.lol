@@ -6,6 +6,7 @@ use App\Events\CommentCreated;
 use App\Events\FileDownloaded;
 use App\Events\GifPublished;
 use App\Events\ImagePublished;
+use App\Events\NotificationSettingsUpdated;
 use App\Events\PostPublished;
 use App\Events\ProfileComplected;
 use App\Events\TaskCompleted;
@@ -16,6 +17,7 @@ use App\Events\VideoPublished;
 use App\Listeners\AddTaskToUsers;
 use App\Listeners\HandleCommentCreated;
 use App\Listeners\HandleFileDownloaded;
+use App\Listeners\HandleNotificationSettingsUpdated;
 use App\Listeners\HandleProfileComplected;
 use App\Listeners\PostPublishedListener;
 use App\Listeners\UpdateOnlineStatus;
@@ -71,6 +73,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         FileDownloaded::class => [
             HandleFileDownloaded::class,
+        ],
+        NotificationSettingsUpdated::class => [
+            HandleNotificationSettingsUpdated::class,
         ],
     ];
 

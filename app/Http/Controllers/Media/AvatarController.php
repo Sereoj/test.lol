@@ -61,7 +61,7 @@ class AvatarController extends Controller
             $cacheKey = self::CACHE_KEY_USER_AVATARS . $user->id;
 
             $avatars = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
-                return $this->avatarService->getUserAvatars($user->id);
+                return AvatarResource::collection($this->avatarService->getUserAvatars($user->id));
             });
 
             Log::info('User avatars retrieved successfully', ['user_id' => $user->id]);
@@ -93,6 +93,20 @@ class AvatarController extends Controller
         } catch (Exception $e) {
             Log::error('Error deleting avatar: ' . $e->getMessage(), ['user_id' => Auth::id(), 'avatar_id' => $avatarId]);
             return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+
+    public function setActive($avatarId)
+    {
+        try {
+            $user = Auth::user();
+            $this->avatarService->setActive($user, $avatarId);
+            Log::info('Avatar deleted successfully', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
+
+            return $this->successResponse(['message' => 'Avatar deleted successfully']);
+        }catch (Exception $e) {
+
         }
     }
 }

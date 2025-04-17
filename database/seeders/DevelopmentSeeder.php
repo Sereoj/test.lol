@@ -2,25 +2,25 @@
 
 namespace Database\Seeders;
 
-use App\Models\Comments\Comment;
-use App\Models\Challenge;
-use App\Models\Posts\Post;
-use App\Models\Content\Tag;
-use App\Models\Billing\Transaction;
 use App\Models\Billing\Subscription;
-use App\Models\Media\Media;
+use App\Models\Billing\Transaction;
 use App\Models\Categories\Category;
+use App\Models\Challenge;
+use App\Models\Comments\Comment;
+use App\Models\Comments\CommentLike;
+use App\Models\Content\Achievement;
+use App\Models\Content\Tag;
+use App\Models\Follow;
+use App\Models\Interactions\Interaction;
+use App\Models\Media\Avatar;
+use App\Models\Media\Media;
+use App\Models\PostMedia;
+use App\Models\Posts\Post;
+use App\Models\Posts\PostStatistic;
+use App\Models\Users\NotificationSetting;
 use App\Models\Users\User;
 use App\Models\Users\UserBalance;
 use App\Models\Users\UserSetting;
-use App\Models\Content\Achievement;
-use App\Models\NotificationSetting;
-use App\Models\Media\Avatar;
-use App\Models\PostMedia;
-use App\Models\Comments\CommentLike;
-use App\Models\Interactions\Interaction;
-use App\Models\Posts\PostStatistic;
-use App\Models\Follow;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

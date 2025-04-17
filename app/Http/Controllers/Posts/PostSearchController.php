@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
+use App\Http\Resources\Tag\ShortTagSearchResource;
+use App\Http\Resources\Tags\TagShortResource;
 use App\Services\Posts\PostSearchService;
 use App\Services\Posts\SearchSuggestionService;
 use Illuminate\Http\Request;
@@ -32,7 +34,7 @@ class PostSearchController extends Controller
     {
         try {
             $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS . md5($query);
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->search($query);
@@ -53,10 +55,10 @@ class PostSearchController extends Controller
     {
         try {
             $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS . md5($query);
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_tags_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = $this->searchService->searchInTags($query);
+                $searchResults = ShortTagSearchResource::collection($this->searchService->searchInTags($query));
                 Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
@@ -74,7 +76,7 @@ class PostSearchController extends Controller
     {
         try {
             $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS . md5($query);
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->searchInPosts($query);
@@ -95,7 +97,7 @@ class PostSearchController extends Controller
     {
         try {
             $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS . md5($query);
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_users_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->searchInUsers($query);

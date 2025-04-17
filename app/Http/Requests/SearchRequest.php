@@ -3,6 +3,8 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class SearchRequest extends FormRequest
 {
@@ -23,6 +25,25 @@ class SearchRequest extends FormRequest
     {
         return [
             'query' => 'required|string|min:3',
+        ];  
+    }
+
+    public function messages(): array
+    {
+        return [
+            'query.required' => 'The query field is required.',
         ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'query' => 'The query field',
+        ];  
+    }
+
+    public function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(response()->json($validator->errors(), 422));
     }
 }

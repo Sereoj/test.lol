@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tag\StoreTagRequest;
 use App\Http\Requests\Tag\UpdateTagRequest;
+use App\Http\Resources\Tags\TagShortResource;
 use App\Services\Content\TagService;
 use Illuminate\Support\Facades\Cache;
 
 class TagController extends Controller
 {
     protected TagService $tagService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_TAGS = 'tags';
     private const CACHE_KEY_TAG = 'tag_';
@@ -28,7 +29,7 @@ class TagController extends Controller
     public function index()
     {
         $tags = $this->getFromCacheOrStore(self::CACHE_KEY_TAGS, self::CACHE_MINUTES, function () {
-            return $this->tagService->getAllTags();
+            return TagShortResource::collection($this->tagService->getAllTags());
         });
 
         return $this->successResponse($tags);
@@ -57,7 +58,7 @@ class TagController extends Controller
     public function show($id)
     {
         $cacheKey = self::CACHE_KEY_TAG . $id;
-        
+
         $tag = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
             return $this->tagService->getTagById($id);
         });

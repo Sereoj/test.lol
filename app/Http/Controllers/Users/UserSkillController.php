@@ -69,6 +69,7 @@ class UserSkillController extends Controller
     public function store(StoreSkillRequest $request)
     {
         try {
+            //TODO: storeSkill
             $skill = $this->skillService->storeSkill($request->all());
             Log::info('Skill stored successfully', ['skill_id' => $skill->id, 'data' => $request->all()]);
 
@@ -159,6 +160,7 @@ class UserSkillController extends Controller
     public function update(UpdateSkillRequest $request, int $id)
     {
         try {
+            //TODO: updateSkill
             $skill = $this->skillService->updateSkill($id, $request->all());
             Log::info('Skill updated successfully', ['skill_id' => $id, 'data' => $request->all()]);
 

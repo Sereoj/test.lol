@@ -16,6 +16,7 @@ use App\Http\Resources\StatusResource;
 use App\Models\Users\User;
 use Auth;
 use Illuminate\Support\Facades\Log;
+use PHPUnit\Framework\Exception;
 
 class UserProfileService
 {
@@ -26,15 +27,25 @@ class UserProfileService
         $this->userFollowService = $userFollowService;
     }
 
+    public function checkUser(?User $user): bool
+    {
+        return (bool)$user;
+    }
+
     public function getUserProfile(string $slug): array
     {
-        $authUser = Auth::user();
-        $user = User::where('slug', $slug)->firstOrFail();
+        $authUser = Auth::guard('api')->user();
+        $user = User::where('slug', $slug)->first();
+
+        if(!$user)
+        {
+            throw new Exception('User not found');
+        }
 
         Log::info('Auth user ID', ['auth_user_id' => $authUser?->id]);
         Log::info('User ID from DB', ['user_id_from_db' => $user->id]);
 
-        $isMyProfile = $authUser && $authUser->id === $user->id;
+        $isMyProfile = $authUser->id === $user->id;
 
         Log::info('Is my profile', ['is_my_profile' => $isMyProfile]);
 
@@ -49,19 +60,21 @@ class UserProfileService
             $isFollowedBy = $this->userFollowService->isFollowing($user->id, $authUser->id);
         }
 
+        $activeBadge = $user->badges->firstWhere('is_active', true);
+
         return [
             'is_my_profile' => $isMyProfile,
             'user' => [
                 'id' => $user->id,
                 'username' => $user->username,
                 'slug' => $user->slug,
-                'avatars' => AvatarResource::collection($user->avatars),
-                'cover' => $user->cover,
+                'avatars' => AvatarResource::collection($user->avatars->sortDesc()),
+                'cover' => 'http://test/public/'.$user->cover,
                 'website' => $user->website,
                 'description' => $user->description,
                 'verification' => $user->verification,
                 'online' => new OnlineStatusResource($user->onlineStatus),
-                'badges' => BadgeResource::collection($user->badges),
+                'badges' => new BadgeResource($activeBadge),
                 'gender' => $user->gender,
                 'age' => $user->age,
                 'language' => $user->language,
