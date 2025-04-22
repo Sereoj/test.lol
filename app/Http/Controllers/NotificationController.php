@@ -2,11 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\Notifications\NotificationDeleted;
-use App\Events\Notifications\NotificationRead;
-use App\Http\Resources\NotificationCollection;
-use App\Http\Resources\NotificationResource;
-use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -20,7 +15,6 @@ class NotificationController extends Controller
     public function __construct(
         protected NotificationService $notificationService
     ) {
-        $this->middleware('auth:api');
     }
 
     /**
@@ -82,7 +76,7 @@ class NotificationController extends Controller
     {
         try {
             $notification = $this->notificationService->markAsRead($id, auth()->id());
-            
+
             if (!$notification) {
                 return $this->errorResponse('Notification not found', 404);
             }
@@ -110,7 +104,7 @@ class NotificationController extends Controller
     {
         try {
             $notifications = $this->notificationService->markAllAsRead(auth()->id());
-            
+
             foreach ($notifications as $notification) {
                 event(new NotificationRead($notification));
             }
@@ -150,13 +144,13 @@ class NotificationController extends Controller
     {
         try {
             $notification = $this->notificationService->getById($id);
-            
+
             if (!$notification || $notification->user_id !== auth()->id()) {
                 return $this->errorResponse('Notification not found', 404);
             }
 
             $result = $this->notificationService->delete($id, auth()->id());
-            
+
             if ($result) {
                 event(new NotificationDeleted($notification));
                 return $this->successResponse('Notification deleted successfully');

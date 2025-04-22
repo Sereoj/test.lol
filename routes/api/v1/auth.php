@@ -99,6 +99,9 @@ Route::middleware('auth:api')->group(function () {
 
         // Статус занятости пользователя
         Route::prefix('employment-status')->group(function () {
+            Route::get('/', [UserEmploymentStatusController::class, 'index'])
+                ->name('employment-status.index');
+
             Route::post('/assign', [UserEmploymentStatusController::class, 'assignEmploymentStatus'])
                 ->name('employment.status.assign');
             Route::delete('/remove', [UserEmploymentStatusController::class, 'removeEmploymentStatus'])

@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Users;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\EmploymentStatus\AssignEmploymentStatusRequest;
 use App\Http\Requests\EmploymentStatus\RemoveEmploymentStatusRequest;
+use App\Http\Resources\EmploymentStatusResource;
+use App\Http\Resources\UserEmploymentStatusResource;
 use App\Services\Users\UserEmploymentStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -20,6 +22,14 @@ class UserEmploymentStatusController extends Controller
     public function __construct(UserEmploymentStatusService $userEmploymentStatusService)
     {
         $this->userEmploymentStatusService = $userEmploymentStatusService;
+    }
+
+    public function index()
+    {
+
+       $employmentStatuses = new UserEmploymentStatusResource($this->userEmploymentStatusService->getAllEmploymentStatuses());
+
+        return $this->successResponse($employmentStatuses);
     }
 
     /**

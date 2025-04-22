@@ -30,7 +30,7 @@ class UserAccountController extends Controller
     public function index()
     {
         try {
-            $userId = Auth::guard('api')->id;
+            $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
 
             $userAccount = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {

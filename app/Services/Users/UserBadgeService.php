@@ -23,8 +23,8 @@ class UserBadgeService
         $activeBadge = $userBadges->firstWhere('is_active', true)?->badge;
 
         return [
-            'active_badge' => $activeBadge ? new BadgeResource($activeBadge) : [],
-            'badges' => BadgeResource::collection($badges->values()),
+            'active' => $activeBadge ? new BadgeResource($activeBadge) : [],
+            'items' => BadgeResource::collection($badges->values()),
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Users;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\User\AssignStatusRequest;
 use App\Http\Resources\StatusResource;
+use App\Http\Resources\UserStatusResource;
 use App\Services\Users\UserStatusService;
 use Illuminate\Support\Facades\Auth;
 
@@ -21,8 +22,7 @@ class UserStatusController extends Controller
     public function index()
     {
         try {
-            $user = Auth::user();
-            $statuses = StatusResource::collection($this->userStatusService->getAll($user));
+            $statuses = new UserStatusResource($this->userStatusService->getAll());
             return $this->successResponse($statuses);
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to retrieve statuses: ' . $e->getMessage(), 500);

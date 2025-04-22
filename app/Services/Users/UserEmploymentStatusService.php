@@ -4,9 +4,17 @@ namespace App\Services\Users;
 
 use App\Models\Employment\EmploymentStatus;
 use App\Models\Users\User;
+use Illuminate\Support\Facades\Auth;
 
 class UserEmploymentStatusService
 {
+    public function getAllEmploymentStatuses()
+    {
+        return [
+            'active_employment_status' => Auth::user()->employmentStatus,
+            'employment_statuses' => EmploymentStatus::all()
+        ];
+    }
     public function assignEmploymentStatusToUser($userId, $employmentStatusId)
     {
         $user = User::find($userId);

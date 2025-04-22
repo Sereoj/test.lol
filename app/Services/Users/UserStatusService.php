@@ -4,12 +4,16 @@ namespace App\Services\Users;
 
 use App\Models\Users\User;
 use App\Models\Users\UserStatus;
+use Illuminate\Support\Facades\Auth;
 
 class UserStatusService
 {
-    public function getAll(User $user)
+    public function getAll()
     {
-        return UserStatus::all() ?? collect();
+        return [
+            'active_status' => Auth::user()->status,
+            'statuses' => UserStatus::all()
+        ];
     }
 
     public function assignStatus(User $user, int $statusId)
