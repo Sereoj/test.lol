@@ -29,7 +29,6 @@ class PostController extends Controller
     }
 
     // Получение списка всех постов
-
     public function index(Request $request)
     {
         try {
@@ -79,11 +78,9 @@ class PostController extends Controller
         $post = $this->postService->updatePost($id, $request->validated());
         $this->forgetCache(self::CACHE_KEY_POST . $id);
 
-        return response()->json([
-            'success' => true,
-            'data' => new PostResource($post),
-            'message' => 'Пост успешно обновлен'
-        ]);
+        return $this->successResponse(
+            new PostResource($post),
+        );
     }
 
     // Удаление поста
@@ -102,12 +99,13 @@ class PostController extends Controller
     public function toggleLike(Request $request, $postId)
     {
         try {
+            $userId = Auth::guard('api')->id();
             $action = $request->input('action', 'like');
-            $post = match ($action) {
-                'unlike' => $this->postService->unlikePost($postId),
-                default => $this->postService->likePost($postId),
-            };
 
+            $post = match ($action) {
+                'unlike' => $this->postService->unlikePost($userId, $postId),
+                default => $this->postService->likePost($userId, $postId),
+            };
             return $this->successResponse(new PostStatResource($post));
         } catch (\Exception $exception)
         {

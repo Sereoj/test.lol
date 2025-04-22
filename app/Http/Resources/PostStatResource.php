@@ -15,13 +15,14 @@ class PostStatResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-          'id' => $this->id,
-          'views_count' => $this->views_count,
-          'likes_count' => $this->likes_count,
-          'reposts_count' => $this->reposts_count,
-          'downloads_count' => $this->downloads_count,
-          'purchases_count' => $this->purchases_count,
-          'comments_count' => $this->comments_count
+          'id' => $this->resource['stat']->id,
+          'views_count' => $this->resource['stat']->views_count,
+          'isUserLiked' => $this->resource['isUserLiked'],
+          'likes_count' => $this->resource['stat']->likes_count,
+          'reposts_count' => $this->resource['stat']->reposts_count,
+          'downloads_count' => $this->resource['stat']->downloads_count,
+          'purchases_count' => $this->resource['stat']->purchases_count,
+          'comments_count' => $this->resource['stat']->comments_count
         ];
     }
 }

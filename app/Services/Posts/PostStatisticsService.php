@@ -119,10 +119,8 @@ class PostStatisticsService
             ->toArray();
     }
 
-    public function incrementLikes(int $postId)
+    public function incrementLikes($userId,$postId)
     {
-        $userId = Auth::guard('api')->id();
-
         $interaction = $this->isUserLiked($userId, $postId);
 
         if (! $interaction) {
@@ -138,16 +136,17 @@ class PostStatisticsService
                 'interaction_type' => 'like',
             ]);
 
-            return $stat;
+            return [
+                'stat' => $stat,
+                'isUserLiked' => true
+            ];
         }
 
         throw new Exception('You have already liked this post.');
     }
 
-    public function decrementLikes(int $postId)
+    public function decrementLikes($userId,$postId)
     {
-        $userId = Auth::guard('api')->id();
-
         $interaction = $this->isUserLiked($userId, $postId);
 
         if ($interaction) {
@@ -159,7 +158,10 @@ class PostStatisticsService
 
             $interaction->delete();
 
-            return $stat;
+            return [
+                'stat' => $stat,
+                'isUserLiked' => false
+            ];
         }
         throw new Exception('You have not liked this post yet.');
     }

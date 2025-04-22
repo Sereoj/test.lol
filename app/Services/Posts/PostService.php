@@ -32,15 +32,21 @@ class PostService
     public function getPost($id)
     {
         $post = $this->postRepository->getPost($id);
+
         if(Auth::guard('api')->check()) {
             $this->statService->incrementViews($post->id);
-            Log::info('Post is viewed from user',
-                [
-                    'user' => Auth::id(),
-                    'post' => $id
-                ]);
+
+            return [
+                'post' => $post,
+                'isUserLiked' => $this->statService->isUserLiked(Auth::guard('api')->id(),  $post->id),
+                'isFavorited' => false
+            ];
         }
-        return $post;
+        return [
+            'post' => $post,
+            'isUserLiked' => false,
+            'isFavorited' => false
+        ];
     }
 
     public function getPostsByUser(User $user)
@@ -55,7 +61,12 @@ class PostService
 
     public function updatePost(int $id, array $data)
     {
-        return $this->postRepository->updatePost($id, $data);
+        $post = $this->postRepository->updatePost($id, $data);
+        return [
+            'post' => $post,
+            'isUserLiked' => false,
+            'isFavorited' => false
+        ];
     }
 
     public function deletePost(int $id): void
@@ -63,16 +74,21 @@ class PostService
         $this->postRepository->deletePost($id);
     }
 
-    public function likePost($postId)
+    public function likePost($userId,$postId)
     {
         $post = $this->postRepository->getPost($postId);
-        return $this->statService->incrementLikes($post->id);
+        return $this->statService->incrementLikes($userId, $post->id);
     }
 
-    public function unlikePost($postId)
+    public function unlikePost($userId,$postId)
     {
         $post = $this->postRepository->getPost($postId);
-        return $this->statService->decrementLikes($post->id);
+        return $this->statService->decrementLikes($userId, $post->id);
+    }
+
+    public function isUserLiked($userId, $postId)
+    {
+        return $this->statService->isUserLiked($userId, $postId);
     }
 
     public function repostPost(int $id)
