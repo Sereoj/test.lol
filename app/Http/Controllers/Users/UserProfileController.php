@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с профилем пользователя
 class UserProfileController extends Controller
 {
     protected UserProfileService $userProfileService;
@@ -32,7 +33,7 @@ class UserProfileController extends Controller
     {
         try {
             $user = $this->userService->getBySlug($slug);
-            $cacheKey = self::CACHE_KEY_USER_PROFILE . $user?->id ?? rand(0,10000);
+            $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
                 if($this->userProfileService->checkUser($user))
                 {

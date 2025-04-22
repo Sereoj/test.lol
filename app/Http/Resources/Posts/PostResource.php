@@ -5,8 +5,8 @@ namespace App\Http\Resources\Posts;
 use App\Http\Resources\Apps\AppShortResource;
 use App\Http\Resources\Media\MediaShortResource;
 use App\Http\Resources\ShortCategoryResource;
-use App\Http\Resources\Tags\TagShortResource;
-use App\Http\Resources\Users\UserShortResource;
+use App\Http\Resources\Tag\TagShortResource;
+use App\Http\Resources\Users\UserShortWithBalanceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -33,7 +33,7 @@ class PostResource extends JsonResource
                 'advanced' => $this->settings
             ],
             'media' => MediaShortResource::collection($this->media),
-            'user' => new UserShortResource($this->user),
+            'user' => new UserShortWithBalanceResource($this->user),
             'statistics' => new PostStatisticResource($this->statistics),
             'category' => new ShortCategoryResource($this->category),
             'apps' => AppShortResource::collection($this->apps),

@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с настройками уведомлений пользователя
 class UserNotificationSettingsController extends Controller
 {
     protected UserNotificationSettingsService $notificationSettingsService;
@@ -20,6 +21,7 @@ class UserNotificationSettingsController extends Controller
         $this->notificationSettingsService = $notificationSettingsService;
     }
 
+    // Получение настроек уведомлений пользователя
     public function index()
     {
         try {
@@ -36,6 +38,7 @@ class UserNotificationSettingsController extends Controller
         }
     }
 
+    // Обновление настроек уведомлений пользователя
     public function update(UpdateNotificationSettingsRequest $request)
     {
         try {

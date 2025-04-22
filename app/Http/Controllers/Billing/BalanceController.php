@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
 
+// Контроллер для работы с балансом пользователя
 class BalanceController extends Controller
 {
     protected BalanceService $balanceService;
@@ -26,6 +27,7 @@ class BalanceController extends Controller
         $this->paymentGatewayService = $paymentGatewayService;
     }
 
+    // Получение баланса пользователя
     public function getBalance(Request $request): JsonResponse
     {
         try {
@@ -60,6 +62,7 @@ class BalanceController extends Controller
         }
     }
 
+    // Пополнение баланса пользователя
     public function topUpBalance(Request $request): JsonResponse
     {
         try {
@@ -99,6 +102,7 @@ class BalanceController extends Controller
         }
     }
 
+    // Перевод баланса между пользователями
     public function transferBalance(Request $request): JsonResponse
     {
         try {
@@ -142,6 +146,7 @@ class BalanceController extends Controller
         }
     }
 
+    // Снятие средств с баланса пользователя
     public function withdrawBalance(Request $request): JsonResponse
     {
         try {

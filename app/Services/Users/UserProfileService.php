@@ -42,10 +42,7 @@ class UserProfileService
             throw new Exception('User not found');
         }
 
-        Log::info('Auth user ID', ['auth_user_id' => $authUser?->id]);
-        Log::info('User ID from DB', ['user_id_from_db' => $user->id]);
-
-        $isMyProfile = $authUser->id === $user->id;
+        $isMyProfile = $authUser?->id === $user->id;
 
         Log::info('Is my profile', ['is_my_profile' => $isMyProfile]);
 

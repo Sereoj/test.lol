@@ -118,7 +118,9 @@ class User extends Authenticatable
 
     public function badges()
     {
-        return $this->belongsToMany(Badge::class, 'user_badge');
+        return $this->belongsToMany(Badge::class, 'user_badge')
+            ->withPivot('is_active')
+            ->withTimestamps();
     }
 
     public function usingApps()
@@ -138,6 +140,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(NotificationSetting::class)->withDefault();
     }
+
 
     public function specializations()
     {

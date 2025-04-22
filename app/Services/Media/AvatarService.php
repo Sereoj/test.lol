@@ -33,6 +33,7 @@ class AvatarService
             $avatarData = $this->avatarRepository->createAvatar([
                 'user_id' => $userId,
                 'path' => $path,
+                'is_active' => true
             ]);
             return $avatarData;
     }
@@ -64,9 +65,5 @@ class AvatarService
             Log::error("An error occurred while deleting the user avatar.");
             throw new Exception($e);
         }
-    }
-
-    public function setActive()
-    {
     }
 }

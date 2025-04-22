@@ -67,14 +67,6 @@ class UserBadgeService
         return $userBadge;
     }
 
-    /**
-     * Устанавливает значок как активный для указанного пользователя
-     *
-     * @param int $userId ID пользователя
-     * @param int $badgeId ID значка, который нужно сделать активным
-     * @return UserBadge|array Активированный значок или сообщение об ошибке
-     * @throws Exception Если произошла ошибка при установке активного значка
-     */
     public function setActiveBadgeForUser($userId, $badgeId)
     {
         try {
@@ -93,19 +85,17 @@ class UserBadgeService
             if (! $userBadge) {
                 throw new Exception('Badge not found for the user.');
             }
-
             $userBadge->update(['is_active' => true]);
 
             DB::commit();
-
-            return $userBadge;
+            return true;
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error setting active badge: '.$e->getMessage(), [
                 'user_id' => $userId,
                 'badge_id' => $badgeId
             ]);
-            throw $e;
+            return false;
         }
     }
 

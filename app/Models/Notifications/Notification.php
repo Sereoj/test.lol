@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models\Messaging;
+namespace App\Models\Notifications;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,4 +16,4 @@ class Notification extends Model
     {
         return $this->morphTo();
     }
-} 
+}

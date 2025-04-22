@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
 
+// Контроллер для работы с подписками
 class SubscriptionController extends Controller
 {
     protected SubscriptionService $subscriptionService;
@@ -23,6 +24,7 @@ class SubscriptionController extends Controller
         $this->subscriptionService = $subscriptionService;
     }
 
+    // Получение активной подписки пользователя
     public function getActiveSubscription(Request $request): JsonResponse
     {
         try {
@@ -44,6 +46,7 @@ class SubscriptionController extends Controller
         }
     }
 
+    // Создание новой подписки
     public function createSubscription(Request $request): JsonResponse
     {
         try {
@@ -81,6 +84,7 @@ class SubscriptionController extends Controller
         }
     }
 
+    // Продление подписки
     public function extendSubscription(Request $request, int $subscriptionId): JsonResponse
     {
         try {

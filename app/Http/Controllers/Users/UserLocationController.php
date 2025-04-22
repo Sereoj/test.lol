@@ -9,6 +9,7 @@ use App\Services\Locations\LocationService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с местоположениями пользователей
 class UserLocationController extends Controller
 {
     protected LocationService $locationService;

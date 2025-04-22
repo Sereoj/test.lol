@@ -20,15 +20,19 @@ class UserService
     protected UserRepository $userRepository;
     protected UserSettingsService $userSettingsService;
     protected UserMessageService $userMessageService;
+    protected UserBadgeService $userBadgeService;
 
     public function __construct(
         UserRepository $userRepository,
         UserSettingsService $userSettingsService,
-        UserMessageService $userMessageService)
+        UserMessageService $userMessageService,
+        UserBadgeService $userBadgeService
+    )
     {
         $this->userRepository = $userRepository;
         $this->userSettingsService = $userSettingsService;
         $this->userMessageService = $userMessageService;
+        $this->userBadgeService = $userBadgeService;
     }
 
     public function getAll(array $filters = [])
@@ -43,6 +47,8 @@ class UserService
 
         $user = $this->userRepository->create($data);
 
+        $this->userBadgeService->setActiveBadgeForUser($user->id, 1);
+        $this->userBadgeService->setActiveBadgeForUser($user->id, 2);
         $this->userSettingsService->createNotification($user);
         $this->userSettingsService->createBalance($user);
         $this->userSettingsService->attachTask($user);
@@ -67,7 +73,7 @@ class UserService
 
     public function getBySlug(string $slug)
     {
-        return $this->userRepository->findBySlug($slug) ?: null;
+        return $this->userRepository->findBySlug($slug);
     }
 
     public function updateUser(int $id, array $data)

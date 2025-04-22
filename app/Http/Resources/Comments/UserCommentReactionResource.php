@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Resources\comment;
+namespace App\Http\Resources\Comments;
 
 use App\Http\Resources\Users\UserShortResource;
 use Illuminate\Http\Request;
@@ -18,7 +18,7 @@ class UserCommentReactionResource extends JsonResource
         return [
             'id' => $this->id,
             'type' => $this->type,
-            'user' => new UserShortResource($this->user_id)
+            'user' => new UserShortResource($this->user)
         ];
     }
 }

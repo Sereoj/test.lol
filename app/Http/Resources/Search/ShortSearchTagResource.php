@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Tag;
+namespace App\Http\Resources\Search;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ShortTagSearchResource extends JsonResource
+class ShortSearchTagResource extends JsonResource
 {
     /**
      * Transform the resource into an array.

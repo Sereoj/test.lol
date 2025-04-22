@@ -13,7 +13,9 @@ class Avatar extends Model
     protected $table = 'avatars';
 
     protected $fillable = [
-        'user_id', 'path',
+        'user_id',
+        'path',
+        'is_active'
     ];
 
     public $timestamps = true;

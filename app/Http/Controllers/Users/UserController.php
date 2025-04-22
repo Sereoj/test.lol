@@ -12,6 +12,7 @@ use App\Utils\PasswordUtil;
 use Exception;
 use Illuminate\Http\Request;
 
+// Контроллер для работы с пользователями
 class UserController extends Controller
 {
     protected UserService $userService;

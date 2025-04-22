@@ -13,6 +13,7 @@ use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с челленджами
 class ChallengeController extends Controller
 {
     protected ChallengeService $challengeService;
@@ -46,17 +47,17 @@ class ChallengeController extends Controller
             $filters = $request->only(['status', 'search']);
 
             $cacheKey = self::CACHE_KEY_CHALLENGES . '_' . md5(json_encode($filters) . $perPage);
-            
+
             $challenges = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($perPage, $filters) {
                 return $this->challengeService->getAll($perPage, $filters);
             });
 
             Log::info('Челленджи успешно получены', ['filters' => $filters]);
-            
+
             return $this->successResponse(ChallengeResource::collection($challenges));
         } catch (Exception $e) {
             Log::error('Ошибка при получении челленджей: ' . $e->getMessage());
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -75,13 +76,13 @@ class ChallengeController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_CHALLENGES);
             $this->forgetCache(self::CACHE_KEY_ACTIVE_CHALLENGES);
-            
+
             Log::info('Челлендж успешно создан', ['id' => $challenge->id]);
-            
-            return $this->successResponse(new ChallengeResource($challenge), 201);
+
+            return $this->successResponse(new ChallengeResource($challenge),[], 201);
         } catch (Exception $e) {
             Log::error('Ошибка при создании челленджа: ' . $e->getMessage());
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -96,17 +97,17 @@ class ChallengeController extends Controller
     {
         try {
             $cacheKey = self::CACHE_KEY_CHALLENGE . $id;
-            
+
             $challenge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
                 return $this->challengeService->getById($id);
             });
-            
+
             Log::info('Челлендж успешно получен', ['id' => $id]);
-            
+
             return $this->successResponse(new ChallengeResource($challenge));
         } catch (Exception $e) {
             Log::error('Ошибка при получении челленджа: ' . $e->getMessage(), ['id' => $id]);
-            
+
             return $this->errorResponse($e->getMessage(), 404);
         }
     }
@@ -127,13 +128,13 @@ class ChallengeController extends Controller
             $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
             $this->forgetCache(self::CACHE_KEY_CHALLENGES);
             $this->forgetCache(self::CACHE_KEY_ACTIVE_CHALLENGES);
-            
+
             Log::info('Челлендж успешно обновлен', ['id' => $id]);
-            
+
             return $this->successResponse(new ChallengeResource($challenge));
         } catch (Exception $e) {
             Log::error('Ошибка при обновлении челленджа: ' . $e->getMessage(), ['id' => $id]);
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -153,13 +154,13 @@ class ChallengeController extends Controller
             $this->forgetCache(self::CACHE_KEY_CHALLENGES);
             $this->forgetCache(self::CACHE_KEY_ACTIVE_CHALLENGES);
             $this->forgetCache(self::CACHE_KEY_USER_CHALLENGES);
-            
+
             Log::info('Челлендж успешно удален', ['id' => $id]);
-            
+
             return $this->successResponse(null, 204);
         } catch (Exception $e) {
             Log::error('Ошибка при удалении челленджа: ' . $e->getMessage(), ['id' => $id]);
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -175,17 +176,17 @@ class ChallengeController extends Controller
         try {
             $perPage = $request->get('per_page', 10);
             $cacheKey = self::CACHE_KEY_ACTIVE_CHALLENGES . $perPage;
-            
+
             $challenges = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($perPage) {
                 return $this->challengeService->getActiveChallenges($perPage);
             });
-            
+
             Log::info('Активные челленджи успешно получены');
-            
+
             return $this->successResponse(ChallengeResource::collection($challenges));
         } catch (Exception $e) {
             Log::error('Ошибка при получении активных челленджей: ' . $e->getMessage());
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -202,17 +203,17 @@ class ChallengeController extends Controller
             $perPage = $request->get('per_page', 10);
             $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_USER_CHALLENGES . $userId . '_' . $perPage;
-            
+
             $challenges = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId, $perPage) {
                 return $this->challengeService->getUserChallenges($userId, $perPage);
             });
-            
+
             Log::info('Челленджи пользователя успешно получены', ['user_id' => $userId]);
-            
+
             return $this->successResponse(ChallengeResource::collection($challenges));
         } catch (Exception $e) {
             Log::error('Ошибка при получении челленджей пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -232,16 +233,16 @@ class ChallengeController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
             $this->forgetCache(self::CACHE_KEY_USER_CHALLENGES . $userId . '_' . $request->get('per_page', 10));
-            
+
             Log::info('Пользователь присоединился к челленджу', ['user_id' => $userId, 'challenge_id' => $id]);
-            
+
             return $this->successResponse(['message' => 'Вы успешно присоединились к челленджу']);
         } catch (Exception $e) {
             Log::error('Ошибка при присоединении к челленджу: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'challenge_id' => $id
             ]);
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -260,16 +261,16 @@ class ChallengeController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
             $this->forgetCache(self::CACHE_KEY_USER_CHALLENGES . $userId . '_10');
-            
+
             Log::info('Пользователь покинул челлендж', ['user_id' => $userId, 'challenge_id' => $id]);
-            
+
             return $this->successResponse(['message' => 'Вы успешно покинули челлендж']);
         } catch (Exception $e) {
             Log::error('Ошибка при выходе из челленджа: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'challenge_id' => $id
             ]);
-            
+
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

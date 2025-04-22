@@ -159,6 +159,8 @@ Route::middleware('auth:api')->group(function () {
             ->name('notifications.mark_read');
         Route::patch('/read-all', [NotificationController::class, 'markAllAsRead'])
             ->name('notifications.mark_all_read');
+        Route::delete('/{notification_id}', [NotificationController::class, 'delete'])
+            ->name('notifications.delete');
     });
 
     // Сообщения
@@ -260,8 +262,6 @@ Route::middleware('auth:api')->group(function () {
             ->name('posts.index');
         Route::post('/', [PostController::class, 'store'])
             ->name('posts.store');
-        Route::get('/{id}', [PostController::class, 'show'])
-            ->name('posts.show');
         Route::put('/{id}', [PostController::class, 'update'])
             ->name('posts.update');
         Route::delete('/{id}', [PostController::class, 'destroy'])
@@ -289,17 +289,17 @@ Route::middleware('auth:api')->group(function () {
                 ->name('comments.index');
             Route::post('/', [CommentController::class, 'store'])
                 ->name('comments.store');
-            Route::get('/{id}', [CommentController::class, 'show'])
+            Route::get('/{comment_id}', [CommentController::class, 'show'])
                 ->name('comments.show');
-            Route::patch('/{id}', [CommentController::class, 'update'])
+            Route::patch('/{comment_id}', [CommentController::class, 'update'])
                 ->name('comments.update');
-            Route::delete('/{id}', [CommentController::class, 'destroy'])
+            Route::delete('/{comment_id}', [CommentController::class, 'destroy'])
                 ->name('comments.destroy');
-            Route::post('/{commentId}/react', [CommentController::class, 'react'])
+            Route::post('/{comment_id}/react', [CommentController::class, 'react'])
                 ->name('comments.react');
-            Route::post('/{commentId}/report', [CommentController::class, 'report'])
+            Route::post('/{comment_id}/report', [CommentController::class, 'report'])
                 ->name('comments.report');
-            Route::post('/{commentId}/repost', [CommentController::class, 'repost'])
+            Route::post('/{comment_id}/repost', [CommentController::class, 'repost'])
                 ->name('comments.repost');
         });
     });

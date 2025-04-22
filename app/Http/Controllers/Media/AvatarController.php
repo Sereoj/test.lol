@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с аватарами пользователей
 class AvatarController extends Controller
 {
     protected AvatarService $avatarService;
@@ -24,8 +25,8 @@ class AvatarController extends Controller
         $this->avatarService = $avatarService;
     }
 
-    /**
-     * Upload an avatar for the authenticated user.
+    /** 
+     * Загрузка аватара для авторизованного пользователя.
      *
      * @param UploadAvatarRequest $request
      * @return JsonResponse
@@ -50,7 +51,7 @@ class AvatarController extends Controller
     }
 
     /**
-     * Get all avatars for the authenticated user.
+     * Получение всех аватаров для авторизованного пользователя.
      *
      * @return JsonResponse
      */
@@ -74,7 +75,7 @@ class AvatarController extends Controller
     }
 
     /**
-     * Delete an avatar for the authenticated user.
+     * Удаление аватара для авторизованного пользователя.
      *
      * @param  int  $avatarId
      * @return JsonResponse
@@ -96,7 +97,12 @@ class AvatarController extends Controller
         }
     }
 
-
+    /**
+     * Установка активного аватара для авторизованного пользователя.
+     *
+     * @param  int  $avatarId
+     * @return JsonResponse
+     */
     public function setActive($avatarId)
     {
         try {

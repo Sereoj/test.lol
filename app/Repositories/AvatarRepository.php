@@ -8,9 +8,11 @@ class AvatarRepository
 {
     public function createAvatar(array $data)
     {
+        Avatar::where('user_id', $data['user_id'])->update(['is_active' => false]);
         return Avatar::create([
             'user_id' => $data['user_id'],
             'path' => $data['path'],
+            'is_active' => true
         ]);
     }
 

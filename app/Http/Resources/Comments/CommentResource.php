@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Comments;
 
 use App\Http\Resources\Users\UserShortResource;
+use App\Http\Resources\Users\UserShortWithBalanceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -19,10 +20,10 @@ class CommentResource extends JsonResource
             'id' => $this->id,
             'user' => new UserShortResource($this->user),
             'content' => $this->content,
-            'likes' => CommentLikeResource::collection($this->whenLoaded('likes')), // Ресурс для лайков
-            'reports' => CommentReportResource::collection($this->whenLoaded('reports')),
+            'likes' => $this->likes, // Ресурс для лайков
+            'reports' => $this->reports,
             'reposts' => $this->reposts()->count(), // Количество репостов
-            'replies' => CommentResource::collection($this->whenLoaded('replies')), // Вложенные комментарии
+            'replies' => CommentResource::collection($this->replies), // Вложенные комментарии
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
         ];
     }

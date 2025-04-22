@@ -8,6 +8,7 @@ use App\Services\Users\UserLevelService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с уровнями пользователей
 class UserLevelController extends Controller
 {
     protected UserLevelService $levelService;

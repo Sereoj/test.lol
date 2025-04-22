@@ -18,6 +18,7 @@ class EmailVerificationController extends Controller
         $this->emailVerificationService = $emailVerificationService;
     }
 
+    // Отправка кода подтверждения на email
     public function sendVerificationCode(SendVerificationCodeRequest $request)
     {
         try {
@@ -37,6 +38,7 @@ class EmailVerificationController extends Controller
         }
     }
 
+    // Проверка подтверждения email
     public function verifyEmail(VerifyEmailRequest $request)
     {
         try {

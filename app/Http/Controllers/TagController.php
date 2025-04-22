@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Tag\StoreTagRequest;
 use App\Http\Requests\Tag\UpdateTagRequest;
-use App\Http\Resources\Tags\TagShortResource;
+use App\Http\Resources\Tag\TagShortResource;
 use App\Services\Content\TagService;
-use Illuminate\Support\Facades\Cache;
 
+// Контроллер для работы с тегами
 class TagController extends Controller
 {
     protected TagService $tagService;
@@ -22,7 +22,7 @@ class TagController extends Controller
     }
 
     /**
-     * Display a listing of the tags.
+     * Получение списка всех тегов
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -36,7 +36,7 @@ class TagController extends Controller
     }
 
     /**
-     * Store a newly created tag in storage.
+     * Создание нового тега
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -46,11 +46,11 @@ class TagController extends Controller
 
         $this->forgetCache(self::CACHE_KEY_TAGS);
 
-        return $this->successResponse($tag, 201);
+        return $this->successResponse($tag, [], 201);
     }
 
     /**
-     * Display the specified tag.
+     * Получение конкретного тега
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -67,7 +67,7 @@ class TagController extends Controller
     }
 
     /**
-     * Update the specified tag in storage.
+     * Обновление конкретного тега
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -84,7 +84,7 @@ class TagController extends Controller
     }
 
     /**
-     * Remove the specified tag from storage.
+     * Удаление конкретного тега
      *
      * @param  int  $id
      * @return \Illuminate\Http\JsonResponse
@@ -98,6 +98,6 @@ class TagController extends Controller
             self::CACHE_KEY_TAG . $id
         ]);
 
-        return $this->successResponse(null, 204);
+        return $this->successResponse(null, [], 204);
     }
 }

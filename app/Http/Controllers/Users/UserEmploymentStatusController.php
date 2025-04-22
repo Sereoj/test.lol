@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с трудовым статусом пользователя
 class UserEmploymentStatusController extends Controller
 {
     protected UserEmploymentStatusService $userEmploymentStatusService;

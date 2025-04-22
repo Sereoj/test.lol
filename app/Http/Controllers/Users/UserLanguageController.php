@@ -8,8 +8,10 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с языком пользователя
 class UserLanguageController extends Controller
 {
+    // Получение списка языков
     public function index()
     {
         return $this->successResponse([
@@ -25,6 +27,7 @@ class UserLanguageController extends Controller
             ],
         ]);
     }
+    // Смена языка пользователя
     public function switchLanguage(SetLanguageRequest $request)
     {
         try {

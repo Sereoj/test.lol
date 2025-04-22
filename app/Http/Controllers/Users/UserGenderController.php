@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 
+// Контроллер для работы с полом пользователя
 class UserGenderController extends Controller
 {
     public function index()

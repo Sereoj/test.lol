@@ -17,6 +17,21 @@
         },
         {
             "name": {
+                "ru": "Первопроходец",
+                "en": "The Trailblazer"
+            },
+            "color": "#BDBDBD",
+            "description" : {
+                "ru": "Для тех, кто хочет исследовать новые горизонты.",
+                "en": "For those who want to explore new horizons."
+            },
+            "options": {
+                "availability": "open"
+            },
+            "image": ""
+        },
+        {
+            "name": {
                 "ru": "Активный участник",
                 "en": "Active Member"
             },

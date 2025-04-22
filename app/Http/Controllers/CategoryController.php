@@ -7,6 +7,7 @@ use App\Http\Resources\ShortCategoryResource;
 use App\Services\Content\CategoryService;
 use Illuminate\Support\Facades\Cache;
 
+// Контроллер для работы с категориями
 class CategoryController extends Controller
 {
     protected CategoryService $categoryService;
@@ -36,7 +37,7 @@ class CategoryController extends Controller
 
         $this->forgetCache(self::CACHE_KEY_CATEGORIES_LIST);
 
-        return $this->successResponse($category, 201);
+        return $this->successResponse($category, [], 201);
     }
 
     public function show($id)

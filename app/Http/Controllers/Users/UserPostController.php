@@ -7,6 +7,7 @@ use App\Http\Resources\Media\ThumbMediaResource;
 use App\Models\Users\User;
 use App\Services\Posts\PostService;
 
+// Контроллер для работы с постами пользователей
 class UserPostController extends Controller
 {
     protected PostService $postService;
@@ -16,6 +17,7 @@ class UserPostController extends Controller
         $this->postService = $postService;
     }
 
+    // Получение списка постов пользователя
     public function index(User $user)
     {
         return ThumbMediaResource::collection($this->postService->getPostsByUser($user));

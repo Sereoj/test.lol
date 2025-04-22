@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Media;
 
-use App\Http\Resources\Users\UserShortResource;
+use App\Http\Resources\Users\UserShortWithBalanceResource;
 use App\Models\Media\Media;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -27,7 +27,7 @@ class ThumbMediaResource extends JsonResource
             'is_nsfl_content' => $this->is_nsfl_content,
             'is_free' => $this->is_free,
             'has_copyright' => $this->has_copyright,
-            'user' => UserShortResource::make($this->whenLoaded('user')),
+            'user' => UserShortWithBalanceResource::make($this->whenLoaded('user')),
             'media' => MediaShortResource::groupMedia($filteredMedia),
             'likes_count' => '',
             'views_count' => '',

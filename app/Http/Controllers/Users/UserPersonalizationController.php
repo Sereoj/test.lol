@@ -8,6 +8,7 @@ use App\Services\UserPersonalizationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с персонализацией пользователя
 class UserPersonalizationController extends Controller
 {
     protected UserPersonalizationService $userPersonalizationService;
@@ -16,6 +17,7 @@ class UserPersonalizationController extends Controller
         $this->userPersonalizationService = $userPersonalizationService;
     }
 
+    // Обновление персонализации пользователя
     public function update(UserPersonalizationRequest $request)
     {
         try {

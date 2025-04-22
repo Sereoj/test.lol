@@ -26,6 +26,23 @@ class Badge extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'user_badge');
+        return $this->belongsToMany(User::class, 'user_badge')
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    public function isAchievementBased()
+    {
+        return isset($this->options['availability']) && $this->options['availability'] === 'achievement';
+    }
+
+    public function isPurchaseBased()
+    {
+        return isset($this->options['availability']) && $this->options['availability'] === 'purchase';
+    }
+
+    public function getRequirements()
+    {
+        return $this->options['requirements'] ?? null;
     }
 }

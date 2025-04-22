@@ -2,8 +2,9 @@
 
 namespace App\Repositories;
 
-use App\Models\Messaging\Notification;
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Notification;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 
 class NotificationRepository
 {
@@ -14,46 +15,92 @@ class NotificationRepository
         $this->model = $model;
     }
 
-    public function getAll(array $filters = []): Collection
+    /**
+     * Получить уведомления пользователя
+     *
+     * @param int $userId
+     * @return Collection
+     */
+    public function getUserNotifications(int $userId): Collection
     {
-        $query = $this->model->query();
-
-        if (!empty($filters)) {
-            foreach ($filters as $key => $value) {
-                if (!empty($value)) {
-                    $query->where($key, $value);
-                }
-            }
-        }
-
-        return $query->get();
+        return $this->model
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
-    public function create(array $data): Notification
+    /**
+     * Получить непрочитанные уведомления пользователя
+     *
+     * @param int $userId
+     * @return Collection
+     */
+    public function getUnreadNotifications(int $userId): Collection
     {
-        return $this->model->create($data);
+        return $this->model
+            ->where('user_id', $userId)
+            ->whereNull('read_at')
+            ->orderBy('created_at', 'desc')
+            ->get();
     }
 
+    /**
+     * Найти уведомление по ID
+     *
+     * @param int $id
+     * @return Notification|null
+     */
     public function findById(int $id): ?Notification
     {
         return $this->model->find($id);
     }
 
-    public function update(Notification $notification, array $data): bool
+    /**
+     * Отметить уведомление как прочитанное
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function markAsRead(int $id): bool
     {
-        return $notification->update($data);
+        return $this->model
+            ->where('id', $id)
+            ->update(['read_at' => now()]);
     }
 
-    public function delete(Notification $notification): ?bool
+    /**
+     * Отметить все уведомления пользователя как прочитанные
+     *
+     * @param int $userId
+     * @return bool
+     */
+    public function markAllAsRead(int $userId): bool
     {
-        return $notification->delete();
+        return $this->model
+            ->where('user_id', $userId)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
     }
 
-    public function getNotificationsByUserId(int $userId): Collection
+    /**
+     * Удалить уведомление
+     *
+     * @param int $id
+     * @return bool
+     */
+    public function delete(int $id): bool
     {
-        return $this->model->where('notifiable_type', \App\Models\Users\User::class)
-            ->where('notifiable_id', $userId)
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return $this->model->where('id', $id)->delete();
+    }
+
+    /**
+     * Создать новое уведомление
+     *
+     * @param array $data
+     * @return Notification
+     */
+    public function create(array $data): Notification
+    {
+        return $this->model->create($data);
     }
 } 

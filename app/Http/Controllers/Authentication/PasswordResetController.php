@@ -9,6 +9,7 @@ use App\Services\Authentication\PasswordResetService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для сброса пароля
 class PasswordResetController extends Controller
 {
     protected PasswordResetService $passwordResetService;

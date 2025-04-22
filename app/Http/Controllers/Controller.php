@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
+// Базовый контроллер для всех контроллеров
 class Controller extends BaseController
 {
     use AuthorizesRequests,
@@ -22,11 +23,12 @@ class Controller extends BaseController
      * @param int $statusCode
      * @return \Illuminate\Http\JsonResponse
      */
-    protected function successResponse(mixed $data = null, int $statusCode = 200)
+    protected function successResponse(mixed $data = null, array $pagination = [], int $statusCode = 200)
     {
         return response()->json([
             'success' => true,
-            'data' => $data
+            'data' => $data,
+            'pagination' => $pagination
         ], $statusCode);
     }
 

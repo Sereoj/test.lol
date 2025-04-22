@@ -12,6 +12,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с навыками пользователей
 class UserSkillController extends Controller
 {
     protected SkillService $skillService;

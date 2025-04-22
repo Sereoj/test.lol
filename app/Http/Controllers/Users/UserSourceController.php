@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с источниками пользователей
 class UserSourceController extends Controller
 {
     protected UserSourceService $userSourceService;

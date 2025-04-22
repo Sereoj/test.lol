@@ -27,21 +27,21 @@ class MessageService
     {
         $message = $this->messageRepository->create($data);
         Log::info('Message created successfully', ['message_id' => $message->id]);
-        
+
         // Вызов события для вещания через Reverb
         event(new NewMessageReceived($message));
-        
+
         // Определение получателя сообщения
-        $recipient = $message->conversation->creator_id === $message->user_id 
-            ? $message->conversation->recipient 
+        $recipient = $message->conversation->creator_id === $message->user_id
+            ? $message->conversation->recipient
             : $message->conversation->creator;
-        
+
         // Отправка уведомления получателю
         if ($recipient) {
             Notification::send($recipient, new NewMessageNotification($message));
             Log::info('Notification sent for new message', ['message_id' => $message->id, 'recipient_id' => $recipient->id]);
         }
-        
+
         return $message;
     }
 
@@ -53,7 +53,7 @@ class MessageService
     public function updateMessage(int $id, array $data): bool
     {
         $message = $this->getById($id);
-        return $message ? $this->messageRepository->update($message, $data) : false;
+        return $message && $this->messageRepository->update($message, $data);
     }
 
     public function deleteMessage(Message $message): void
@@ -62,7 +62,7 @@ class MessageService
         Log::info('Message deleted successfully', ['message_id' => $message->id]);
     }
 
-    public function getMessagesByConversationId(int $conversationId): \Illuminate\Database\Eloquent\Collection
+    public function getMessagesByConversationId(int $conversationId)
     {
         return $this->messageRepository->getMessagesByConversationId($conversationId);
     }
@@ -76,4 +76,4 @@ class MessageService
         }
         return $message;
     }
-} 
+}

@@ -9,6 +9,7 @@ use App\Services\Roles\RoleService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с ролями пользователей
 class UserRoleController extends Controller
 {
     protected RoleService $roleService;

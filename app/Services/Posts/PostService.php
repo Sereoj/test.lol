@@ -26,15 +26,20 @@ class PostService
 
     public function getPosts(array $filters, $userId = null)
     {
-        $posts = $this->postRepository->getPosts($filters, $userId);
-
-        return ThumbMediaResource::collection($posts);
+        return $this->postRepository->getPosts($filters, $userId);
     }
 
     public function getPost($id)
     {
         $post = $this->postRepository->getPost($id);
-        Auth::check() ?? $this->statService->incrementViews($post->id);
+        if(Auth::guard('api')->check()) {
+            $this->statService->incrementViews($post->id);
+            Log::info('Post is viewed from user',
+                [
+                    'user' => Auth::id(),
+                    'post' => $id
+                ]);
+        }
         return $post;
     }
 
@@ -58,17 +63,15 @@ class PostService
         $this->postRepository->deletePost($id);
     }
 
-    public function likePost(int $id)
+    public function likePost($postId)
     {
-        $post = $this->postRepository->getPost($id);
-
+        $post = $this->postRepository->getPost($postId);
         return $this->statService->incrementLikes($post->id);
     }
 
-    public function unlikePost(int $id)
+    public function unlikePost($postId)
     {
-        $post = $this->postRepository->getPost($id);
-
+        $post = $this->postRepository->getPost($postId);
         return $this->statService->decrementLikes($post->id);
     }
 

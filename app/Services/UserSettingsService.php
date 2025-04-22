@@ -6,10 +6,21 @@ use App\Events\UserExperienceChanged;
 use App\Models\Content\Achievement;
 use App\Models\Content\Task;
 use App\Models\Users\User;
+use App\Models\Users\UserSetting;
 use Illuminate\Support\Facades\Log;
 
 class UserSettingsService
 {
+    public function createUserSettings()
+    {
+        return  UserSetting::query()->create([
+            'is_online' => true,
+            'is_preferences_feed' => false,
+            'preferences_feed' => 'default',
+            'is_private' => false,
+            'enable_two_factor' => false,
+        ]);
+    }
     public function createNotification(User $user)
     {
         $user->notificationSettings()->create([

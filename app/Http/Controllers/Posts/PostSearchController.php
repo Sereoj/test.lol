@@ -4,14 +4,15 @@ namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
-use App\Http\Resources\Tag\ShortTagSearchResource;
-use App\Http\Resources\Tags\TagShortResource;
+use App\Http\Resources\Search\SearchThumbMediaResource;
+use App\Http\Resources\Search\ShortSearchTagResource;
 use App\Services\Posts\PostSearchService;
 use App\Services\Posts\SearchSuggestionService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
+// Контроллер для поиска постов
 class PostSearchController extends Controller
 {
     protected PostSearchService $searchService;
@@ -51,6 +52,7 @@ class PostSearchController extends Controller
         }
     }
 
+    // Поиск постов по тегам
     public function searchTags(SearchRequest $request)
     {
         try {
@@ -58,7 +60,7 @@ class PostSearchController extends Controller
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_tags_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = ShortTagSearchResource::collection($this->searchService->searchInTags($query));
+                $searchResults = ShortSearchTagResource::collection($this->searchService->searchInTags($query));
                 Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
@@ -72,6 +74,7 @@ class PostSearchController extends Controller
         }
     }
 
+    // Поиск постов по запросу
     public function searchPosts(SearchRequest $request)
     {
         try {
@@ -79,7 +82,7 @@ class PostSearchController extends Controller
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = $this->searchService->searchInPosts($query);
+                $searchResults = SearchThumbMediaResource::collection($this->searchService->searchInPosts($query));
                 Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
@@ -93,6 +96,7 @@ class PostSearchController extends Controller
         }
     }
 
+    // Поиск постов по пользователям
     public function searchUsers(SearchRequest $request)
     {
         try {
@@ -114,9 +118,7 @@ class PostSearchController extends Controller
         }
     }
 
-    /**
-     * Предложение популярных запросов.
-     */
+    // Предложение популярных запросов
     public function suggest(Request $request)
     {
         try {

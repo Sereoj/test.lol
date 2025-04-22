@@ -11,6 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
+// Контроллер для работы с статистикой постов
 class PostStatisticController extends Controller
 {
     protected PostStatisticsService $postStatisticsService;

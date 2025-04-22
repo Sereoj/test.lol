@@ -4,6 +4,7 @@ namespace App\Services\Acquiring;
 
 use App\Models\Billing\Topup;
 
+// Сервис для работы с Anypay
 class AnypayService implements IAcquiringService
 {
     protected string $client = 'anypay';

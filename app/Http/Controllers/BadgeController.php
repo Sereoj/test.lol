@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
 
+// Контроллер для работы с бейджами
 class BadgeController extends Controller
 {
     protected BadgeService $badgeService;
@@ -64,7 +65,7 @@ class BadgeController extends Controller
 
         $this->forgetCache(self::CACHE_KEY_BADGES_LIST);
 
-        return $this->successResponse($badge, 201);
+        return $this->successResponse($badge, [], 201);
     }
 
     /**

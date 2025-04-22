@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Tags;
+namespace App\Http\Resources\Search;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class TagShortResource extends JsonResource
+class SearchThumbMediaResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -14,10 +14,6 @@ class TagShortResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug
-        ];
+        return parent::toArray($request);
     }
 }

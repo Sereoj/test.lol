@@ -9,6 +9,7 @@ use App\Services\Media\MediaService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с медиа-файлами
 class MediaController extends Controller
 {
     protected MediaService $mediaService;
@@ -21,6 +22,7 @@ class MediaController extends Controller
         $this->mediaService = $mediaService;
     }
 
+    // Загрузка медиа-файлов
     public function store(MediaRequest $request)
     {
         try {
@@ -35,15 +37,15 @@ class MediaController extends Controller
             ];
 
             $media = $this->mediaService->upload($files, $options);
-            Log::info($media);
 
-            return $this->successResponse($media, 201);
+            return $this->successResponse($media,[], 201);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
 
+    // Получение медиа-файлов
     public function show($id)
     {
         try {
@@ -62,6 +64,7 @@ class MediaController extends Controller
         }
     }
 
+    // Обновление медиа-файлов
     public function update(MediaRequest $request, $id)
     {
         try {
@@ -79,6 +82,7 @@ class MediaController extends Controller
         }
     }
 
+    // Удаление медиа-файлов
     public function destroy($id)
     {
         try {
@@ -89,7 +93,7 @@ class MediaController extends Controller
 
             Log::info('Media deleted successfully', ['media_id' => $id]);
 
-            return $this->successResponse(null, 204);
+            return $this->successResponse(null, [], 204);
         } catch (Exception $e) {
             Log::error('Error deleting media: ' . $e->getMessage(), ['media_id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);

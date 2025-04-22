@@ -8,6 +8,7 @@ use App\Http\Resources\EmploymentStatusResource;
 use App\Services\Employment\EmploymentStatusService;
 use Illuminate\Support\Facades\Cache;
 
+// Контроллер для работы с трудовым статусом
 class EmploymentStatusController extends Controller
 {
     protected EmploymentStatusService $employmentStatusService;
@@ -20,6 +21,7 @@ class EmploymentStatusController extends Controller
         $this->employmentStatusService = $employmentStatusService;
     }
 
+    // Получение списка всех трудовых статусов
     public function index()
     {
         $employmentStatuses = $this->getFromCacheOrStore(self::CACHE_KEY_EMPLOYMENT_STATUSES, self::CACHE_MINUTES, function () {
@@ -29,6 +31,7 @@ class EmploymentStatusController extends Controller
         return $this->successResponse($employmentStatuses);
     }
 
+    // Получение конкретного трудового статуса
     public function show($id)
     {
         $employmentStatus = $this->employmentStatusService->getEmploymentStatusById($id);
@@ -40,6 +43,7 @@ class EmploymentStatusController extends Controller
         return $this->errorResponse('EmploymentStatus not found', 404);
     }
 
+    // Создание нового трудового статуса
     public function store(StoreEmploymentStatusRequest $request)
     {
         $data = $request->validated();
@@ -47,9 +51,10 @@ class EmploymentStatusController extends Controller
 
         $this->forgetCache(self::CACHE_KEY_EMPLOYMENT_STATUSES);
 
-        return $this->successResponse($employmentStatus, 201);
+        return $this->successResponse($employmentStatus,[], 201);
     }
 
+    // Обновление трудового статуса
     public function update(UpdateEmploymentStatusRequest $request, $id)
     {
         $data = $request->validated();
@@ -64,6 +69,7 @@ class EmploymentStatusController extends Controller
         return $this->errorResponse('EmploymentStatus not found', 404);
     }
 
+    // Удаление трудового статуса   
     public function destroy($id)
     {
         $result = $this->employmentStatusService->deleteEmploymentStatus($id);

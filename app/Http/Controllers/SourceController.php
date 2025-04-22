@@ -8,6 +8,7 @@ use App\Services\Content\SourceService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
+// Контроллер для работы с источниками
 class SourceController extends Controller
 {
     protected SourceService $sourceService;
@@ -22,7 +23,7 @@ class SourceController extends Controller
     }
 
     /**
-     * Display a listing of the sources.
+     * Получение списка всех источников
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -44,7 +45,7 @@ class SourceController extends Controller
     }
 
     /**
-     * Display the specified source.
+     * Получение конкретного источника
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -67,7 +68,7 @@ class SourceController extends Controller
     }
 
     /**
-     * Store a newly created source in storage.
+     * Создание нового источника
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -80,7 +81,7 @@ class SourceController extends Controller
 
             Log::info('Source created successfully', ['source' => $source]);
 
-            return $this->successResponse($source, 201);
+            return $this->successResponse($source, [], 201);
         } catch (Exception $e) {
             Log::error('Error creating source: '.$e->getMessage(), ['data' => $request->all()]);
 
@@ -89,7 +90,7 @@ class SourceController extends Controller
     }
 
     /**
-     * Update the specified source in storage.
+     * Обновление конкретного источника
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -114,7 +115,7 @@ class SourceController extends Controller
     }
 
     /**
-     * Remove the specified source from storage.
+     * Удаление конкретного источника
      *
      * @return \Illuminate\Http\JsonResponse
      */

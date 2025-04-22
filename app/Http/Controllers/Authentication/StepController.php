@@ -25,6 +25,7 @@ class StepController extends Controller
         $this->avatarController = $avatarController;
     }
 
+    // Шаг 1: Добавление источников
     public function one(StepOneRequest $request)
     {
         try {
@@ -46,6 +47,7 @@ class StepController extends Controller
         }
     }
 
+    // Шаг 2: Добавление навыков
     public function two(StepTwoRequest $request)
     {
         try {
@@ -67,6 +69,7 @@ class StepController extends Controller
         }
     }
 
+    // Шаг 3: Загрузка аватара
     public function three(UploadAvatarRequest $request)
     {
         try {

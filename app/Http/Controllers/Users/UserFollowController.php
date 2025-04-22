@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с подписками на пользователей
 class UserFollowController extends Controller
 {
     protected UserFollowService $followService;

@@ -8,6 +8,8 @@ use App\Models\Comments\CommentLike;
 use App\Models\Comments\CommentReport;
 use App\Models\Comments\CommentRepost;
 use App\Models\Posts\Post;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class CommentRepository
 {
@@ -16,20 +18,55 @@ class CommentRepository
         return Comment::find($id);
     }
 
+    public function findCommentByIdWithTrashed($id)
+    {
+        return Comment::withTrashed()->find($id);
+    }
+
     public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        return Comment::with([
-            'user',
-            'likes',
-            'reports',
-            'reposts',
-            'replies.user',
-            'replies.likes',
-            'replies.reports',
-            'replies.reposts',
-        ])
-            ->where('post_id', $postId)
-            ->whereNull('parent_id') // Только родительские комментарии
+        $userId = auth()->check() ? auth()->id() : null;
+
+        $query = Comment::with(['user']);
+
+        if ($userId) {
+            $query->with([
+                'likes' => function($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'reports' => function($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                },
+                'reposts' => function($query) use ($userId) {
+                    $query->where('user_id', $userId);
+                }
+            ]);
+        }
+
+        $query->withCount(['likes', 'reports', 'reposts']);
+
+        $query->with(['replies' => function($query) use ($userId) {
+            $query->with(['user']);
+
+            if ($userId) {
+                $query->with([
+                    'likes' => function($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    },
+                    'reports' => function($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    },
+                    'reposts' => function($q) use ($userId) {
+                        $q->where('user_id', $userId);
+                    }
+                ]);
+            }
+
+            $query->withCount(['likes', 'reports', 'reposts']);
+        }]);
+
+        return $query->where('post_id', $postId)
+            ->whereNull('parent_id')
             ->orderBy($sortBy, $order)
             ->paginate($limit, ['*'], 'page', $page);
     }
@@ -50,21 +87,38 @@ class CommentRepository
     public function updateComment(Comment $comment, array $data)
     {
         $comment->update($data);
-
         return $comment;
     }
 
     public function deleteComment(Comment $comment)
     {
+        Log::info('deleteComment', [
+            'comment' => $comment
+        ]);
         return $comment->delete();
     }
 
     public function updateOrCreateReaction($commentId, $userId, $type)
     {
-        return CommentLike::updateOrCreate(
-            ['comment_id' => $commentId, 'user_id' => $userId],
-            ['type' => $type]
-        );
+        return DB::transaction(function () use ($commentId, $userId, $type) {
+            Log::info("Reacting to comment {$commentId} with type {$type} by user " . $userId);
+
+            $existingReaction = CommentLike::where([
+                'comment_id' => $commentId,
+                'user_id' => $userId,
+                'type' => $type
+            ])->first();
+
+            if ($existingReaction) {
+                return $existingReaction->load('user');
+            }
+
+            // Иначе создаем или обновляем
+            return CommentLike::with(['user'])->updateOrCreate(
+                ['comment_id' => $commentId, 'user_id' => $userId],
+                ['type' => $type]
+            );
+        });
     }
 
     public function updateOrCreateReport($commentId, $userId, $reason)

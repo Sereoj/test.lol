@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с транзакциями
 class TransactionController extends Controller
 {
     protected TransactionService $transactionService;
@@ -22,6 +23,7 @@ class TransactionController extends Controller
         $this->transactionService = $transactionService;
     }
 
+    // Получение транзакций пользователя
     public function getTransactions(Request $request): JsonResponse
     {
         try {

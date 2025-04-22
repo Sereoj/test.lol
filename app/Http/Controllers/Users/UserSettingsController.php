@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Users\UserSetting;
 
+// Контроллер для работы с настройками пользователя
 class UserSettingsController extends Controller
 {
     /**

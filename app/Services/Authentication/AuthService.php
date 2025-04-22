@@ -2,7 +2,7 @@
 
 namespace App\Services\Authentication;
 
-use App\Http\Resources\Users\UserShortResource;
+use App\Http\Resources\Users\UserShortWithBalanceResource;
 use App\Models\Users\User;
 use App\Services\Users\TokenService;
 use App\Services\Users\UserService;
@@ -41,7 +41,7 @@ class AuthService
         $token = $this->tokenService->generateTokens($user);
 
         return [
-            'user' => new UserShortResource($user),
+            'user' => new UserShortWithBalanceResource($user),
             'token' => [
                 'access_token' => $token['access_token'],
                 'refresh_token' => $token['refresh_token'],
@@ -58,7 +58,7 @@ class AuthService
         $token = $this->tokenService->generateTokens($user);
 
         return [
-            'user' => new UserShortResource($user),
+            'user' => new UserShortWithBalanceResource($user),
             'token' => [
                 'access_token' => $token['access_token'],
                 'refresh_token' => $token['refresh_token'],

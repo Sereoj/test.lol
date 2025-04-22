@@ -4,6 +4,7 @@ namespace App\Services\Posts;
 
 use App\Models\Interactions\Interaction;
 use App\Models\Posts\PostStatistic;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -120,14 +121,9 @@ class PostStatisticsService
 
     public function incrementLikes(int $postId)
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('api')->id();
 
-        // Проверяем, не поставил ли пользователь лайк ранее
-        $interaction = Interaction::query()
-            ->where('user_id', $userId)
-            ->where('post_id', $postId)
-            ->where('interaction_type', 'like')
-            ->first();
+        $interaction = $this->isUserLiked($userId, $postId);
 
         if (! $interaction) {
             // Нет лайка, увеличиваем количество лайков
@@ -145,18 +141,14 @@ class PostStatisticsService
             return $stat;
         }
 
-        return ['message' => 'You have already liked this post.'];
+        throw new Exception('You have already liked this post.');
     }
 
     public function decrementLikes(int $postId)
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('api')->id();
 
-        $interaction = Interaction::query()
-            ->where('user_id', $userId)
-            ->where('post_id', $postId)
-            ->where('interaction_type', 'like')
-            ->first();
+        $interaction = $this->isUserLiked($userId, $postId);
 
         if ($interaction) {
             $stat = PostStatistic::query()->where('post_id', $postId)->first();
@@ -169,8 +161,7 @@ class PostStatisticsService
 
             return $stat;
         }
-
-        return ['message' => 'You have not liked this post yet.'];
+        throw new Exception('You have not liked this post yet.');
     }
 
     public function incrementComments(int $postId)
@@ -189,7 +180,7 @@ class PostStatisticsService
 
     public function incrementDownloads(int $postId)
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('api')->id();
 
         if (! $this->hasInteraction($postId, $userId, 'view')) {
             $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
@@ -210,7 +201,7 @@ class PostStatisticsService
 
     public function incrementViews(int $postId)
     {
-        $userId = Auth::id();
+        $userId = Auth::guard('api')->id();
 
         $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
         $stat->increment('views_count');
@@ -231,5 +222,14 @@ class PostStatisticsService
             ->where('post_id', $postId)
             ->where('interaction_type', $type)
             ->exists();
+    }
+
+    public function isUserLiked(int $userId, int $postId)
+    {
+        return Interaction::query()
+            ->where('user_id', $userId)
+            ->where('post_id', $postId)
+            ->where('interaction_type', 'like')
+            ->first();
     }
 }

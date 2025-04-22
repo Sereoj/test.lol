@@ -10,10 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с достижениями пользователей
 class UserAchievementController extends Controller
 {
     protected AchievementService $achievementService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER_ACHIEVEMENTS = 'user_achievements_';
 
@@ -34,9 +35,9 @@ class UserAchievementController extends Controller
             $achievements = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
                 return $user->achievements;
             });
-            
+
             Log::info('User achievements retrieved successfully', ['user_id' => $user->id]);
-            
+
             return $this->successResponse($achievements);
         } catch (Exception $e) {
             Log::error('Error retrieving user achievements: ' . $e->getMessage(), ['user_id' => Auth::id()]);
@@ -57,17 +58,17 @@ class UserAchievementController extends Controller
 
             // Очистка кеша достижений пользователя
             $this->forgetCache(self::CACHE_KEY_USER_ACHIEVEMENTS . $user->id);
-            
+
             Log::info('Achievement assigned to user successfully', [
-                'user_id' => $user->id, 
+                'user_id' => $user->id,
                 'achievement_id' => $achievement->id
             ]);
 
             // Возвращаем актуальные достижения
-            return $this->successResponse($user->achievements, 201);
+            return $this->successResponse($user->achievements, [], 201);
         } catch (Exception $e) {
             Log::error('Error assigning achievement to user: ' . $e->getMessage(), [
-                'user_id' => Auth::id(), 
+                'user_id' => Auth::id(),
                 'achievement_id' => $request->achievement_id
             ]);
             return $this->errorResponse('Failed to assign achievement', 500);
@@ -85,16 +86,16 @@ class UserAchievementController extends Controller
 
             // Очистка кеша достижений пользователя
             $this->forgetCache(self::CACHE_KEY_USER_ACHIEVEMENTS . $user->id);
-            
+
             Log::info('Achievement removed from user successfully', [
-                'user_id' => $user->id, 
+                'user_id' => $user->id,
                 'achievement_id' => $achievement->id
             ]);
 
             return $this->successResponse($user->achievements);
         } catch (Exception $e) {
             Log::error('Error removing achievement from user: ' . $e->getMessage(), [
-                'user_id' => Auth::id(), 
+                'user_id' => Auth::id(),
                 'achievement_id' => $achievement->id
             ]);
             return $this->errorResponse('Failed to remove achievement', 500);

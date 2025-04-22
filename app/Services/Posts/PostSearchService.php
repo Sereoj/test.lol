@@ -77,7 +77,7 @@ class PostSearchService
 
             return [];
         }
-        $baseQuery = Post::query();
+        $baseQuery = Post::query()->with('media', 'user');
 
         $relevanceCase = '
             CASE

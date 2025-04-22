@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 
+// Контроллер для работы с наградами пользователей
 class UserBadgeController extends Controller
 {
     protected UserBadgeService $userBadgeService;
@@ -65,7 +66,7 @@ class UserBadgeController extends Controller
                 'badge_id' => $badge->id
             ]);
 
-            return $this->successResponse($badge, 201);
+            return $this->successResponse($badge,[], 201);
         } catch (Exception $e) {
             Log::error('Error creating user badge: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('Failed to create user badge', 500);

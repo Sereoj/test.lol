@@ -109,15 +109,12 @@ class PostRepository
 
     public function getPost($id)
     {
-        \Log::info("Type of $id: " . gettype($id)); // Выводит тип данных
-        \Log::info("Is numeric: " . is_numeric($id)); // Проверяет, является ли $id числом
-
-        $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
+        $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions'])
             ->where('slug', $id)
             ->firstOrFail();
         if(!$post && is_numeric($id))
         {
-            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics'])
+            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions'])
                 ->findOrFail($id);
         }
         return $post;
@@ -158,8 +155,6 @@ class PostRepository
                     'gifs' => [],
                     'videos' => [],
                 ];
-
-                \Log::info($data['media']);
 
                 foreach ($data['media'] as $mediaId) {
                     $media = $this->mediaService->getMediaById($mediaId); //FindOrFail

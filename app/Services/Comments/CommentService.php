@@ -2,12 +2,11 @@
 
 namespace App\Services\Comments;
 
-use App\Formatters\CommentFormatter;
-use App\Http\Resources\Comments\CommentCollection;
-use App\Http\Resources\Comments\CommentResource;
+use App\Models\Comments\Comment;
 use App\Models\Posts\Post;
 use App\Repositories\CommentRepository;
 use App\Services\Posts\PostStatisticsService;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 
 class CommentService
@@ -24,18 +23,23 @@ class CommentService
         $this->postStatisticsService = $postStatisticsService;
     }
 
-    public function getCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
+    public function fetchCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        $post = Post::where('slug', $postId)->firstOrFail();
-
-        if(!$post && is_numeric($postId))
-        {
-            $post = Post::findOrFail($postId);
-        }
+        $post = is_numeric($postId)
+            ? Post::findOrFail($postId)
+            : Post::where('slug', $postId)->firstOrFail();
         $postId = $post->id;
 
-        $rawComments = $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
-        return new CommentCollection($rawComments);
+        return $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
+    }
+
+    public function fetchCommentById($id)
+    {
+        $comment = $this->commentRepository->findCommentById($id);
+        if (!$comment) {
+            throw new Exception('Comment not found.', 404);
+        }
+        return $comment;
     }
 
     public function updateComment($id, array $data)
@@ -43,40 +47,36 @@ class CommentService
         $comment = $this->commentRepository->findCommentById($id);
 
         if (! $comment) {
-            return ['message' => 'Comment not found.'];
+            throw new Exception('Comment not found.', 404);
         }
 
         $parentId = $data['parent_id'] ?? null;
         if ($parentId) {
             $parentComment = $this->commentRepository->findParentComment($parentId);
             if (! $parentComment) {
-                return ['message' => 'Parent comment not found.'];
+                throw new Exception('Parent comment not found.', 404);
             }
         }
 
-        $comment = $this->commentRepository->updateComment($comment, [
+        return $this->commentRepository->updateComment($comment, [
             'content' => $data['content'],
             'parent_id' => $parentId,
         ]);
-
-        return $comment;
     }
 
     public function createComment($postId, array $data)
     {
-        $post = Post::where('slug', $postId)->firstOrFail();
+        $post = is_numeric($postId)
+            ? Post::findOrFail($postId)
+            : Post::where('slug', $postId)->firstOrFail();
 
-        if(!$post && is_numeric($postId))
-        {
-            $post = Post::findOrFail($postId);
-        }
         $postId = $post->id;
         $parentId = $data['parent_id'] ?? null;
 
         if ($parentId) {
             $parentComment = $this->commentRepository->findParentComment($parentId);
             if (! $parentComment) {
-                return ['message' => 'Parent comment not found.'];
+                throw new Exception('Parent comment not found.', 404);
             }
         }
 
@@ -95,7 +95,7 @@ class CommentService
         $comment = $this->commentRepository->findCommentById($commentId);
 
         if (! $comment) {
-            return ['message' => 'Comment not found.'];
+            throw new Exception('Comment not found.', 404);
         }
 
         return $this->commentRepository->updateOrCreateReaction($commentId, Auth::id(), $type);
@@ -111,18 +111,15 @@ class CommentService
         return $this->commentRepository->updateOrCreateRepost($commentId, Auth::id());
     }
 
-    public function deleteComment($commentId)
+    public function deleteComment(int $commentId)
     {
-        $comment = $this->commentRepository->findCommentById($commentId);
+        \Log::info('deleteComment', ['id' => $commentId]);
+        $comment = $this->commentRepository->findCommentByIdWithTrashed($commentId);
 
-        if (! $comment) {
-            return ['message' => 'Comment not found.'];
+        if($this->commentRepository->deleteComment($comment))
+        {
+            $this->postStatisticsService->decrementComments($comment->post_id);
         }
-
-        $this->postStatisticsService->decrementComments($comment->post_id);
-
-        $this->commentRepository->deleteComment($comment);
-
         return $comment;
     }
 }

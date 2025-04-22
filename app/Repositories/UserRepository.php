@@ -9,6 +9,10 @@ use App\Models\Users\User;
 use App\Models\Users\UserSetting;
 use App\Services\Employment\EmploymentStatusService;
 use App\Services\Roles\RoleService;
+use App\Services\StatusService;
+use App\Services\Users\UserService;
+use App\Services\Users\UserStatusService;
+use App\Services\UserSettingsService;
 use App\Store\UserRelations;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -17,35 +21,36 @@ class UserRepository
 {
     protected AvatarRepository $avatarRepository;
 
-    private RoleService $roleService;
+    protected RoleService $roleService;
+    protected EmploymentStatusService $employmentStatusService;
+    protected UserSettingsService $userSettingsService;
+    protected StatusService $statusService;
 
-    private EmploymentStatusService $employmentStatusService;
+    public function __construct(AvatarRepository $avatarRepository,
+                                RoleService $roleService,
+                                EmploymentStatusService $employmentStatusService,
+                                UserSettingsService $userSettingsService,
+                                StatusService $statusService
 
-    public function __construct(AvatarRepository $avatarRepository, RoleService $roleService, EmploymentStatusService $employmentStatusService)
+    )
     {
         $this->avatarRepository = $avatarRepository;
         $this->roleService = $roleService;
         $this->employmentStatusService = $employmentStatusService;
+        $this->userSettingsService = $userSettingsService;
+        $this->statusService = $statusService;
     }
 
     public function create(array $data)
     {
         Log::info('Starting user creation', ['data' => $data]);
 
-        //
-
-        $userSettings = UserSetting::query()->create([
-            'is_online' => true,
-            'is_preferences_feed' => false,
-            'preferences_feed' => 'default',
-            'is_private' => false,
-            'enable_two_factor' => false,
-        ]);
-
+        $userSettings = $this->userSettingsService->createUserSettings();
         $role = $this->roleService->getRoleByType('user');
-        $status = $this->employmentStatusService->getEmploymentStatusById(1);
+        $employmentStatus = $this->employmentStatusService->getEmploymentStatusById(1);
+        $status = $this->statusService->getById(1);
 
-        $user = User::query()->create([
+        return User::query()->create([
             'username' => $data['username'],
             'slug' => $data['slug'],
             'description' => $data['description'],
@@ -54,20 +59,16 @@ class UserRepository
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role_id' => $role->id,
-            'status_id' => 1,
+            'status_id' => $status->id,
             'userSettings_id' => $userSettings->id,
             'usingApps_id' => null,
             'location_id' => null,
-            'employment_status_id' => $status->id,
+            'employment_status_id' => $employmentStatus->id,
             'verification' => false,
             'experience' => 0,
             'gender' => null,
             'age' => null,
         ]);
-        // Логирование завершения создания пользователя
-        Log::info('User creation completed', ['user_id' => $user->id]);
-
-        return $user;
     }
 
     public function getAll(array $filters = []): \Illuminate\Database\Eloquent\Collection

@@ -9,6 +9,7 @@ use App\ShortAppResource;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с приложениями
 class AppController extends Controller
 {
     protected AppService $appService;
@@ -22,6 +23,7 @@ class AppController extends Controller
         $this->appService = $appService;
     }
 
+    // Получение списка всех приложений
     public function index()
     {
         try {
@@ -38,6 +40,7 @@ class AppController extends Controller
         }
     }
 
+    // Создание нового приложения
     public function store(AppRequest $request)
     {
         try {
@@ -47,13 +50,14 @@ class AppController extends Controller
 
             Log::info('App created successfully', ['app_id' => $app->id]);
 
-            return $this->successResponse($app, 201);
+            return $this->successResponse($app,[], 201);
         } catch (Exception $e) {
             Log::error('Failed to create app: ' . $e->getMessage(), ['data' => $request->validated()]);
             return $this->errorResponse('Failed to create app', 500);
         }
     }
 
+    // Получение информации о конкретном приложении
     public function show($id)
     {
         try {
@@ -72,6 +76,7 @@ class AppController extends Controller
         }
     }
 
+    // Обновление информации о приложении
     public function update(AppRequest $request, $id)
     {
         try {
@@ -91,6 +96,7 @@ class AppController extends Controller
         }
     }
 
+    // Удаление приложения  
     public function destroy($id)
     {
         try {

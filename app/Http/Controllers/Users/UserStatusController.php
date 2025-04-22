@@ -8,6 +8,7 @@ use App\Http\Resources\StatusResource;
 use App\Services\Users\UserStatusService;
 use Illuminate\Support\Facades\Auth;
 
+// Контроллер для работы со статусами пользователей
 class UserStatusController extends Controller
 {
     protected UserStatusService $userStatusService;

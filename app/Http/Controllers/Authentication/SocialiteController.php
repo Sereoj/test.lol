@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
 
+// Контроллер для работы с социальными сетями
 class SocialiteController extends Controller
 {
     private const CACHE_MINUTES = 60;
@@ -28,6 +29,7 @@ class SocialiteController extends Controller
         }
     }
 
+    // Обработка обратного вызова от социальной сети
     public function handleProviderCallback($provider)
     {
         try {
@@ -58,6 +60,7 @@ class SocialiteController extends Controller
         }
     }
 
+    // Поиск или создание пользователя из социальной сети
     protected function findOrCreateUser($user, $provider)
     {
         try {

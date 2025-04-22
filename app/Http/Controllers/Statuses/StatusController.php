@@ -8,6 +8,7 @@ use App\Http\Requests\Statuses\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Services\StatusService;
 
+// Контроллер для работы со статусами
 class StatusController extends Controller
 {
     protected StatusService $statusService;
@@ -21,6 +22,7 @@ class StatusController extends Controller
         $this->statusService = $statusService;
     }
 
+    // Получение списка всех статусов
     public function index()
     {
         $statuses = $this->getFromCacheOrStore(self::CACHE_KEY_STATUSES_LIST, self::CACHE_MINUTES, function () {
@@ -30,6 +32,7 @@ class StatusController extends Controller
         return $this->successResponse(StatusResource::collection($statuses));
     }
 
+    // Создание нового статуса
     public function store(StoreStatusRequest $request)
     {
         $status = $this->statusService->create($request->validated());
@@ -37,6 +40,7 @@ class StatusController extends Controller
         return $this->successResponse(new StatusResource($status), 201);
     }
 
+    // Получение конкретного статуса
     public function show($id)
     {
         $cacheKey = self::CACHE_KEY_STATUS . $id;
@@ -52,6 +56,7 @@ class StatusController extends Controller
         return $this->errorResponse('Status not found', 404);
     }
 
+    // Обновление статуса
     public function update(UpdateStatusRequest $request, $id)
     {
         $status = $this->statusService->update($id, $request->validated());
@@ -68,6 +73,7 @@ class StatusController extends Controller
         return $this->errorResponse('Status not found', 404);
     }
 
+    // Удаление статуса
     public function destroy($id)
     {
         $this->statusService->delete($id);

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
 
+// Контроллер для покупок и оплаты
 class PurchaseController extends Controller
 {
     protected PurchaseService $purchaseService;

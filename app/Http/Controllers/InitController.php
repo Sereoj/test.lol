@@ -5,6 +5,7 @@ use App\Services\InitService;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для инициализации приложения  
 class InitController extends Controller
 {
     protected InitService $initService;
@@ -16,7 +17,8 @@ class InitController extends Controller
     {
         $this->initService = $initService;
     }
-    
+
+    // Инициализация приложения
     public function init()
     {
         try {

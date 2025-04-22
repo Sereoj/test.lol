@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
+// Контроллер для работы с аккаунтом пользователя
 class UserAccountController extends Controller
 {
     protected UserAccountService $userAccountService;
@@ -29,9 +30,9 @@ class UserAccountController extends Controller
     public function index()
     {
         try {
-            $userId = Auth::id();
+            $userId = Auth::guard('api')->id;
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
-            
+
             $userAccount = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
                 return new UserAccountResource($this->userAccountService->getUserById($userId));
             });
@@ -53,17 +54,17 @@ class UserAccountController extends Controller
         try {
             $userId = Auth::id();
             $validatedData = $request->validated();
-            
+
             $userAccount = $this->userAccountService->updateUserAccount($userId, $validatedData);
-            
+
             // Обновляем кэш
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('User account updated successfully', ['user_id' => $userId]);
 
             return $this->successResponse([
-                'message' => 'Данные аккаунта успешно обновлены', 
+                'message' => 'Данные аккаунта успешно обновлены',
                 'user' => new UserAccountResource($userAccount)
             ]);
         } catch (Exception $e) {
@@ -83,13 +84,13 @@ class UserAccountController extends Controller
         try {
             $userId = Auth::id();
             $validatedData = $request->validated();
-            
+
             $this->userAccountService->deleteUserAccount($userId, $validatedData);
-            
+
             // Очищаем кэш
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('User account deleted successfully', ['user_id' => $userId]);
 
             return $this->successResponse([
@@ -110,13 +111,13 @@ class UserAccountController extends Controller
     {
         try {
             $userId = Auth::id();
-            
+
             $user = $this->userAccountService->restoreUserAccount($userId, 'Восстановлено через аккаунт пользователя');
-            
+
             // Обновляем кэш
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
-            
+
             Log::info('User account restored successfully', ['user_id' => $userId]);
 
             return $this->successResponse([
@@ -128,4 +129,4 @@ class UserAccountController extends Controller
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
-} 
+}
