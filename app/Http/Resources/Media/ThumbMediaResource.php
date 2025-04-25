@@ -29,9 +29,9 @@ class ThumbMediaResource extends JsonResource
             'has_copyright' => $this->has_copyright,
             'user' => UserShortWithBalanceResource::make($this->whenLoaded('user')),
             'media' => MediaShortResource::groupMedia($filteredMedia),
-            'likes_count' => '',
-            'views_count' => '',
-            'comments_count' => '',
+            'likes_count' => $this->likes_count,
+            'views_count' => $this->views_count,
+            'comments_count' => $this->comments_count,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

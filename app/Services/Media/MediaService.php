@@ -25,7 +25,8 @@ class MediaService
         $this->mediaRepository = $mediaRepository;
     }
 
-    public function upload($files, array $options)
+    // Загрузка медиа-файлов
+    public function upload($files)
     {
         $originalPath = 'originals';
         $processedPath = 'processed';
@@ -59,11 +60,10 @@ class MediaService
                 $type = FileHelper::determineFileType($mimeType);
                 if (! $type) {
                     Log::error("Unsupported file type: {$mimeType}.");
-
                     continue;
                 }
 
-                $results = $this->mediaHandler->handleFile($type, $file, $options, $originalPath, $processedPath);
+                $results = $this->mediaHandler->handleFile($type, $file, $originalPath, $processedPath);
 
                 if (empty($results)) {
                     Log::error("Failed to process file {$file->getClientOriginalName()}.");
@@ -96,7 +96,7 @@ class MediaService
                         'mime_type' => $mimeType,
                         'size' => $file->getSize(),
                         'user_id' => Auth::id(),
-                        'is_public' => $options['is_public'],
+                        'is_public' => true,
                         'width' => $width,
                         'height' => $height,
                         'parent_id' => ($resultType === 'original') ? null : $originalMedia->id,
@@ -117,7 +117,7 @@ class MediaService
             }
         }
 
-        return $allCreatedFiles ?? [];
+        return collect($allCreatedFiles) ?? collect();
     }
 
     public function getMediaById($id)

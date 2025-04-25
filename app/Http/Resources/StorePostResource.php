@@ -1,11 +1,11 @@
 <?php
 
-namespace App;
+namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ShortAppResource extends JsonResource
+class StorePostResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,8 +16,9 @@ class ShortAppResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'path' => $this->path
+            'title' => $this->title,
+            'content' => $this->content,
+            'status' => $this->status,
         ];
     }
 }

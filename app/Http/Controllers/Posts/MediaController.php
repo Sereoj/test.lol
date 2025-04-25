@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Media\MediaRequest;
+use App\Http\Resources\Media\MediaResource;
 use App\Http\Resources\Media\ShortMediaResource;
 use App\Services\Media\MediaService;
 use Exception;
@@ -28,15 +29,7 @@ class MediaController extends Controller
         try {
             $files = $request->file('file');
 
-            $options = [
-                'is_paid' => $request->boolean('is_paid'),
-                'is_adult' => $request->boolean('is_adult'),
-                'is_subscription' => $request->boolean('is_subscription'),
-                'is_author' => $request->boolean('is_author'),
-                'is_public' => true,
-            ];
-
-            $media = $this->mediaService->upload($files, $options);
+            $media = $this->mediaService->upload($files);
 
             return $this->successResponse($media,[], 201);
         } catch (Exception $e) {

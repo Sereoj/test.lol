@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Notifications\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -12,9 +13,10 @@ use Illuminate\Support\Facades\Log;
  */
 class NotificationController extends Controller
 {
-    public function __construct(
-        protected NotificationService $notificationService
-    ) {
+    protected NotificationService $notificationService;
+    public function __construct(NotificationService $notificationService)
+    {
+
     }
 
     /**

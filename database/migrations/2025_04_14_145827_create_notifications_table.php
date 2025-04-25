@@ -12,7 +12,7 @@ return new class () extends Migration {
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->string('type');
+            $table->string('type'); //like comment follow message
             $table->morphs('notifiable');
             $table->json('data');
             $table->timestamp('read_at')->nullable()->index();

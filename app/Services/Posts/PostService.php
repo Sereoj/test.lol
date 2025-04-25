@@ -38,7 +38,7 @@ class PostService
 
             return [
                 'post' => $post,
-                'isUserLiked' => $this->statService->isUserLiked(Auth::guard('api')->id(),  $post->id),
+                'isUserLiked' => (bool)$this->statService->isUserLiked(Auth::guard('api')->id(), $post->id),
                 'isFavorited' => false
             ];
         }
@@ -49,9 +49,11 @@ class PostService
         ];
     }
 
-    public function getPostsByUser(User $user)
+    public function getPostsByUser(User $user, $filters)
     {
-        return $user->posts()->with(['media', 'user'])->published()->get();
+        $perPage = $filters['per_page'] ?? 40;
+        $pageOffset = $filters['page_offset'] ?? 0;
+        return $user->posts()->with(['media', 'user', 'statistics'])->published()->paginate($perPage, ['*'], 'page', $pageOffset + 1);
     }
 
     public function createPost(array $data)
@@ -88,7 +90,7 @@ class PostService
 
     public function isUserLiked($userId, $postId)
     {
-        return $this->statService->isUserLiked($userId, $postId);
+        return (bool)$this->statService->isUserLiked($userId, $postId);
     }
 
     public function repostPost(int $id)

@@ -29,10 +29,10 @@ class MediaHandler
         $this->length = $this->appSettingsService->get('images.length');
     }
 
+    // Обработка медиа-файлов
     public function handleFile(
         string $type,
         UploadedFile $file,
-        array $options,
         string $originalPath,
         string $processedPath
     ): array {
@@ -42,18 +42,19 @@ class MediaHandler
 
         $results['original'] = Storage::disk('public')->putFileAs($originalPath, $file, $fileName);
 
-        if ($type === 'image') {
-            $results = array_merge($results, $this->handleImage($file, $originalFilePath, $options, $processedPath));
+/*        if ($type === 'image') {
+            $results = array_merge($results, $this->handleImage($file, $originalFilePath, $processedPath));
         } elseif ($type === 'gif') {
             $results = array_merge($results, $this->handleGif($file, $originalFilePath));
         } elseif ($type === 'video') {
-            $results = array_merge($results, $this->handleVideo($file, $originalFilePath, $options, $processedPath));
-        }
+            $results = array_merge($results, $this->handleVideo($file, $originalFilePath, $processedPath));
+        }*/
 
         return $results;
     }
 
-    protected function handleImage(UploadedFile $file, string $originalFilePath, array $options, string $processedPath): array
+    // Обработка изображений
+    protected function handleImage(UploadedFile $file, string $originalFilePath, string $processedPath): array
     {
         $results = [];
 
@@ -79,38 +80,18 @@ class MediaHandler
             $results['compressed'] = $blurredPath;
         }
 
-        if (! empty($options['is_adult'])) {
-            $blurredAdultPath = "$processedPath/blurred_adult/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
-
-            $pipeline = new ImagePipeline();
-            $pipeline->addFilter(new BlurFilter(), ['blur' => 30])
-                ->addFilter(new WatermarkFilter(), ['text' => 'Content 18+'])
-                ->process($originalFilePath, $blurredAdultPath);
-
-            $results['compressed'] = $blurredAdultPath;
-        }
-
-        if (! empty($options['is_subscription'])) {
-            $blurredPath = "$processedPath/blurred/".Str::random($this->length).'.'.$file->getClientOriginalExtension();
-
-            $pipeline = new ImagePipeline();
-            $pipeline->addFilter(new BlurFilter(), ['blur' => 30])
-                ->addFilter(new WatermarkFilter(), ['text' => 'Водяной знак'])
-                ->process($originalFilePath, $blurredPath);
-
-            $results['compressed'] = $blurredPath;
-        }
-
         return $results;
     }
 
+    // Обработка GIF-файлов
     protected function handleGif(UploadedFile $file, string $originalFilePath): array
     {
         // Логика обработки GIF-файлов (например, оптимизация).
         return ['compressed' => $originalFilePath];
     }
 
-    protected function handleVideo(UploadedFile $file, string $originalFilePath, array $options, string $processedPath): array
+    // Обработка видео-файлов
+    protected function handleVideo(UploadedFile $file, string $originalFilePath, string $processedPath): array
     {
         $results = [];
 
@@ -130,22 +111,6 @@ class MediaHandler
 
             copy($originalFilePath, $storagePath.$authorWatermarkedPath);
             $results['compressed'] = $authorWatermarkedPath;
-        }
-
-        if (!empty($options['is_adult'])) {
-            $processedFileName = Str::random(20).'.mp4';
-            $blurredPath = "/$processedPath/blurred_adult/".$processedFileName;
-
-            copy($originalFilePath, $storagePath.$blurredPath);
-            $results['compressed'] = $blurredPath;
-        }
-
-        if (!empty($options['is_subscription'])) {
-            $processedFileName = Str::random(20).'.mp4';
-            $subscriptionPath = "/$processedPath/blurred/".$processedFileName;
-
-            copy($originalFilePath, $storagePath.$subscriptionPath);
-            $results['compressed'] = $subscriptionPath;
         }
 
         return $results;

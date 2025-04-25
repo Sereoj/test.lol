@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Apps;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\App\AppRequest;
+use App\Http\Resources\ShortAppResource;
 use App\Services\Apps\AppService;
-use App\ShortAppResource;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 // Контроллер для работы с приложениями
 class AppController extends Controller
@@ -96,7 +96,7 @@ class AppController extends Controller
         }
     }
 
-    // Удаление приложения  
+    // Удаление приложения
     public function destroy($id)
     {
         try {

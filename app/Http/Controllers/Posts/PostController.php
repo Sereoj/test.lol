@@ -8,6 +8,7 @@ use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\Media\ThumbMediaResource;
 use App\Http\Resources\Posts\PostResource;
 use App\Http\Resources\PostStatResource;
+use App\Http\Resources\StorePostResource;
 use App\Services\Posts\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -58,7 +59,7 @@ class PostController extends Controller
         try {
             $post = $this->postService->createPost($request->validated());
 
-            return $this->successResponse(new PostResource($post), [], 201);
+            return $this->successResponse(new StorePostResource($post), [], 201);
         } catch (\Exception $exception)
         {
             return $this->errorResponse($exception->getMessage());

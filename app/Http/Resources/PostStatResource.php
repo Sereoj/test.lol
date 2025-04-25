@@ -16,13 +16,13 @@ class PostStatResource extends JsonResource
     {
         return [
           'id' => $this->resource['stat']->id,
-          'views_count' => $this->resource['stat']->views_count,
+          'views' => $this->resource['stat']->views_count,
           'isUserLiked' => $this->resource['isUserLiked'],
-          'likes_count' => $this->resource['stat']->likes_count,
-          'reposts_count' => $this->resource['stat']->reposts_count,
-          'downloads_count' => $this->resource['stat']->downloads_count,
-          'purchases_count' => $this->resource['stat']->purchases_count,
-          'comments_count' => $this->resource['stat']->comments_count
+          'likes' => $this->resource['stat']->likes_count,
+          'reposts' => $this->resource['stat']->reposts_count,
+          'downloads' => $this->resource['stat']->downloads_count,
+          'purchases' => $this->resource['stat']->purchases_count,
+          'comments' => $this->resource['stat']->comments_count
         ];
     }
 }

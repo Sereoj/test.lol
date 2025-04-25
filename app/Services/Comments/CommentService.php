@@ -25,9 +25,12 @@ class CommentService
 
     public function fetchCommentsForPost($postId, $page = 1, $limit = 10, $sortBy = 'created_at', $order = 'desc')
     {
-        $post = is_numeric($postId)
-            ? Post::findOrFail($postId)
-            : Post::where('slug', $postId)->firstOrFail();
+        $post = Post::where('slug', $postId)
+            ->firstOrFail();
+        if(!$post && is_numeric($postId))
+        {
+            $post = Post::findOrFail($postId);
+        }
         $postId = $post->id;
 
         return $this->commentRepository->getCommentsForPost($postId, $page, $limit, $sortBy, $order);
@@ -66,11 +69,14 @@ class CommentService
 
     public function createComment($postId, array $data)
     {
-        $post = is_numeric($postId)
-            ? Post::findOrFail($postId)
-            : Post::where('slug', $postId)->firstOrFail();
-
+        $post = Post::where('slug', $postId)
+            ->firstOrFail();
+        if(!$post && is_numeric($postId))
+        {
+            $post = Post::findOrFail($postId);
+        }
         $postId = $post->id;
+
         $parentId = $data['parent_id'] ?? null;
 
         if ($parentId) {

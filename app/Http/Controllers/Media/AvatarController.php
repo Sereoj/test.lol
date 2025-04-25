@@ -8,7 +8,6 @@ use App\Http\Resources\AvatarResource;
 use App\Services\Media\AvatarService;
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -25,7 +24,7 @@ class AvatarController extends Controller
         $this->avatarService = $avatarService;
     }
 
-    /** 
+    /**
      * Загрузка аватара для авторизованного пользователя.
      *
      * @param UploadAvatarRequest $request
