@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\InitController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostSearchController;
+use App\Http\Controllers\TagController;
 use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
 use App\Http\Controllers\Users\UserProfileController;

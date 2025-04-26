@@ -30,12 +30,11 @@ class AvatarService
 
             Storage::disk('public')->put($path, $image);
 
-            $avatarData = $this->avatarRepository->createAvatar([
-                'user_id' => $userId,
-                'path' => $path,
-                'is_active' => true
-            ]);
-            return $avatarData;
+        return $this->avatarRepository->createAvatar([
+            'user_id' => $userId,
+            'path' => $path,
+            'is_active' => true
+        ]);
     }
 
     public function getUserAvatars($userId)
@@ -45,6 +44,15 @@ class AvatarService
         } catch (Exception $e) {
             throw new Exception('An error occurred while retrieving the user avatars.');
         }
+    }
+
+    public function setAvatar($userId, $path)
+    {
+        return $this->avatarRepository->createAvatar([
+            'user_id' => $userId,
+            'path' => $path,
+            'is_active' => true
+        ]);
     }
 
     public function deleteAvatar($userId, $avatarId)

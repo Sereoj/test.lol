@@ -54,6 +54,7 @@ class UserBadgeController extends Controller
     {
         try {
             $userId = Auth::id();
+            //
             // Создаем новую награду
             $badge = $this->userBadgeService->createUserBadge($request->validated() + ['user_id' => $userId]);
 

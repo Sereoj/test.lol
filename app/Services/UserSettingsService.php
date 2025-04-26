@@ -21,7 +21,7 @@ class UserSettingsService
             'enable_two_factor' => false,
         ]);
     }
-    public function createNotification(User $user)
+    public function createNotificationSettings(User $user)
     {
         $user->notificationSettings()->create([
             'email_enabled' => true,

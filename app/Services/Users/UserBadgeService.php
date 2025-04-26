@@ -3,6 +3,7 @@
 namespace App\Services\Users;
 
 use App\Http\Resources\BadgeResource;
+use App\Models\Users\User;
 use App\Models\Users\UserBadge;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -30,9 +31,21 @@ class UserBadgeService
 
     public function createUserBadge(array $data)
     {
-        Auth::user()->badges()->syncWithoutDetaching([$data['badge_id']]);
+        try {
+            Auth::user()->badges()->syncWithoutDetaching([$data['badge_id']]);
+            return true;
+        }catch (Exception $e){
+            Log::error('Не удалось создать badge', [
+                'badge' => $data['badge_id'],
+                'exception' => $e
+            ]);
+            throw new Exception($e->getMessage());
+        }
+    }
 
-        return ['message' => 'Badge assigned successfully'];
+    public function createBadgeForUser(User $user, int $badgeId)
+    {
+        return $user->badges()->syncWithoutDetaching([$badgeId]);
     }
 
     public function getUserBadgeById($id)

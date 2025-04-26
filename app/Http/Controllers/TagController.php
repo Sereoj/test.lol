@@ -35,6 +35,15 @@ class TagController extends Controller
         return $this->successResponse($tags);
     }
 
+    public function popularTags()
+    {
+        $popular = $this->getFromCacheOrStore('popular_tags', self::CACHE_MINUTES, function () {
+           return TagShortResource::collection($this->tagService->getPopularTags());
+        });
+
+        return $this->successResponse($popular);
+    }
+
     /**
      * Создание нового тега
      *

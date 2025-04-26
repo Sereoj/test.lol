@@ -2,9 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\MessageCollection;
-use App\Http\Resources\MessageResource;
-use App\Http\Requests\Message\SendMessageRequest;
 use App\Services\Messaging\ConversationService;
 use App\Services\Messaging\MessageService;
 use Illuminate\Http\JsonResponse;

@@ -311,6 +311,8 @@ Route::middleware('auth:api')->group(function () {
     Route::prefix('tags')->group(function () {
         Route::get('/', [TagController::class, 'index'])
             ->name('tags.index');
+        Route::get('/popular', [TagController::class, 'popularTags'])
+            ->name('tags.popular');
         Route::get('/{tag}', [TagController::class, 'show'])
             ->name('tags.show');
         Route::post('/', [TagController::class, 'store'])

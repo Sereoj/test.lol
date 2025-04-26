@@ -13,37 +13,27 @@ class TagService
         return Tag::all();
     }
 
-    public function getPopularTags(): array
+    public function getPopularTags()
     {
-        $recentPosts = Post::query()
-            ->latest()
-            ->take(15)
-            ->with('tags')
-            ->get();
+        $tagCounts = Tag::query()
+            ->select('tags.*')
+            ->join('post_tag', 'tags.id', '=', 'post_tag.tag_id')
+            ->join('posts', 'posts.id', '=', 'post_tag.post_id')
+            ->whereNull('posts.deleted_at') // если soft deletes есть
+            ->orderBy('posts.created_at', 'desc')
+            ->limit(15)
+            ->get()
+            ->groupBy('slug')
+            ->map(function ($tags) {
+                $firstTag = $tags->first();
+                $firstTag->count = $tags->count();
+                return $firstTag;
+            })
+            ->sortByDesc('count')
+            ->take(10)
+            ->values();
 
-        $tagCounts = [];
-
-        foreach ($recentPosts as $post) {
-            foreach ($post->tags as $tag) {
-                $tagSlug = $tag->slug;
-
-                if (!isset($tagCounts[$tagSlug])) {
-                    $tagCounts[$tagSlug] = [
-                        'name' => $tag->name,
-                        'slug' => $tagSlug,
-                        'count' => 0,
-                    ];
-                }
-
-                $tagCounts[$tagSlug]['count']++;
-            }
-        }
-
-        uasort($tagCounts, function ($a, $b) {
-            return $b['count'] <=> $a['count'];
-        });
-
-        return array_values(array_slice($tagCounts, 0, 10));
+        return $tagCounts;
     }
 
     public function getTagById($id)

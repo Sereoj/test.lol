@@ -22,7 +22,10 @@ class NewMessageNotification extends Notification implements ShouldQueue
     public function via(object $notifiable): array
     {
         $channels = [];
-        if ($notifiable->notificationSettings && $notifiable->notificationSettings->email_enabled && $notifiable->notificationSettings->notify_on_new_message) {
+        if ($notifiable->notificationSettings &&
+            $notifiable->notificationSettings->email_enabled &&
+            $notifiable->notificationSettings->notify_on_new_message)
+        {
             $channels[] = 'mail';
         }
         $channels[] = 'database';
@@ -48,4 +51,4 @@ class NewMessageNotification extends Notification implements ShouldQueue
             'type' => 'new_message',
         ];
     }
-} 
+}
