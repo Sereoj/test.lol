@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Services\InitService;
 use Illuminate\Support\Facades\Log;
 use Exception;
