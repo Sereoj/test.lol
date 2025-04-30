@@ -14,7 +14,7 @@ use App\Services\Posts\Assistants\TimeFrameFilterService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use function App\Helpers\sanitizeText;
 class PostRepository
 {
     protected MediaService $mediaService;
@@ -135,7 +135,7 @@ class PostRepository
                 'title' => $data['title'],
                 'slug' => TextUtil::generateUniqueSlug($data['title'], $count_posts),
                 'user_id' => Auth::id(),
-                'content' => $data['content'],
+                'content' => sanitizeText($data['content']),
                 'status' => Post::STATUS_DRAFT,
                 'is_adult_content' => $data['is_adult_content'] ?? false,
                 'is_nsfl_content' => $data['is_nsfl_content'] ?? false,

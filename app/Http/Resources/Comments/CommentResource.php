@@ -16,15 +16,17 @@ class CommentResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $isDeleted = $this->deleted_at !== null;
         return [
             'id' => $this->id,
-            'user' => new UserShortResource($this->user),
-            'content' => $this->content,
-            'likes' => $this->likes, // Ресурс для лайков
-            'reports' => $this->reports,
-            'reposts' => $this->reposts()->count(), // Количество репостов
-            'replies' => CommentResource::collection($this->replies), // Вложенные комментарии
+            'user' => $isDeleted ? null : new UserShortResource($this->user),
+            'content' => $isDeleted ? 'Комментарий удалён' : $this->content,
+            'likes' => $isDeleted ? [] : $this->likes,
+            'reports' => $isDeleted ? [] : $this->reports,
+            'reposts' => $isDeleted ? 0 : $this->reposts()->count(),
+            'replies' => CommentResource::collection($this->replies),
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'deleted' => $isDeleted,
         ];
     }
 }

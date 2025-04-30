@@ -27,7 +27,7 @@ class CommentRepository
     {
         $userId = auth()->check() ? auth()->id() : null;
 
-        $query = Comment::with(['user']);
+        $query = Comment::withTrashed()->with(['user']);
 
         if ($userId) {
             $query->with([
@@ -46,6 +46,7 @@ class CommentRepository
         $query->withCount(['likes', 'reports', 'reposts']);
 
         $query->with(['replies' => function($query) use ($userId) {
+            $query->withTrashed();
             $query->with(['user']);
 
             if ($userId) {

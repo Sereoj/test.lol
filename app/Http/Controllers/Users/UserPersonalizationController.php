@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserPersonalizationRequest;
-use App\Services\UserPersonalizationService;
+use App\Services\Users\UserPersonalizationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 

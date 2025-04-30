@@ -1,13 +1,8 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Users;
 
-use AllowDynamicProperties;
 use App\Models\Users\User;
-use App\Services\Employment\EmploymentStatusService;
-use App\Services\Users\UserBadgeService;
-use App\Services\Users\UserEmploymentStatusService;
-use App\Services\Users\UserStatusService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 

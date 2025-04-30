@@ -113,7 +113,6 @@ class PostSearchService
             ->whereRaw(implode(' OR ', $whereConditions), $bindParams)
             ->whereNull('deleted_at')
             ->orderByRaw('relevance_score DESC')
-            ->limit(5)
             ->get();
     }
 
@@ -130,7 +129,7 @@ class PostSearchService
      */
     protected function searchUsers(array $queries)
     {
-        return $this->performSearch(User::query(), $queries, ['username', 'description']);
+        return $this->performSearch(User::with(['avatars', 'badges', 'onlineStatus', 'role', 'followers']), $queries, ['username', 'description', 'slug']);
     }
 
     /**
@@ -146,7 +145,7 @@ class PostSearchService
             $this->buildSearchConditions($q, $queries, $fields);
         });
 
-        return $queryBuilder->limit(10)->get();
+        return $queryBuilder->get();
     }
 
     /**

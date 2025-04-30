@@ -45,7 +45,10 @@ class TagService
     {
         $slugPreview = str()->slug($data['name']['en']);
 
-        $existingTag = Tag::query()->where('name->en', $data['name']['en'])->first();
+        $existingTag = Tag::query()
+            ->where('name->ru', $data['name']['ru'])
+            ->where('name->en', $data['name']['en'])
+            ->first();
 
         if ($existingTag) {
             return $existingTag;

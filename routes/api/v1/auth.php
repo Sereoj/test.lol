@@ -30,6 +30,7 @@ use App\Http\Controllers\Users\UserLocationController;
 use App\Http\Controllers\Users\UserNotificationSettingsController;
 use App\Http\Controllers\Users\UserPersonalizationController;
 use App\Http\Controllers\Users\UserPostController;
+use App\Http\Controllers\Users\UserPrivacyController;
 use App\Http\Controllers\Users\UserSettingsController;
 use App\Http\Controllers\Users\UserSkillController;
 use App\Http\Controllers\Users\UserSourceController;
@@ -212,9 +213,24 @@ Route::middleware('auth:api')->group(function () {
 
     // Статусы пользователя
     Route::prefix('user/statuses')->group(function () {
-        Route::get('/', [UserStatusController::class, 'index'])->name('user.statuses.index'); // Получить все статусы
-        Route::post('/assign', [UserStatusController::class, 'assign'])->name('user.statuses.assign'); // Привязать статус
-        Route::delete('/detach', [UserStatusController::class, 'detach'])->name('user.statuses.detach'); // Отвязать статус
+        Route::get('/', [UserStatusController::class, 'index'])
+            ->name('user.statuses.index'); // Получить все статусы
+        Route::post('/assign', [UserStatusController::class, 'assign'])
+            ->name('user.statuses.assign'); // Привязать статус
+        Route::delete('/detach', [UserStatusController::class, 'detach'])
+            ->name('user.statuses.detach'); // Отвязать статус
+    });
+
+    Route::prefix('user/employment-statuses')->group(function () {
+       Route::get('/', [UserEmploymentStatusController::class, 'index'])
+           ->name('user.employment-statuses.index');
+    });
+
+    Route::prefix('user/privacy')->group(function () {
+       Route::get('/', [UserPrivacyController::class, 'index'])
+           ->name('user.privacy.index');
+       Route::patch('/', [UserPrivacyController::class, 'edit'])
+           ->name('user.privacy.edit');
     });
 
     // Аватары

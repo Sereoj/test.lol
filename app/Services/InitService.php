@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use App\Http\Resources\Tag\TagShortResource;
 use App\Services\Content\TagService;
 
 class InitService
@@ -13,7 +14,7 @@ class InitService
     public function getInfo()
     {
         return [
-            'tags' => $this->tagService->getPopularTags(),
+            'tags' => TagShortResource::collection($this->tagService->getPopularTags()),
             'options' => $this->getOptions(),
             'hits' => $this->getHits(),
             'hero' => $this->getHero(),
@@ -32,6 +33,7 @@ class InitService
                      'ru' => 'Видео',
                      'en' => 'Videos'
                  ],
+                 'code' => 'video'
              ],
              [
                 'id' => 2,
@@ -39,6 +41,7 @@ class InitService
                     'ru' => 'Картинки',
                     'en' => 'Images'
                 ],
+                'code' => 'images'
              ],
              [
                 'id' => 2,
@@ -46,6 +49,7 @@ class InitService
                     'ru' => 'Гифки',
                     'en' => 'Gifs'
                 ],
+                'code' => 'gif'
              ],
              [
                 'id' => 3,
@@ -53,6 +57,7 @@ class InitService
                     'ru' => 'Гифки123',
                     'en' => 'Gifs123'
                 ],
+                'code' => 'gif123'
              ],
         ];
     }

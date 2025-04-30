@@ -55,7 +55,7 @@ class TagController extends Controller
 
         $this->forgetCache(self::CACHE_KEY_TAGS);
 
-        return $this->successResponse($tag, [], 201);
+        return $this->successResponse(new TagShortResource($tag), [], 201);
     }
 
     /**

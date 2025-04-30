@@ -11,8 +11,8 @@ class UserEmploymentStatusService
     public function getAllEmploymentStatuses()
     {
         return [
-            'active_employment_status' => Auth::user()->employmentStatus,
-            'employment_statuses' => EmploymentStatus::all()
+            'active' => Auth::user()->employmentStatus,
+            'items' => EmploymentStatus::all()
         ];
     }
     public function assignEmploymentStatusToUser($userId, $employmentStatusId)

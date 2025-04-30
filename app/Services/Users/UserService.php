@@ -2,17 +2,11 @@
 
 namespace App\Services\Users;
 
-use App\Events\UserExperienceChanged;
-use App\Models\Content\Achievement;
-use App\Models\Content\Task;
 use App\Models\Roles\Role;
 use App\Models\Users\User;
 use App\Notifications\NewMessageNotification;
 use App\Repositories\UserRepository;
-use App\Services\BaseService;
 use App\Services\Media\AvatarService;
-use App\Services\UserMessageService;
-use App\Services\UserSettingsService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;

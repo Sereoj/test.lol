@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Users;
 
 use App\Events\UserExperienceChanged;
 use App\Models\Content\Achievement;

@@ -2,17 +2,11 @@
 
 namespace App\Repositories;
 
-use App\Events\UserExperienceChanged;
-use App\Models\Content\Achievement;
-use App\Models\Content\Task;
 use App\Models\Users\User;
-use App\Models\Users\UserSetting;
 use App\Services\Employment\EmploymentStatusService;
 use App\Services\Roles\RoleService;
 use App\Services\StatusService;
-use App\Services\Users\UserService;
-use App\Services\Users\UserStatusService;
-use App\Services\UserSettingsService;
+use App\Services\Users\UserSettingsService;
 use App\Store\UserRelations;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;

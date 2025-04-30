@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
 use App\Http\Resources\Search\SearchThumbMediaResource;
 use App\Http\Resources\Search\ShortSearchTagResource;
+use App\Http\Resources\ThumbUserMediaResource;
+use App\Http\Resources\UserSearchResource;
 use App\Services\Posts\PostSearchService;
 use App\Services\Posts\SearchSuggestionService;
 use Exception;
@@ -82,7 +84,7 @@ class PostSearchController extends Controller
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = SearchThumbMediaResource::collection($this->searchService->searchInPosts($query));
+                $searchResults = ThumbUserMediaResource::collection($this->searchService->searchInPosts($query));
                 Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
@@ -110,8 +112,8 @@ class PostSearchController extends Controller
             });
 
             Log::info("Results returned for query: {$query}");
-
-            return $this->successResponse($results);
+                //return $this->successResponse($results);
+            return $this->successResponse(UserSearchResource::collection($results));
         }catch (Exception $e) {
             Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
             return $this->errorResponse($e->getMessage(), 500);

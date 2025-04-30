@@ -1,16 +1,12 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Users;
 
 use App\Events\NewMessageReceived;
-use App\Models\Users\User;
-use App\Notifications\NewMessageNotification;
 use App\Services\Messaging\ConversationService;
 use App\Services\Messaging\MessageService;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use Laravel\Reverb\Events\MessageReceived;
-use Symfony\Component\Mailer\Event\MessageEvent;
 
 class UserMessageService
 {

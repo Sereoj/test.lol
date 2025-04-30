@@ -15,8 +15,8 @@ class UserEmploymentStatusResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'active' => new EmploymentStatusResource($this->resource['active_employment_status']),
-            'items' => EmploymentStatusResource::collection($this->resource['employment_statuses'])
+            'active' => new EmploymentStatusResource($this->resource['active']),
+            'items' => EmploymentStatusResource::collection($this->resource['items'])
         ];
     }
 }

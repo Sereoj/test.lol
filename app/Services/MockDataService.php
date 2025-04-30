@@ -2,11 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Billing\Transaction;
 use App\Models\Challenge;
-use App\Models\Comment;
+use App\Models\Comments\Comment;
+use App\Models\Content\Tag;
 use App\Models\Posts\Post;
-use App\Models\Tag;
-use App\Models\Transaction;
 use App\Models\Users\User;
 
 /**
@@ -109,19 +109,19 @@ class MockDataService
     {
         $users = User::inRandomOrder()->limit($userCount)->get();
         $result = [];
-        
+
         foreach ($users as $user) {
             $posts = Post::where('user_id', $user->id)
                 ->inRandomOrder()
                 ->limit($postCount)
                 ->get();
-                
+
             $result[] = [
                 'user' => $user,
                 'posts' => $posts
             ];
         }
-        
+
         return $result;
     }
 
@@ -132,4 +132,4 @@ class MockDataService
     {
         return app()->environment('local', 'development');
     }
-} 
+}

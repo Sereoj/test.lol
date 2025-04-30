@@ -13,7 +13,7 @@ use Exception;
 class UserFollowController extends Controller
 {
     protected UserFollowService $followService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER_FOLLOWING = 'user_%s_following_%s';
     private const CACHE_KEY_USER_FOLLOWERS = 'user_%s_followers';
@@ -31,7 +31,7 @@ class UserFollowController extends Controller
     {
         try {
             $followerId = Auth::id();
-            
+
             // Проверка, не подписан ли пользователь уже
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING, $followerId, $userId);
             $isFollowing = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($followerId, $userId) {
@@ -40,7 +40,10 @@ class UserFollowController extends Controller
 
             if ($isFollowing) {
                 Log::info('User already following', ['follower_id' => $followerId, 'user_id' => $userId]);
-                return $this->successResponse(['message' => 'You are already following this user']);
+                return $this->successResponse([
+                    'status' => 'already_subscribed',
+                    'message' => 'You are already following this user'
+                ]);
             }
 
             $result = $this->followService->followUser($followerId, $userId);
@@ -51,17 +54,20 @@ class UserFollowController extends Controller
                     sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId),
                     sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $followerId)
                 ]);
-                
+
                 // Устанавливаем кеш подписки
                 $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
                     return true;
                 }, true);
-                
+
                 Log::info('User followed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
 
-                return $this->successResponse(['message' => 'User followed successfully']);
+                return $this->successResponse([
+                    'status' => 'subscribed',
+                    'message' => 'User followed successfully'
+                ]);
             }
-            
+
             Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
             return $this->errorResponse('User not found', 404);
         } catch (Exception $e) {
@@ -80,7 +86,7 @@ class UserFollowController extends Controller
     {
         try {
             $followerId = Auth::id();
-            
+
             // Проверка, не отписан ли пользователь уже
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING, $followerId, $userId);
             $isFollowing = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($followerId, $userId) {
@@ -89,7 +95,10 @@ class UserFollowController extends Controller
 
             if (!$isFollowing) {
                 Log::info('User not following', ['follower_id' => $followerId, 'user_id' => $userId]);
-                return $this->successResponse(['message' => 'You are not following this user']);
+                return $this->successResponse([
+                    'status' => 'not_following',
+                    'message' => 'You are not following this user'
+                ]);
             }
 
             $result = $this->followService->unfollowUser($followerId, $userId);
@@ -101,12 +110,15 @@ class UserFollowController extends Controller
                     sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId),
                     sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $followerId)
                 ]);
-                
+
                 Log::info('User unfollowed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
 
-                return $this->successResponse(['message' => 'User unfollowed successfully']);
+                return $this->successResponse([
+                    'status' => 'unsubscribed',
+                    'message' => 'User unfollowed successfully'
+                ]);
             }
-            
+
             Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
             return $this->errorResponse('User not found', 404);
         } catch (Exception $e) {
@@ -126,11 +138,11 @@ class UserFollowController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId);
-            
+
             $followers = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
                 return $this->followService->getFollowers($userId);
             });
-            
+
             Log::info('Followers retrieved successfully', ['user_id' => $userId]);
 
             return $this->successResponse($followers);
@@ -148,11 +160,11 @@ class UserFollowController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $userId);
-            
+
             $following = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
                 return $this->followService->getFollowing();
             });
-            
+
             Log::info('Following list retrieved successfully', ['user_id' => $userId]);
 
             return $this->successResponse($following);

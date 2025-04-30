@@ -11,16 +11,36 @@ class UserGenderController extends Controller
     {
         $this->successResponse([
             [
-                'label' => 'Мужской',
-                'value' => 'male',
+                'id' => 0,
+                'name' => [
+                    'ru' => 'Не указано',
+                    'en' => 'Not specified'
+                ],
+                'code' => 'unknown',
             ],
             [
-                'label' => 'Женский',
-                'value' => 'female',
+                'id' => 1,
+                'name' => [
+                    'ru' => 'Мужской',
+                    'en' => 'Male'
+                ],
+                'code' => 'male',
             ],
             [
-                'label' => 'Другой',
-                'value' => 'other',
+                'id' => 2,
+                'name' => [
+                    'ru' => 'Женский',
+                    'en' => 'Female'
+                ],
+                'code' => 'female',
+            ],
+            [
+                'id' => 3,
+                'name' => [
+                    'ru' => 'Другой',
+                    'en' => 'Other'
+                ],
+                'code' => 'other',
             ],
         ]);
     }
