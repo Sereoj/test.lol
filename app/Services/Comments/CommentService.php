@@ -57,7 +57,15 @@ class CommentService
             throw new Exception('Нет прав на редактирование этого комментария', 403);
         }
 
-        $parentId = $data['parent_id'] ?? null;
+        if ($comment->deleted_at) {
+            throw new Exception('Нельзя редактировать удалённый комментарий', 400);
+        }
+
+        $parentId = $data['parent_id'] ?? $comment->parent_id;
+
+        if ($comment->parent_id && $parentId === null) {
+            throw new Exception('Нельзя сделать дочерний комментарий корневым', 400);
+        }
 
         if ($parentId && $parentId == $comment->id) {
             throw new Exception('Комментарий не может быть своим же родителем', 400);
@@ -68,8 +76,19 @@ class CommentService
             if (! $parentComment || $parentComment->deleted_at) {
                 throw new Exception('Родительский комментарий не найден или удалён', 404);
             }
+
             if ($parentComment->post_id !== $comment->post_id) {
                 throw new Exception('Родительский комментарий принадлежит другому посту', 400);
+            }
+
+            $depth = 1;
+            $current = $parentComment;
+            while ($current->parent_id) {
+                $depth++;
+                $current = $this->commentRepository->findParentComment($current->parent_id);
+                if ($depth > 3) {
+                    throw new Exception('Максимальная глубина вложенности комментариев — 3', 400);
+                }
             }
         }
 
@@ -109,35 +128,6 @@ class CommentService
             'content' => $data['content'],
             'parent_id' => $parentId,
         ]);
-    }
-
-    private function validateParent($comment, $parentComment, $postId = null)
-    {
-        if ($comment && $parentComment->id === $comment->id) {
-            throw new Exception('Нельзя сделать комментарий своим же родителем', 400);
-        }
-        if ($parentComment->deleted_at) {
-            throw new Exception('Родительский комментарий удалён', 400);
-        }
-        if ($comment && $parentComment->post_id !== $comment->post_id) {
-            throw new Exception('Родительский комментарий принадлежит другому посту', 400);
-        }
-        if ($postId && $parentComment->post_id !== $postId) {
-            throw new Exception('Родительский комментарий принадлежит другому посту', 400);
-        }
-        $depth = 1;
-        $current = $parentComment;
-        while ($current->parent_id) {
-            $depth++;
-            $current = $this->commentRepository->findParentComment($current->parent_id);
-            if (!$current) break;
-            if ($comment && $current->id === $comment->id) {
-                throw new Exception('Циклическая вложенность комментариев', 400);
-            }
-            if ($depth > 3) {
-                throw new Exception('Максимальная глубина вложенности комментариев — 3', 400);
-            }
-        }
     }
 
     public function reactToComment($commentId, $type)

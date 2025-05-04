@@ -40,7 +40,7 @@ class MediaHandler
         $fileName = Str::random($this->length).'.'.$file->getClientOriginalExtension();
         $originalFilePath = $file->getPathname();
 
-        $results['original'] = Storage::disk('public')->putFileAs($originalPath, $file, $fileName);
+        $results['original'] = Storage::disk('ftp')->putFileAs($originalPath, $file, $fileName);
 
 /*        if ($type === 'image') {
             $results = array_merge($results, $this->handleImage($file, $originalFilePath, $processedPath));

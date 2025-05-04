@@ -28,7 +28,8 @@ class AvatarService
             $image = Image::read($file)
                 ->encode(new JpegEncoder(80));
 
-            Storage::disk('public')->put($path, $image);
+            //Storage::disk('public')->put($path, $image);
+            Storage::disk('ftp')->put($path, $image);
 
         return $this->avatarRepository->createAvatar([
             'user_id' => $userId,

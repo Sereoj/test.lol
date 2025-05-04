@@ -55,6 +55,13 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
+        'ftp' => [
+            'driver' => 'ftp',
+            'host' => env('FTP_HOST'),
+            'username' => env('FTP_USERNAME'),
+            'password' => env('FTP_PASSWORD'),
+            'root' => '' // for example: /var/www/html/dev/images
+        ]
 
     ],
 
@@ -71,6 +78,8 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('badges') => storage_path('app/public/badges'),
+        public_path('static') => storage_path('app/public/static'),
     ],
 
 ];

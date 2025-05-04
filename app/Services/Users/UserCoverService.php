@@ -7,6 +7,7 @@ use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Log;
 
 class UserCoverService
 {
@@ -33,15 +34,12 @@ class UserCoverService
             throw new Exception('Пользователь не найден');
         }
 
-        // Удаляем старую обложку, если она существует
         $this->removeOldCover($user);
 
-        // Генерируем имя файла и путь
         $filename = $this->generateCoverFilename($coverFile);
-        $path = $coverFile->storeAs('public/users/covers', $filename);
+        $filePath = Storage::disk('ftp')->put('users/covers/' . $filename, $coverFile);
 
-        // Сохраняем путь к обложке в модель пользователя
-        $user->cover = Storage::url($path);
+        $user->cover = $filePath;
         $user->save();
 
         return $user;
@@ -81,9 +79,12 @@ class UserCoverService
     private function removeOldCover(User $user): void
     {
         if ($user->cover) {
-            $oldPath = str_replace('/storage', 'public', $user->cover);
-            if (Storage::exists($oldPath)) {
-                Storage::delete($oldPath);
+            $path = $user->cover;
+            Log::info('Cover path:', [
+                'path' => $path
+            ]);
+            if (Storage::exists($path)) {
+                Storage::delete($path);
             }
         }
     }
@@ -99,4 +100,4 @@ class UserCoverService
         $extension = $file->getClientOriginalExtension();
         return 'cover_' . Str::uuid() . '.' . $extension;
     }
-} 
+}
