@@ -27,11 +27,12 @@ class MessageController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $messages = $this->messageService->getAllMessages(auth()->id());
-            return $this->successResponse(
+            return $this->successResponse([]);
+            //$messages = $this->messageService->getAllMessages(auth()->id());
+            /*return $this->successResponse(
                 'Messages retrieved successfully',
                 new MessageCollection($messages)
-            );
+            );*/
         } catch (\Exception $e) {
             Log::error('Error retrieving messages: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -47,11 +48,12 @@ class MessageController extends Controller
     public function getChats(): JsonResponse
     {
         try {
-            $chats = $this->conversationService->getUserChats(auth()->id());
+            return $this->successResponse([]);
+/*            $chats = $this->conversationService->getUserChats(auth()->id());
             return $this->successResponse(
                 'Chats retrieved successfully',
                 $chats
-            );
+            );*/
         } catch (\Exception $e) {
             Log::error('Error retrieving chats: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -69,11 +71,12 @@ class MessageController extends Controller
     public function getMessages(int $conversationId): JsonResponse
     {
         try {
-            $messages = $this->messageService->getConversationMessages($conversationId, auth()->id());
+            return $this->successResponse([]);
+/*            $messages = $this->messageService->getConversationMessages($conversationId, auth()->id());
             return $this->successResponse(
                 'Messages retrieved successfully',
                 new MessageCollection($messages)
-            );
+            );*/
         } catch (\Exception $e) {
             Log::error('Error retrieving conversation messages: ' . $e->getMessage(), [
                 'conversation_id' => $conversationId,
@@ -92,7 +95,8 @@ class MessageController extends Controller
     public function store(SendMessageRequest $request): JsonResponse
     {
         try {
-            $message = $this->messageService->create([
+            return $this->successResponse([]);
+/*            $message = $this->messageService->create([
                 'conversation_id' => $request->conversation_id,
                 'sender_id' => auth()->id(),
                 'message' => $request->message,
@@ -102,7 +106,7 @@ class MessageController extends Controller
             return $this->successResponse(
                 'Message sent successfully',
                 new MessageResource($message)
-            );
+            );*/
         } catch (\Exception $e) {
             Log::error('Error sending message: ' . $e->getMessage(), [
                 'conversation_id' => $request->conversation_id,
@@ -125,11 +129,11 @@ class MessageController extends Controller
             if (!$message) {
                 return $this->errorResponse('Message not found', 404);
             }
-
-            return $this->successResponse(
+            return $this->successResponse([]);
+/*            return $this->successResponse(
                 'Message marked as read successfully',
                 new MessageResource($message)
-            );
+            );*/
         } catch (\Exception $e) {
             Log::error('Error marking message as read: ' . $e->getMessage(), [
                 'message_id' => $messageId,
@@ -146,13 +150,14 @@ class MessageController extends Controller
     public function delete(int $messageId): JsonResponse
     {
         try {
-            $result = $this->messageService->delete($messageId, auth()->id());
+            return $this->successResponse([]);
+/*            $result = $this->messageService->delete($messageId, auth()->id());
 
             if (!$result) {
                 return $this->errorResponse('Message not found', 404);
             }
 
-            return $this->successResponse('Message deleted successfully');
+            return $this->successResponse('Message deleted successfully');*/
         } catch (\Exception $e) {
             Log::error('Error deleting message: ' . $e->getMessage(), [
                 'message_id' => $messageId,

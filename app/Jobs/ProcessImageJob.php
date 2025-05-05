@@ -38,6 +38,6 @@ class ProcessImageJob implements ShouldQueue
             $filterData['filter']->apply($image, $filterData['options']);
         }
 
-        Storage::disk('public')->put($this->outputPath, $image->encode(new WebpEncoder(quality: 65)));
+        Storage::disk('ftp')->put($this->outputPath, $image->encode(new WebpEncoder(quality: 65)));
     }
 }

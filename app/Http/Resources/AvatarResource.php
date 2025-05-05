@@ -16,7 +16,7 @@ class AvatarResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'path' => 'http://test/public/storage/'.$this->path,
+            'path' => $this->path,
         ];
     }
 }

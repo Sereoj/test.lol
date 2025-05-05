@@ -6,7 +6,7 @@ use App\Events\CommentCreated;
 use App\Services\Users\UserTaskService;
 use Illuminate\Support\Facades\Log;
 
-class HandleCommentCreated
+class UpdateUserTasksOnCommentCreated
 {
     protected UserTaskService $userTaskService;
 

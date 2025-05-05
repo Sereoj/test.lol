@@ -16,7 +16,7 @@ use App\Events\UserActivity;
 use App\Events\UserExperienceChanged;
 use App\Events\VideoPublished;
 use App\Listeners\AddTaskToUsers;
-use App\Listeners\HandleCommentCreated;
+use App\Listeners\UpdateUserTasksOnCommentCreated;
 use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleNotificationSettingsUpdated;
 use App\Listeners\HandleProfileComplected;
@@ -28,7 +28,6 @@ use App\Listeners\UpdateUserTasksOnPostPublished;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Event;
 
 class EventServiceProvider extends ServiceProvider
 {
@@ -45,20 +44,20 @@ class EventServiceProvider extends ServiceProvider
             UpdateOnlineStatus::class,
         ],
         TaskCreated::class => [
-            AddTaskToUsers::class,
+            AddTaskToUsers::class, //Как только создается задача, сразу присваивается к пользователю.
         ],
         TaskCompleted::class => [
-            UpdateUserExperience::class,
+            UpdateUserExperience::class, // Как только задача выполняется, сразу присваивает опыт.
         ],
         UserExperienceChanged::class => [
-            UpdateUserLevel::class,
+            UpdateUserLevel::class, // Как только обновляется опыт, присваивается уровень.
         ],
         PostPublished::class => [
-            PostPublishedListener::class,
-            UpdateUserTasksOnPostPublished::class,
+            PostPublishedListener::class, //Как только пользователь, публикует, пост переходит в статус опубликовано.
+            UpdateUserTasksOnPostPublished::class, //Автоматически выполняется задача
         ],
         ImagePublished::class => [
-            UpdateUserTasksOnPostPublished::class,
+            UpdateUserTasksOnPostPublished::class, //как только публикуется изображение, задача сразу выполняется.
         ],
         GifPublished::class => [
             UpdateUserTasksOnPostPublished::class,
@@ -67,7 +66,7 @@ class EventServiceProvider extends ServiceProvider
             UpdateUserTasksOnPostPublished::class,
         ],
         CommentCreated::class => [
-            HandleCommentCreated::class,
+            UpdateUserTasksOnCommentCreated::class,
         ],
         ProfileComplected::class => [
             HandleProfileComplected::class,

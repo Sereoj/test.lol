@@ -14,16 +14,22 @@ use Str;
 class AvatarService
 {
     private AvatarRepository $avatarRepository;
+    protected string $directoryName = 'avatars';
 
     public function __construct(AvatarRepository $avatarRepository)
     {
+        if(Storage::drive('ftp')->exists($this->directoryName))
+        {
+            Storage::disk('ftp')->makeDirectory($this->directoryName);
+        }
+
         $this->avatarRepository = $avatarRepository;
     }
 
     public function uploadAvatar($userId, $file)
     {
             $fileName = Str::random(15).'.jpg';
-            $path = "avatars/{$fileName}";
+            $path = "{$this->directoryName}/{$fileName}";
 
             $image = Image::read($file)
                 ->encode(new JpegEncoder(80));
@@ -67,7 +73,8 @@ class AvatarService
             );
 
             // Удаляем файл аватара из хранилища
-            Storage::delete('public/'.$avatar->path);
+            Storage::disk('ftp')->delete($avatar->path);
+            //Storage::delete('public/'.$avatar->path);
 
             return $this->avatarRepository->deleteAvatar($avatar);
         } catch (Exception $e) {

@@ -1,14 +1,17 @@
 <?php
 namespace App\Services;
 use App\Http\Resources\Tag\TagShortResource;
+use App\Services\Base\AppSettingsService;
 use App\Services\Content\TagService;
 
 class InitService
 {
     protected TagService $tagService;
-    public function __construct(TagService $tagService)
+    protected AppSettingsService $appSettingsService;
+    public function __construct(TagService $tagService, AppSettingsService $appSettingsService)
     {
         $this->tagService = $tagService;
+        $this->appSettingsService = $appSettingsService;
     }
 
     public function getInfo()
@@ -20,7 +23,7 @@ class InitService
             'hero' => $this->getHero(),
             'backgrounds' => $this->getBackgrounds(),
             'language' => app()->getLocale(),
-            'version' => getenv('APP_VERSION'),
+            'version' => $this->appSettingsService->get('app.version'),
         ];
     }
 

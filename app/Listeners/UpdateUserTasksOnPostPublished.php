@@ -25,8 +25,6 @@ class UpdateUserTasksOnPostPublished
     {
         $post = $event->post;
         $user = $post->user;
-
-        Log::info("Comment created: $post");
         $this->taskService->processTasks($user, 'publish_posts');
     }
 }

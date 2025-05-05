@@ -19,17 +19,23 @@ class MediaHandler
     protected ImagePipeline $imagePipeline;
 
     private AppSettingsService $appSettingsService;
-
     private int $length;
+    protected string $directoryName = 'originals';
 
     public function __construct(ImagePipeline $imagePipeline, AppSettingsService $appSettingsService)
     {
         $this->imagePipeline = $imagePipeline;
         $this->appSettingsService = $appSettingsService;
         $this->length = $this->appSettingsService->get('images.length');
+
+        if(Storage::drive('ftp')->exists($this->directoryName))
+        {
+            Storage::disk('ftp')->makeDirectory($this->directoryName);
+        }
     }
 
     // Обработка медиа-файлов
+    //TODO: сделать сжатие файлов, пересмотреть работу логики.
     public function handleFile(
         string $type,
         UploadedFile $file,
@@ -38,9 +44,14 @@ class MediaHandler
     ): array {
         $results = [];
         $fileName = Str::random($this->length).'.'.$file->getClientOriginalExtension();
+        \Log::info($fileName);
         $originalFilePath = $file->getPathname();
+        //Storage::disk('ftp')->putFileAs($this->directoryName, $file, $fileName);
+        $results['original'] = Storage::disk('ftp')->putFileAs($this->directoryName, $file, $fileName);
+        \Log::info('File:', [
+            'file' => $results['original']
+            ]);
 
-        $results['original'] = Storage::disk('ftp')->putFileAs($originalPath, $file, $fileName);
 
 /*        if ($type === 'image') {
             $results = array_merge($results, $this->handleImage($file, $originalFilePath, $processedPath));
