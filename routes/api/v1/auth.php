@@ -13,7 +13,6 @@ use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\EmploymentStatusController;
 use App\Http\Controllers\Media\AvatarController;
-use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Posts\MediaController;
 use App\Http\Controllers\Posts\PostController;
@@ -165,20 +164,6 @@ Route::middleware('auth:api')->group(function () {
             ->name('notifications.mark_all_read');
         Route::delete('/{notification_id}', [NotificationController::class, 'delete'])
             ->name('notifications.delete');
-    });
-
-    // Сообщения
-    Route::prefix('messages')->group(function () {
-        Route::get('/', [MessageController::class, 'index'])
-            ->name('message.index');
-        Route::get('/chats', [MessageController::class, 'getChats'])
-            ->name('messages.chats');
-        Route::get('/{user_id}', [MessageController::class, 'getMessages'])
-            ->name('messages.get');
-        Route::post('/{user_id}', [MessageController::class, 'sendMessage'])
-            ->name('messages.send');
-        Route::patch('/{user_id}/read', [MessageController::class, 'markAsRead'])
-            ->name('messages.mark_read');
     });
 
     // Настройки аккаунта пользователя

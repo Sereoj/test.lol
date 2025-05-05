@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Statuses;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Statuses\StoreStatusRequest;
-use App\Http\Requests\Statuses\UpdateStatusRequest;
+use App\Http\Requests\Status\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Services\StatusService;
 

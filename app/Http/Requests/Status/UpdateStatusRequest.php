@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Statuses;
+namespace App\Http\Requests\Status;
 
 use Illuminate\Foundation\Http\FormRequest;
 

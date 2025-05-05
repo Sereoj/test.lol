@@ -6,7 +6,6 @@ use App\Events\CommentCreated;
 use App\Events\FileDownloaded;
 use App\Events\GifPublished;
 use App\Events\ImagePublished;
-use App\Events\NewMessageReceived;
 use App\Events\NotificationSettingsUpdated;
 use App\Events\PostPublished;
 use App\Events\ProfileComplected;
@@ -76,9 +75,6 @@ class EventServiceProvider extends ServiceProvider
         ],
         NotificationSettingsUpdated::class => [
             HandleNotificationSettingsUpdated::class,
-        ],
-        NewMessageReceived::class => [
-            //HandleMessageSended::class
         ]
     ];
 
