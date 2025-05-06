@@ -10,6 +10,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\InitController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostSearchController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
@@ -29,6 +30,9 @@ Route::middleware('guest')->group(function () {
     // Инициализация приложения
     Route::get('/init', [InitController::class, 'init'])
         ->name('init.public');
+
+    Route::get('/sitemap', [SitemapController::class, 'index'])
+        ->name('sitemap');
 
     // Аутентификация
     Route::prefix('auth')->group(function () {

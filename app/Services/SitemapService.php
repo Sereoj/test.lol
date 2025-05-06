@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Services\Users;
+namespace App\Services;
 
 use App\Models\Posts\Post;
+use App\Models\Users\User;
 use Illuminate\Support\Facades\URL;
 
 class SitemapService
@@ -22,7 +23,7 @@ class SitemapService
 
         foreach ($generalPages as $path => $priority) {
             $urls[] = [
-                'loc' => URL::to($path),
+                'loc' => URL::to(getenv('APP_FRONT_URL').$path),
                 'lastmod' => now()->format('c'),
                 'changefreq' => 'weekly',
                 'priority' => $priority,
@@ -31,7 +32,7 @@ class SitemapService
 
         foreach ($contentPages as $page) {
             $urls[] = [
-                'loc' => URL::to("/posts/{$page->slug}"),
+                'loc' => URL::to(getenv('APP_FRONT_URL')."/posts/{$page->slug}"),
                 'lastmod' => $page->updated_at->format('c'),
                 'changefreq' => 'daily',
                 'priority' => '0.9',
@@ -40,7 +41,7 @@ class SitemapService
 
         foreach ($profilePages as $user) {
             $urls[] = [
-                'loc' => URL::to("/profile/{$user->id}"),
+                'loc' => URL::to(getenv('APP_FRONT_URL')."/profile/{$user->slug}"),
                 'lastmod' => $user->updated_at->format('c'),
                 'changefreq' => 'monthly',
                 'priority' => '0.6',
@@ -52,6 +53,11 @@ class SitemapService
 
     protected function getContentPages()
     {
-        return Post::
+        return Post::withoutTrashed()->published()->get();
+    }
+
+    protected function getProfilePages()
+    {
+        return User::get();
     }
 }

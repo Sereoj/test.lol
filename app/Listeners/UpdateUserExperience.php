@@ -17,11 +17,11 @@ class UpdateUserExperience
         $experienceReward = $task->experience_reward;
         $user->update(['experience' => $user->experience + $experienceReward]);
 
-        // Вызов события для обновления уровня пользователя
-        event(new UserExperienceChanged($user));
-
         // Проверка на достижения
         $this->checkAchievements($user);
+
+        // Вызов события для обновления уровня пользователя
+        event(new UserExperienceChanged($user));
     }
 
     private function checkAchievements($user)

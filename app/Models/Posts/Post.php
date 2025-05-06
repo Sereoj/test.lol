@@ -51,6 +51,8 @@ class Post extends Model
         'meta' => 'json',
     ];
 
+
+
     public function statistics()
     {
         return $this->hasOne(PostStatistic::class);

@@ -172,9 +172,6 @@ return [
         \SocialiteProviders\Manager\ServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
         //Intervention\Image\ImageServiceProvider::class,
-        
-        // Сервис-провайдер для режима разработки
-        App\Providers\MockDataServiceProvider::class,
     ])->toArray(),
 
     /*

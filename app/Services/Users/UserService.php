@@ -4,9 +4,9 @@ namespace App\Services\Users;
 
 use App\Models\Roles\Role;
 use App\Models\Users\User;
-use App\Notifications\NewMessageNotification;
 use App\Repositories\UserRepository;
 use App\Services\Media\AvatarService;
+use App\Services\Media\GravatarService;
 use App\Utils\TextUtil;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -15,23 +15,23 @@ class UserService
 {
     protected UserRepository $userRepository;
     protected UserSettingsService $userSettingsService;
-    protected UserMessageService $userMessageService;
     protected UserBadgeService $userBadgeService;
     protected AvatarService  $avatarService;
+    protected GravatarService $gravatarService;
 
     public function __construct(
         UserRepository $userRepository,
         UserSettingsService $userSettingsService,
-        UserMessageService $userMessageService,
         UserBadgeService $userBadgeService,
         AvatarService $avatarService,
+        GravatarService $gravatarService,
     )
     {
         $this->userRepository = $userRepository;
         $this->userSettingsService = $userSettingsService;
-        $this->userMessageService = $userMessageService;
         $this->userBadgeService = $userBadgeService;
         $this->avatarService = $avatarService;
+        $this->gravatarService = $gravatarService;
     }
 
     public function getAll(array $filters = [])
@@ -46,7 +46,9 @@ class UserService
 
         $user = $this->userRepository->create($data);
 
-        $this->avatarService->setAvatar($user->id, 'default.png');
+        $gravatar = $this->gravatarService->getPath($data['email']);
+
+        $this->avatarService->setAvatar($user->id, $gravatar);
         $this->userBadgeService->createBadgeForUser($user, 1);
         $this->userBadgeService->createBadgeForUser($user, 2);
         $this->userBadgeService->setActiveBadgeForUser($user->id, 2);
@@ -55,11 +57,6 @@ class UserService
         $this->userSettingsService->attachTask($user);
         $this->userSettingsService->attachAchievement($user);
 
-        $message = $this->userMessageService->sendMessage(1, $user->id);
-        if($message)
-        {
-            $user->notify(new NewMessageNotification($message));
-        }
         // Логирование успешного создания пользователя
         Log::info('User created successfully', ['user_id' => $user->id, 'username' => $user->username]);
 
