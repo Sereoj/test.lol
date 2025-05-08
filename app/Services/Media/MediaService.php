@@ -53,7 +53,6 @@ class MediaService
                     $cachedData = Cache::get($cacheKey);
                     $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
                     Log::info('Отображаю кеш '.$cacheKey);
-
                     continue;
                 }
 
@@ -67,7 +66,6 @@ class MediaService
 
                 if (empty($results)) {
                     Log::error("Failed to process file {$file->getClientOriginalName()}.");
-
                     continue;
                 }
 
@@ -96,6 +94,7 @@ class MediaService
                         'mime_type' => $mimeType,
                         'size' => $file->getSize(),
                         'user_id' => Auth::id(),
+                        'disk' => StorageService::get(),
                         'is_public' => true,
                         'width' => $width,
                         'height' => $height,
@@ -106,7 +105,7 @@ class MediaService
                         $originalMedia = $media;
                     }
 
-                    $mediaData[] = $media->toArray();
+                    $mediaData[] = $media;
                 }
 
                 Cache::put($cacheKey, $mediaData, now()->addMinutes(60));
@@ -117,7 +116,7 @@ class MediaService
             }
         }
 
-        return collect($allCreatedFiles) ?? collect();
+        return collect($allCreatedFiles);
     }
 
     public function getMediaById($id)

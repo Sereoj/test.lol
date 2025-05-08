@@ -6,6 +6,8 @@ use App\Models\Posts\Post;
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Media extends Model
 {
@@ -29,7 +31,10 @@ class Media extends Model
         'height',
         'size',
         'parent_id',
+        'disk'
     ];
+
+    protected $appends = ['url'];
 
     public function posts()
     {
@@ -41,6 +46,20 @@ class Media extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function getUrlAttribute()
+    {
+        $disk = $this->disk ?? 'ftp';
+        $path = config('filesystems.disks.' . $disk . '.url', '');
+        switch ($disk) {
+            case 'ftp':
+                return  $path .'storage/'. $this->file_path;
+            case 'local':
+                return $path .'/'. $this->file_path;
+            default:
+                return $path;
+        }
     }
 
     public function scopeOriginal($query)

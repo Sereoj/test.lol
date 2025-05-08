@@ -7,6 +7,7 @@ use App\Http\Controllers\Authentication\PasswordResetController;
 use App\Http\Controllers\Authentication\SocialiteController;
 use App\Http\Controllers\ChallengeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ImageController;
 use App\Http\Controllers\InitController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostSearchController;
@@ -76,9 +77,15 @@ Route::middleware('guest')->group(function () {
 
 // Маршруты, доступные как гостям, так и авторизованным пользователям
 // Установка языка
-Route::get('/languages', [UserLanguageController::class, 'index'])->name('lang.public');
+Route::get('/languages', [UserLanguageController::class, 'index'])
+    ->name('lang.public');
 Route::post('/languages', [UserLanguageController::class, 'switchLanguage'])
     ->name('set.language');
+
+Route::prefix('storage')->group(function () {
+   Route::get('/originals/{filename}', [ImageController::class, 'getOriginal'])
+       ->name('storage.original');
+});
 
 //http://test/public/api/v1/search/tags?query=&page=1&per_page=12
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Posts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Media\MediaRequest;
 use App\Http\Resources\Media\MediaResource;
+use App\Http\Resources\Media\MediaShortResource;
 use App\Http\Resources\Media\ShortMediaResource;
 use App\Services\Media\MediaService;
 use Exception;
@@ -31,7 +32,16 @@ class MediaController extends Controller
 
             $media = $this->mediaService->upload($files);
 
-            return $this->successResponse($media,[], 201);
+            Log::info('Media', [
+                'data' => $media
+            ]);
+
+            // Преобразуем каждый элемент коллекции в ресурс по отдельности
+            $mediaResources = $media->map(function ($item) {
+                return new MediaResource($item);
+            });
+
+            return $this->successResponse($mediaResources, [], 201);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);

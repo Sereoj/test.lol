@@ -33,6 +33,7 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'url' => env('APP_URL'),
             'throw' => false,
         ],
 
@@ -60,7 +61,8 @@ return [
             'host' => env('FTP_HOST'),
             'username' => env('FTP_USERNAME'),
             'password' => env('FTP_PASSWORD'),
-            'root' => '/static' // for example: /var/www/html/dev/images
+            'url' => env('FTP_URL'),
+            'root' => '/storage' // for example: /var/www/html/dev/images
         ]
 
     ],
@@ -78,8 +80,8 @@ return [
 
     'links' => [
         public_path('storage') => storage_path('app/public'),
+        public_path('originals') => storage_path('app/originals'),
         public_path('badges') => storage_path('app/public/badges'),
-        public_path('static') => storage_path('app/public/static'),
     ],
 
 ];

@@ -7,9 +7,11 @@ use App\Processors\ImagePipeline;
 use App\Processors\WatermarkFilter;
 use App\Processors\WatermarkWithUsername;
 use App\Services\Base\AppSettingsService;
+use App\Services\Media\StorageService;
 use App\Services\Media\VideoService;
 use FFMpeg\FFMpeg;
 use FFMpeg\Format\Video\X264;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -21,6 +23,7 @@ class MediaHandler
     private AppSettingsService $appSettingsService;
     private int $length;
     protected string $directoryName = 'originals';
+    protected string $disk;
 
     public function __construct(ImagePipeline $imagePipeline, AppSettingsService $appSettingsService)
     {
@@ -28,9 +31,10 @@ class MediaHandler
         $this->appSettingsService = $appSettingsService;
         $this->length = $this->appSettingsService->get('images.length');
 
-        if(Storage::drive('ftp')->exists($this->directoryName))
+        $this->disk = StorageService::get();
+        if(!Storage::drive($this->disk)->exists($this->directoryName))
         {
-            Storage::disk('ftp')->makeDirectory($this->directoryName);
+            Storage::disk($this->disk)->makeDirectory($this->directoryName);
         }
     }
 
@@ -44,13 +48,14 @@ class MediaHandler
     ): array {
         $results = [];
         $fileName = Str::random($this->length).'.'.$file->getClientOriginalExtension();
-        \Log::info($fileName);
-        $originalFilePath = $file->getPathname();
         //Storage::disk('ftp')->putFileAs($this->directoryName, $file, $fileName);
-        $results['original'] = Storage::disk('ftp')->putFileAs($this->directoryName, $file, $fileName);
-        \Log::info('File:', [
-            'file' => $results['original']
-            ]);
+        $path = Storage::disk($this->disk)->putFileAs($this->directoryName, $file, $fileName);
+        $results['original'] = $path;
+
+        Log::info('File:', [
+            'file' => $results['original'],
+            'disk' => $this->disk,
+        ]);
 
 
 /*        if ($type === 'image') {

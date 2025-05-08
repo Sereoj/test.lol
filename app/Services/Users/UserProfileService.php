@@ -16,7 +16,7 @@ use App\Http\Resources\StatusResource;
 use App\Models\Users\User;
 use Auth;
 use Illuminate\Support\Facades\Log;
-use PHPUnit\Framework\Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserProfileService
 {
@@ -39,7 +39,7 @@ class UserProfileService
 
         if(!$user)
         {
-            throw new Exception('User not found');
+            throw new ModelNotFoundException('Пользователь не найден');
         }
 
         $isMyProfile = $authUser?->id === $user->id;
@@ -47,7 +47,7 @@ class UserProfileService
         Log::info('Is my profile', ['is_my_profile' => $isMyProfile]);
 
         $followersCount = $this->userFollowService->getFollowers($user->id)->count();
-        $followingCount = $this->userFollowService->getFollowing()->count();
+        $followingCount = $authUser ? $this->userFollowService->getFollowingByUserId($user->id)->count() : 0;
 
         $isFollowing = false;
         $isFollowedBy = false;
@@ -71,7 +71,7 @@ class UserProfileService
                 'description' => $user->description,
                 'verification' => $user->verification,
                 'online' => new OnlineStatusResource($user->onlineStatus),
-                'badges' => new BadgeResource($activeBadge),
+                'badges' => $activeBadge ? new BadgeResource($activeBadge) : null,
                 'gender' => $user->gender,
                 'age' => $user->age,
                 'language' => $user->language,

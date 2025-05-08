@@ -16,7 +16,7 @@ class MediaShortResource extends JsonResource
     {
         return [
             'type' => $this->getMediaType(),
-            'src' => asset('storage/' . $this->file_path),
+            'src' => $this->url,
         ];
     }
 

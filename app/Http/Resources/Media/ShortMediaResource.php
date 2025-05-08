@@ -16,7 +16,7 @@ class ShortMediaResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'file_path' => $this->file_path,
+            'file_path' => $this->url,
             'type' => $this->type,
             'mime_type' => $this->mime_type,
             'size' => $this->size

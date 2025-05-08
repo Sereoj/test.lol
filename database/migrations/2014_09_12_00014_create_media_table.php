@@ -17,6 +17,7 @@ return new class () extends Migration {
             $table->string('file_path');
             $table->enum('type', ['original', 'resized', 'blur', 'compressed'])->default('original');
             $table->string('mime_type');
+            $table->string('disk')->default('ftp');
             $table->unsignedBigInteger('size');
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->boolean('is_public')->default(true);
