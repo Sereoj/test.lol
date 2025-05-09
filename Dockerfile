@@ -34,8 +34,8 @@ WORKDIR /var/www
 # Копирование проекта
 COPY . /var/www
 
-# Установка зависимостей Composer
-RUN composer install --optimize-autoloader --no-dev
+# Установка зависимостей Composer (включая dev-зависимости)
+RUN composer install --optimize-autoloader
 
 # Права на директории
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
