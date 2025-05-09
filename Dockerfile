@@ -31,11 +31,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Настройка рабочей директории
 WORKDIR /var/www
 
-# Копирование проекта
-COPY . /var/www
+# Копирование только composer файлов для кеширования
+COPY composer.json composer.lock ./
 
-# Установка зависимостей Composer (включая dev-зависимости)
-RUN composer install --optimize-autoloader
+# Установка зависимостей Composer
+RUN composer install --optimize-autoloader --no-scripts
+
+# Теперь копируем остальные файлы проекта
+COPY . .
+
+# Запускаем скрипты композера
+RUN composer dump-autoload --optimize
 
 # Права на директории
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
