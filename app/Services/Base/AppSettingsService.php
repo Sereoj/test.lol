@@ -24,7 +24,7 @@ class AppSettingsService
         $filePath = self::$path.DIRECTORY_SEPARATOR.self::$fileName;
 
         if (! File::exists($filePath)) {
-            throw new \RuntimeException("Settings file not found at: {$filePath}");
+            $this->save();
         }
 
         $content = File::get($filePath);

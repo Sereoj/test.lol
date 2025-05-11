@@ -45,13 +45,28 @@ RUN composer dump-autoload --optimize
 
 # Создаем скрипт для запуска PHP-FPM с правильными правами
 RUN echo '#!/bin/bash\n\
+# Создаем необходимые директории\n\
 mkdir -p /var/www/storage/logs\n\
 mkdir -p /var/www/storage/framework/cache\n\
 mkdir -p /var/www/storage/framework/sessions\n\
 mkdir -p /var/www/storage/framework/views\n\
 mkdir -p /var/www/bootstrap/cache\n\
+mkdir -p /var/www/storage/app/settings\n\
+\n\
+# Копируем settings.json, если он существует в исходном коде\n\
+if [ -f /var/www/storage/app/settings/settings.json.example ]; then\n\
+  cp /var/www/storage/app/settings/settings.json.example /var/www/storage/app/settings/settings.json\n\
+fi\n\
+\n\
+# Устанавливаем полные права на директории storage и bootstrap/cache\n\
+chmod -R 777 /var/www/storage\n\
+chmod -R 777 /var/www/bootstrap/cache\n\
+\n\
+# Меняем владельца на www-data\n\
 chown -R www-data:www-data /var/www/storage\n\
 chown -R www-data:www-data /var/www/bootstrap/cache\n\
+\n\
+# Запускаем PHP-FPM\n\
 exec php-fpm\n'\
 > /usr/local/bin/start-php-fpm.sh && \
 chmod +x /usr/local/bin/start-php-fpm.sh
