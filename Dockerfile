@@ -43,11 +43,21 @@ COPY . .
 # Запускаем скрипты композера
 RUN composer dump-autoload --optimize
 
-# Права на директории
-RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+# Создаем скрипт для запуска PHP-FPM с правильными правами
+RUN echo '#!/bin/bash\n\
+mkdir -p /var/www/storage/logs\n\
+mkdir -p /var/www/storage/framework/cache\n\
+mkdir -p /var/www/storage/framework/sessions\n\
+mkdir -p /var/www/storage/framework/views\n\
+mkdir -p /var/www/bootstrap/cache\n\
+chown -R www-data:www-data /var/www/storage\n\
+chown -R www-data:www-data /var/www/bootstrap/cache\n\
+exec php-fpm\n'\
+> /usr/local/bin/start-php-fpm.sh && \
+chmod +x /usr/local/bin/start-php-fpm.sh
 
 # Экспорт порта
 EXPOSE 9000
 
-# Запуск PHP-FPM
-CMD ["php-fpm"] 
+# Запуск PHP-FPM через скрипт-обертку
+CMD ["/usr/local/bin/start-php-fpm.sh"] 
