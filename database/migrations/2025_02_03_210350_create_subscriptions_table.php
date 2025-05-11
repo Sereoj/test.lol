@@ -20,8 +20,8 @@ return new class () extends Migration {
             $table->string('status')->default('active');
             $table->decimal('amount', 10, 2);
             $table->string('currency', 3);
-            $table->timestamp('started_at');
-            $table->timestamp('expires_at');
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('expires_at')->nullable();
             $table->timestamps();
         });
     }
