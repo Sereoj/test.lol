@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
             SourcesTableSeeder::class,
             SkillsTableSeeder::class,
             BadgesTableSeeder::class,
-            FeeSeeder::class,
             UsersTableSeeder::class,
             PassportClientsSeeder::class,
         ]);

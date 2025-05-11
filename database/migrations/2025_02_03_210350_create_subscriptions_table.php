@@ -12,13 +12,16 @@ return new class () extends Migration {
     {
         Schema::create('subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('plan'); // Название или тип подписки (например, 'basic', 'premium')
-            $table->string('status')->default('active'); // Статус подписки ('active', 'inactive', 'expired')
-            $table->decimal('amount', 10, 2); // Сумма подписки
-            $table->string('currency', 3); // Валюта подписки (например, 'USD')
-            $table->timestamp('started_at'); // Дата начала подписки
-            $table->timestamp('expires_at'); // Дата окончания подписки
+            $table->foreignId('user_id')
+                ->constrained('users')
+                ->cascadeOnDelete()
+                ->cascadeOnUpdate();
+            $table->string('plan');
+            $table->string('status')->default('active');
+            $table->decimal('amount', 10, 2);
+            $table->string('currency', 3);
+            $table->timestamp('started_at');
+            $table->timestamp('expires_at');
             $table->timestamps();
         });
     }
