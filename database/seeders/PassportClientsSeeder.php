@@ -17,13 +17,15 @@ class PassportClientsSeeder extends Seeder
         $personalClient = $clientRepository->createPersonalAccessClient(
             1,
             'Personal Access Client',
-            env('APP_URL')
+            env('APP_URL'),
+            'http://localhost:8000'
         );
 
         $passwordClient = $clientRepository->createPasswordGrantClient(
             1,
             'Password Grant Client',
-            env('APP_URL')
+            env('APP_URL'),
+            'http://localhost:8000'
         );
 
         if ($personalClient) {
