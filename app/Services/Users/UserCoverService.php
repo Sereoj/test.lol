@@ -14,10 +14,12 @@ class UserCoverService
 {
     protected UserService $userService;
     protected string $path = 'users/covers/';
+    protected string $disk;
 
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
+        $this->disk = StorageService::get();
     }
 
     /**
@@ -40,7 +42,7 @@ class UserCoverService
 
         $filename = $this->generateCoverFilename($coverFile);
 
-        $isUploaded = Storage::disk(StorageService::get())->put($this->path . $filename, $coverFile);
+        $isUploaded = Storage::disk($this->disk)->put($this->path . $filename, $coverFile);
 
         if (!$isUploaded) {
             throw new Exception('Обложка не загружена');
@@ -89,11 +91,13 @@ class UserCoverService
     {
         if ($user->cover) {
             $path = $user->cover;
+            
             Log::info('Cover path:', [
                 'path' => $path
             ]);
-            if (Storage::exists($path)) {
-                Storage::delete($path);
+
+            if (Storage::disk($this->disk)->exists($path)) {
+                Storage::disk($this->disk)->delete($path);
             }
         }
     }
