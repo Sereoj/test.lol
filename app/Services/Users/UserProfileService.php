@@ -66,7 +66,7 @@ class UserProfileService
                 'username' => $user->username,
                 'slug' => $user->slug,
                 'avatars' => AvatarResource::collection($user->avatars->sortDesc()),
-                'cover' => 'http://test/public/'.$user->cover,
+                'cover' => StorageService::getPath($user->cover),
                 'website' => $user->website,
                 'description' => $user->description,
                 'verification' => $user->verification,

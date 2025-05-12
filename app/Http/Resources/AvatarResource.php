@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Services\Media\StorageService;
 
 class AvatarResource extends JsonResource
 {
@@ -16,7 +17,7 @@ class AvatarResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'path' => $this->path,
+            'path' => StorageService::getPath($this->path),
         ];
     }
 }

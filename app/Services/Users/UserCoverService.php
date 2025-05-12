@@ -3,6 +3,7 @@
 namespace App\Services\Users;
 
 use App\Models\Users\User;
+use App\Services\Media\StorageService;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -12,6 +13,7 @@ use Log;
 class UserCoverService
 {
     protected UserService $userService;
+    protected string $path = 'users/covers/';
 
     public function __construct(UserService $userService)
     {
@@ -37,7 +39,14 @@ class UserCoverService
         $this->removeOldCover($user);
 
         $filename = $this->generateCoverFilename($coverFile);
-        $filePath = Storage::disk('ftp')->put('users/covers/' . $filename, $coverFile);
+
+        $isUploaded = Storage::disk(StorageService::get())->put($this->path . $filename, $coverFile);
+
+        if (!$isUploaded) {
+            throw new Exception('Обложка не загружена');
+        }
+
+        $filePath = $this->path . $filename;
 
         $user->cover = $filePath;
         $user->save();

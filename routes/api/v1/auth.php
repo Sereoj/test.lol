@@ -140,15 +140,20 @@ Route::middleware('auth:api')->group(function () {
                 ->name('follow.user');
             Route::delete('/{userId}', [UserFollowController::class, 'unfollow'])
                 ->name('unfollow.user');
-            Route::get('/followers', [UserFollowController::class, 'followers'])
-                ->name('followers');
-            Route::get('/following', [UserFollowController::class, 'following'])
-                ->name('following');
         });
 
         ///v1/user/3/posts
-        Route::prefix('{user}/posts')->group(function () {
-           Route::get('/', [UserPostController::class, 'index'])->name('posts.index');
+        Route::prefix('{user}')->group(function () {
+           Route::prefix('/following')->group(function () {
+             Route::get('/', [UserFollowController::class, 'following'])
+                 ->name('following.user');
+               Route::get('/', [UserFollowController::class, 'followers'])
+                   ->name('following.user');
+           });
+           Route::prefix('/posts')->group(function () {
+               Route::get('/', [UserPostController::class, 'index'])
+                   ->name('posts.index');
+           });
         });
     });
 

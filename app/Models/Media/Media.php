@@ -50,16 +50,7 @@ class Media extends Model
 
     public function getUrlAttribute()
     {
-        $disk = $this->disk ?? 'ftp';
-        $path = config('filesystems.disks.' . $disk . '.url', '');
-        switch ($disk) {
-            case 'ftp':
-                return  $path .'storage/'. $this->file_path;
-            case 'local':
-                return $path .'/'. $this->file_path;
-            default:
-                return $path;
-        }
+        return StorageService::getPath($this->file_path);
     }
 
     public function scopeOriginal($query)

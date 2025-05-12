@@ -13,7 +13,7 @@
             "options": {
                 "availability": "open"
             },
-            "image": "new_member.png"
+            "image": "new_member.svg"
         },
         {
             "name": {
@@ -28,7 +28,7 @@
             "options": {
                 "availability": "open"
             },
-            "image": "trailblazer.png"
+            "image": "trailblazer.svg"
         },
         {
             "name": {
@@ -47,7 +47,7 @@
                     "value": 50
                 }
             },
-            "image": "active_member.png"
+            "image": "active_member.svg"
         },
         {
             "name": {
@@ -66,7 +66,7 @@
                     "value": 20
                 }
             },
-            "image": "experienced_artist.png"
+            "image": "experienced_artist.svg"
         },
         {
             "name": {
@@ -85,7 +85,7 @@
                     "value": 50
                 }
             },
-            "image": "collector.png"
+            "image": "collector.svg"
         },
         {
             "name": {
@@ -101,7 +101,7 @@
                 "availability": "purchase",
                 "price": 100
             },
-            "image": "supporter.png"
+            "image": "supporter.svg"
         },
         {
             "name": {
@@ -120,7 +120,7 @@
                     "value": 1
                 }
             },
-            "image": "contest_winner.png"
+            "image": "contest_winner.svg"
         },
         {
             "name": {
@@ -139,7 +139,7 @@
                     "value": 500
                 }
             },
-            "image": "super_liker.png"
+            "image": "super_liker.svg"
         },
         {
             "name": {
@@ -155,7 +155,7 @@
                 "availability": "purchase",
                 "price": 1000
             },
-            "image": "community_legend.png"
+            "image": "community_legend.svg"
         }
     ]
 }

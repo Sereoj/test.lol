@@ -15,12 +15,13 @@ class AvatarService
 {
     private AvatarRepository $avatarRepository;
     protected string $directoryName = 'avatars';
-
+    protected string $disk;
     public function __construct(AvatarRepository $avatarRepository)
     {
-        if(Storage::drive('ftp')->exists($this->directoryName))
+        $this->disk = StorageService::get();
+        if(Storage::disk($this->disk)->exists($this->directoryName))
         {
-            Storage::disk('ftp')->makeDirectory($this->directoryName);
+            Storage::disk($this->disk)->makeDirectory($this->directoryName);
         }
 
         $this->avatarRepository = $avatarRepository;
@@ -34,12 +35,17 @@ class AvatarService
             $image = Image::read($file)
                 ->encode(new JpegEncoder(80));
 
-            //Storage::disk('public')->put($path, $image);
-            Storage::disk('ftp')->put($path, $image);
+            $isUploaded = Storage::disk($this->disk)->put($path, $image);
+
+            if (!$isUploaded) {
+                throw new Exception('Аватар не загружен');
+            }
+
+            $filePath = $path;
 
         return $this->avatarRepository->createAvatar([
             'user_id' => $userId,
-            'path' => $path,
+            'path' => $filePath,
             'is_active' => true
         ]);
     }
@@ -69,12 +75,16 @@ class AvatarService
 
             Log::info("test", [
                 'avatar_id' => $avatarId,
-                'user_id' => $userId,]
-            );
+                'user_id' => $userId,
+                'avatar' => $avatar,
+            ]);
 
             // Удаляем файл аватара из хранилища
-            Storage::disk('ftp')->delete($avatar->path);
-            //Storage::delete('public/'.$avatar->path);
+            $isDeleted = Storage::disk($this->disk)->delete($avatar->path);
+
+            if (!$isDeleted) {
+                throw new Exception('Аватар не удален');
+            }
 
             return $this->avatarRepository->deleteAvatar($avatar);
         } catch (Exception $e) {
