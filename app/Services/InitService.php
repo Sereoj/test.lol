@@ -96,6 +96,52 @@ class InitService
 
     private function getBackgrounds(): array
     {
-        return ['background1.jpg', 'background2.jpg', 'background3.jpg'];
+        return [
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => 'https://images.unsplash.com/photo-1615529328331-f8917597711f',
+            ],
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => 'https://images.unsplash.com/photo-1615529328181-cc9a59c08be4',
+            ],
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => 'https://images.unsplash.com/photo-1615529328072-a76fca73b9b1',
+            ],
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => 'https://images.unsplash.com/photo-1518655048521-f130df041f66',
+            ],
+            [
+                'name' => json_encode(
+                    [
+                        'ru' => 'Hero 1',
+                        'en' => 'Hero 1',
+                    ]
+                ),
+                'src' => 'https://images.unsplash.com/photo-1547826039-bfc35e0f1ea8',
+            ]
+        ];
     }
 }
