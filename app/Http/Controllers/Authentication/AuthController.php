@@ -46,7 +46,9 @@ class AuthController extends Controller
 
             return $this->successResponse($result, [], 201);
         } catch (Exception $e) {
-            Log::error('User registration failed: ' . $e->getMessage(), ['data' => $request->validated()]);
+            Log::error('User registration failed: ' . $e->getMessage(), ['data' => [
+                'email' => $userData['email'],
+            ]]);
             $this->errorResponse($e->getMessage(), 500);
         }
     }

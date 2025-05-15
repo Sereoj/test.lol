@@ -37,7 +37,7 @@ class UserRepository
 
     public function create(array $data)
     {
-        Log::info('Starting user creation', ['data' => $data]);
+        Log::info('Starting user creation:', ['data' => $data['email']]);
 
         $userSettings = $this->userSettingsService->createUserSettings();
         $role = $this->roleService->getRoleByType('user');
