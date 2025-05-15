@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Media\Avatar;
+use App\Models\Users\User;
 
 class AvatarRepository
 {
@@ -29,6 +30,12 @@ class AvatarRepository
             ->firstOrFail();
     }
 
+    public function setActive(User $user, int $avatarId)
+    {
+        Avatar::where('user_id', $user->id)->update(['is_active' => false]);
+        return Avatar::where('user_id', $user->id)
+            ->where('id', $avatarId)->update(['is_active' => true]);
+    }
     public function deleteAvatar($avatar)
     {
         return $avatar->delete();

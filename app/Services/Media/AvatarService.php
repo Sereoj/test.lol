@@ -2,6 +2,7 @@
 
 namespace App\Services\Media;
 
+use App\Models\Users\User;
 use App\Repositories\AvatarRepository;
 use Cache;
 use Exception;
@@ -57,6 +58,14 @@ class AvatarService
         } catch (Exception $e) {
             throw new Exception('An error occurred while retrieving the user avatars.');
         }
+    }
+
+    public function setActive(User $user, int $avatarId)
+    {
+        return $this->avatarRepository->setActive(
+            $user,
+            $avatarId
+        );
     }
 
     public function setAvatar($userId, $path)

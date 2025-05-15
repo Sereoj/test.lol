@@ -29,7 +29,7 @@ class MediaHandler
     {
         $this->imagePipeline = $imagePipeline;
         $this->appSettingsService = $appSettingsService;
-        $this->length = $this->appSettingsService->get('images.length');
+        $this->length = $this->appSettingsService->get('images.length') ?? 30;
 
         $this->disk = StorageService::get();
         if(!Storage::drive($this->disk)->exists($this->directoryName))
