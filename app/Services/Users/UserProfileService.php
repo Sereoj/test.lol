@@ -14,6 +14,7 @@ use App\Http\Resources\RoleResource;
 use App\Http\Resources\SpecializationResource;
 use App\Http\Resources\StatusResource;
 use App\Models\Users\User;
+use App\Services\Media\StorageService;
 use Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\ModelNotFoundException;

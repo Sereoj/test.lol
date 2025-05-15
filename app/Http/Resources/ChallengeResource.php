@@ -19,7 +19,7 @@ class ChallengeResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'description' => $this->description,
-            'cover' => $this->cover,
+            'cover' => $this->url,
             'prize_pool' => $this->prize_pool,
             'participants_count' => $this->participants_count,
             'start_date' => $this->start_date?->format('Y-m-d H:i:s'),
@@ -30,4 +30,4 @@ class ChallengeResource extends JsonResource
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
         ];
     }
-} 
+}

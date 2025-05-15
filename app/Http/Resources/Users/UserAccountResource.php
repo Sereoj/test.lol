@@ -4,6 +4,7 @@ namespace App\Http\Resources\Users;
 
 use App\Http\Resources\AvatarResource;
 use App\Http\Resources\LocationResource;
+use App\Services\Media\StorageService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -21,7 +22,7 @@ class UserAccountResource extends JsonResource
             'username' => $this->username,
             'verification' => $this->verification,
             'avatar' => new AvatarResource($this->currentAvatar),
-            'cover' => 'http://test/public/'.$this->cover,
+            'cover' => $this->url,
             'slug' => $this->slug,
             'email' => $this->email,
             'description' => $this->description,

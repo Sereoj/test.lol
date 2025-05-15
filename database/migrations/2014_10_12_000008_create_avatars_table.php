@@ -14,6 +14,7 @@ return new class () extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('path');
+            $table->string('disk')->nullable();
             $table->boolean('is_active')->default(false);
             $table->timestamps();
         });

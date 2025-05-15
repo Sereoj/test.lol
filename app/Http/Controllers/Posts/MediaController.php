@@ -5,8 +5,6 @@ namespace App\Http\Controllers\Posts;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Media\MediaRequest;
 use App\Http\Resources\Media\MediaResource;
-use App\Http\Resources\Media\MediaShortResource;
-use App\Http\Resources\Media\ShortMediaResource;
 use App\Services\Media\MediaService;
 use Exception;
 use Illuminate\Support\Facades\Log;

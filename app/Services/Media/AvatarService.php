@@ -20,9 +20,15 @@ class AvatarService
     public function __construct(AvatarRepository $avatarRepository)
     {
         $this->disk = StorageService::get();
-        if(Storage::disk($this->disk)->exists($this->directoryName))
+        if(!Storage::disk($this->disk)->exists($this->directoryName))
         {
             Storage::disk($this->disk)->makeDirectory($this->directoryName);
+
+            Log::info('disk', [
+                'disk' => $this->disk,
+                'directory' => $this->directoryName,
+                'status' => 'created'
+            ]);
         }
 
         $this->avatarRepository = $avatarRepository;
@@ -46,6 +52,7 @@ class AvatarService
 
         return $this->avatarRepository->createAvatar([
             'user_id' => $userId,
+            'disk' => $this->disk,
             'path' => $filePath,
             'is_active' => true
         ]);
@@ -73,6 +80,7 @@ class AvatarService
         return $this->avatarRepository->createAvatar([
             'user_id' => $userId,
             'path' => $path,
+            'disk' => $this->disk,
             'is_active' => true
         ]);
     }

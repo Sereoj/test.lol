@@ -13,6 +13,7 @@ class AvatarRepository
         return Avatar::create([
             'user_id' => $data['user_id'],
             'path' => $data['path'],
+            'disk' => $data['disk'],
             'is_active' => true
         ]);
     }

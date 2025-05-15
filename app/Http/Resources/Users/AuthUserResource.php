@@ -21,7 +21,7 @@ class AuthUserResource extends JsonResource
             'slug' => $this->slug,
             'verification' => $this->verification,
             'avatar' => new AvatarResource($this->currentAvatar),
-            'cover' => $this->cover,
+            'cover' => $this->url,
         ];
     }
 }

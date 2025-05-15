@@ -15,6 +15,7 @@ use App\Models\Locations\Location;
 use App\Models\Media\Avatar;
 use App\Models\Posts\Post;
 use App\Models\Roles\Role;
+use App\Services\Media\StorageService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -66,6 +67,8 @@ class User extends Authenticatable
         'employment_status_id',
         'location_id'
     ];
+
+    protected $appends = ['url'];
 
     public function isProfileComplete(): bool
     {
@@ -212,6 +215,11 @@ class User extends Authenticatable
     public function currentAvatar()
     {
         return $this->hasOne(Avatar::class)->latest();
+    }
+
+    public function getUrlAttribute()
+    {
+        return StorageService::getPath($this->cover);
     }
 
     public function onlineStatus()

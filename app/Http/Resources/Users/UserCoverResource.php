@@ -16,7 +16,7 @@ class UserCoverResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'cover' => StorageService::getPath($this->cover),
-        ];  
+            'cover' => $this->url,
+        ];
     }
 }

@@ -4,6 +4,7 @@ namespace App\Models\Media;
 
 use App\Models\Posts\Post;
 use App\Models\Users\User;
+use App\Services\Media\StorageService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Log;

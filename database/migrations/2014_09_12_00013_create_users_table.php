@@ -18,6 +18,7 @@ return new class () extends Migration {
             $table->string('description')->nullable();
             $table->string('website')->nullable();
             $table->string('cover')->nullable();
+            $table->string('disk')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->boolean('verification')->default(false);

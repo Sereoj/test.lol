@@ -51,6 +51,7 @@ class UserCoverService
         $filePath = $this->path . $filename;
 
         $user->cover = $filePath;
+        $user->disk = $this->disk;
         $user->save();
 
         return $user;
@@ -91,7 +92,7 @@ class UserCoverService
     {
         if ($user->cover) {
             $path = $user->cover;
-            
+
             Log::info('Cover path:', [
                 'path' => $path
             ]);
