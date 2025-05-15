@@ -43,6 +43,10 @@ COPY . .
 # Запускаем скрипты композера
 RUN composer dump-autoload --optimize
 
+# Копируем скрипт инициализации Passport
+COPY passport-init.sh /usr/local/bin/passport-init.sh
+RUN chmod +x /usr/local/bin/passport-init.sh
+
 # Создаем скрипт для запуска PHP-FPM с правильными правами
 RUN echo '#!/bin/bash\n\
 # Создаем необходимые директории\n\
@@ -62,8 +66,11 @@ fi\n\
 chmod -R 777 /var/www/storage\n\
 chmod -R 777 /var/www/bootstrap/cache\n\
 \n\
-# Генерируем ключи для Laravel Passport\n\
-php artisan passport:keys --force\n\
+# Устанавливаем права на скрипт инициализации Passport\n\
+chmod +x /usr/local/bin/passport-init.sh\n\
+\n\
+# Запускаем скрипт инициализации Passport\n\
+/usr/local/bin/passport-init.sh\n\
 \n\
 # Меняем владельца на www-data\n\
 chown -R www-data:www-data /var/www/storage\n\
@@ -78,4 +85,4 @@ chmod +x /usr/local/bin/start-php-fpm.sh
 EXPOSE 9000
 
 # Запуск PHP-FPM через скрипт-обертку
-CMD ["/usr/local/bin/start-php-fpm.sh"] 
+CMD ["/usr/local/bin/start-php-fpm.sh"]
