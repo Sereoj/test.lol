@@ -62,6 +62,9 @@ fi\n\
 chmod -R 777 /var/www/storage\n\
 chmod -R 777 /var/www/bootstrap/cache\n\
 \n\
+# Генерируем ключи для Laravel Passport\n\
+php artisan passport:keys --force\n\
+\n\
 # Меняем владельца на www-data\n\
 chown -R www-data:www-data /var/www/storage\n\
 chown -R www-data:www-data /var/www/bootstrap/cache\n\
