@@ -52,28 +52,6 @@ class PassportInitCommand extends Command
             return 1;
         }
 
-        // Запускаем passport:install
-        $this->info('Запускаем passport:install --uuids...');
-        try {
-            Artisan::call('passport:install', ['--uuids' => true]);
-            $this->info('Passport успешно установлен');
-        } catch (\Exception $e) {
-            $this->error('Ошибка при установке Passport: ' . $e->getMessage());
-            // Продолжаем выполнение, так как ключи уже созданы
-        }
-
-        // Запускаем сидер
-        $this->info('Запускаем сидер PassportClientsSeeder...');
-        try {
-            Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\PassportClientsSeeder']);
-            $this->info('Сидер PassportClientsSeeder успешно выполнен');
-        } catch (\Exception $e) {
-            $this->error('Ошибка при запуске сидера: ' . $e->getMessage());
-        }
-
-        // Устанавливаем правильные права
-        $this->info('Устанавливаем права на директорию storage...');
-        chmod(storage_path(), 0775);
         chmod(storage_path('oauth-private.key'), 0660);
         chmod(storage_path('oauth-public.key'), 0660);
 

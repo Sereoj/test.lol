@@ -13,50 +13,31 @@ if [ ! -d "/var/www/storage" ]; then
     echo "Директория /var/www/storage создана"
 fi
 
-# Используем нашу новую команду для инициализации Passport
-echo "Запускаем команду passport:init..."
-php artisan passport:init
+# Применяем миграции
+echo "Применяем миграции..."
+php artisan migrate --force || {
+    echo "Предупреждение: Не удалось применить все миграции"
+    # Продолжаем выполнение
+}
 
-# Если команда не сработала, используем старый метод
-if [ $? -ne 0 ]; then
+# Пытаемся использовать команду passport:init
+if php artisan passport:init; then
+    echo "Команда passport:init выполнена успешно"
+else
     echo "Команда passport:init завершилась с ошибкой, используем альтернативный метод..."
     
     # Генерируем ключи для Laravel Passport
-    echo "Запускаем passport:install --uuids..."
-    php artisan passport:install --uuids || {
-        echo "Ошибка при выполнении passport:install"
-        # Продолжаем выполнение, так как следующая команда может исправить проблему
-    }
-
     echo "Запускаем passport:keys --force..."
     php artisan passport:keys --force || {
-        echo "Ошибка при выполнении passport:keys"
+        echo "Критическая ошибка: Не удалось создать ключи OAuth"
         exit 1
     }
-
-    # Проверяем, созданы ли ключи
-    if [ ! -f "/var/www/storage/oauth-private.key" ] || [ ! -f "/var/www/storage/oauth-public.key" ]; then
-        echo "Ошибка: Ключи не были созданы"
-        
-        # Создаем директорию вручную, если она не существует
-        mkdir -p /var/www/storage
-        
-        # Пробуем создать ключи вручную
-        echo "Пробуем создать ключи вручную..."
-        php artisan passport:keys --force
-        
-        # Проверяем еще раз
-        if [ ! -f "/var/www/storage/oauth-private.key" ] || [ ! -f "/var/www/storage/oauth-public.key" ]; then
-            echo "Критическая ошибка: Не удалось создать ключи OAuth"
-            exit 1
-        fi
-    fi
-
-    # Запускаем сидер для создания клиентов Passport
-    echo "Запускаем сидер PassportClientsSeeder..."
-    php artisan db:seed --class=PassportClientsSeeder || {
-        echo "Предупреждение: Не удалось запустить сидер PassportClientsSeeder"
-        # Продолжаем выполнение, так как это может быть не критично
+    
+    # Устанавливаем Passport
+    echo "Запускаем passport:install..."
+    php artisan passport:install || {
+        echo "Предупреждение: Не удалось выполнить passport:install"
+        # Продолжаем выполнение, так как ключи уже созданы
     }
 fi
 

@@ -62,15 +62,8 @@ if [ -f /var/www/storage/app/settings/settings.json.example ]; then\n\
   cp /var/www/storage/app/settings/settings.json.example /var/www/storage/app/settings/settings.json\n\
 fi\n\
 \n\
-# Устанавливаем полные права на директории storage и bootstrap/cache\n\
-chmod -R 777 /var/www/storage\n\
+# Устанавливаем полные права на директории bootstrap/cache\n\
 chmod -R 777 /var/www/bootstrap/cache\n\
-\n\
-# Устанавливаем права на скрипт инициализации Passport\n\
-chmod +x /usr/local/bin/passport-init.sh\n\
-\n\
-# Запускаем скрипт инициализации Passport\n\
-/usr/local/bin/passport-init.sh\n\
 \n\
 # Меняем владельца на www-data\n\
 chown -R www-data:www-data /var/www/storage\n\

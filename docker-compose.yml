@@ -13,7 +13,6 @@ services:
       - /var/www/vendor
       - laravel-storage:/var/www/storage
       - laravel-cache:/var/www/bootstrap/cache
-      - ./passport-init.sh:/usr/local/bin/passport-init.sh
     networks:
       - app-network
     environment:
