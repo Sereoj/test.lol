@@ -26,22 +26,24 @@ class TokenService
     public function generateTokens($user): array
     {
         try {
-            // Get the client with the `password_client` flag
-            $client = Client::query()->where('password_client', 1)->first();
+            // Получаем Personal Access Client (он создаётся через php artisan passport:install)
+            $client = Client::query()->where('personal_access_client', 1)->first();
+            Log::info('Personal Access Client: ', ['client' => $client]);
+
             if (! $client) {
-                throw new Exception('OAuth client with password not found');
+                throw new Exception('OAuth personal access client not found');
             }
 
-            // Generate access_token
+            // Генерируем access_token
             $scope = 'access_api';
-            Log::info('Requested Scope: '.$scope);
-            $accessTokenResult = $user->createToken('access_token', [$scope]);
-            $accessToken = $accessTokenResult->accessToken;
+            $token = $user->createToken('access_token', [$scope]);
+            $accessToken = $token->accessToken;
 
+            // Генерируем refresh_token
             $refreshToken = $this->generateRefreshToken();
             $refreshTokenExpiresAt = Carbon::now()->addMonths($this->appSettingsService->get('tokens.refresh_token'));
 
-            // Save refresh_token in the database (instead of standard logic)
+            // Сохраняем refresh_token вручную
             Token::create([
                 'id' => $refreshToken,
                 'user_id' => $user->id,
@@ -51,18 +53,22 @@ class TokenService
                 'expires_at' => $refreshTokenExpiresAt,
             ]);
 
-            // Log token expiration times
-            Log::info('Access Token Expires At: '.$accessTokenResult->token->expires_at);
+            Log::info('Access Token Expires At: '.$token->token->expires_at);
             Log::info('Refresh Token Expires At: '.$refreshTokenExpiresAt);
 
             return [
                 'token_type' => 'Bearer',
                 'access_token' => $accessToken,
                 'refresh_token' => $refreshToken,
-                'expires_at' => Carbon::parse($accessTokenResult->token->expires_at)->toIso8601String(),
+                'expires_at' => Carbon::parse($token->token->expires_at)->toIso8601String(),
             ];
         } catch (Exception $e) {
-            Log::error('Token generation error: '.$e->getMessage());
+            Log::error('Token generation error: ', [
+                'message' => $e->getMessage(),
+                'code' => $e->getCode(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+            ]);
             throw $e;
         }
     }
@@ -75,30 +81,23 @@ class TokenService
     public function refreshToken(string $refreshToken): array
     {
         try {
-            // Check refresh_token in the database
+            // Проверяем refresh_token
             $token = Token::query()->where('id', $refreshToken)->first();
 
-            if (! $token || $token->revoked) {
-                throw new Exception('Invalid or revoked refresh token');
+            if (! $token || $token->revoked || Carbon::parse($token->expires_at)->isPast()) {
+                throw new Exception('Invalid or expired refresh token');
             }
 
-            // Check refresh_token expiration
-            if (Carbon::parse($token->expires_at)->isPast()) {
-                $token->delete();
-                throw new Exception('Refresh token has expired');
-            }
-
-            // Get the user from the token
             $user = $token->user;
 
             if (! $user) {
-                throw new Exception('Invalid refresh token');
+                throw new Exception('User not found for refresh token');
             }
 
-            // Delete the old refresh_token
+            // Удаляем старый refresh_token
             $token->delete();
 
-            // Generate new tokens
+            // Генерируем новые токены
             return $this->generateTokens($user);
         } catch (Exception $e) {
             Log::error('Token refresh error: '.$e->getMessage());
@@ -125,6 +124,6 @@ class TokenService
      */
     private function generateRefreshToken(): string
     {
-        return bin2hex(random_bytes(40)); // Example of generating a random string
+        return bin2hex(random_bytes(40)); // 80 hex chars
     }
 }
