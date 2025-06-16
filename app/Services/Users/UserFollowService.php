@@ -24,6 +24,7 @@ class UserFollowService
      */
     public function followUser(int $followerId, int $followingId): bool
     {
+
         if ($followerId === $followingId) {
             Log::warning('User cannot follow themselves', ['user_id' => $followerId]);
             return false;

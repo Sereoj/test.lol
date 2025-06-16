@@ -17,7 +17,7 @@ class ValidMxRecord implements ValidationRule
     {
         $emailDomain = substr(strrchr($value, '@'), 1);
 
-        if (!$this->hasMxRecord($emailDomain)) {
+        if (!str_contains($emailDomain, '.') && !$this->hasMxRecord($emailDomain)) {
             $fail(__('validation.invalid_mx_record'));
         }
     }

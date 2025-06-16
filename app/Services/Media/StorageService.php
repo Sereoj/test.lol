@@ -5,6 +5,7 @@ namespace App\Services\Media;
 class StorageService
 {
     public static $server = 'ftp';
+    
     public static function get()
     {
         return self::$server;
