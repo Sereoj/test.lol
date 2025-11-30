@@ -12,7 +12,6 @@ class CommentCreated
     use Dispatchable;
     use InteractsWithSockets;
     use SerializesModels;
-
     public Comment $comment;
 
     public function __construct(Comment $comment)

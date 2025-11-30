@@ -4,8 +4,8 @@ namespace App\Services\Media;
 
 class StorageService
 {
-    public static $server = 'ftp';
-    
+    public static $server = 'local';
+
     public static function get()
     {
         return self::$server;
@@ -13,21 +13,20 @@ class StorageService
 
     public static function getPath(string $filePath)
     {
-        $path = config('filesystems.disks.' . self::$server.'.url');
+        $path = config('filesystems.disks.' . self::$server . '.url');
 
-        if($filePath == null)
+        if ($filePath == null)
             return $filePath;
 
-        if(str($filePath)->startsWith('http'))
-        {
+        if (str($filePath)->startsWith('http')) {
             return $filePath;
         }
 
         switch (self::$server) {
             case 'ftp':
-                return $path .'storage/'. $filePath;
+                return $path . 'storage/' . $filePath;
             case 'local':
-                return $path .'/'. $filePath;
+                return $path . '/' . $filePath;
             default:
                 return '';
         }

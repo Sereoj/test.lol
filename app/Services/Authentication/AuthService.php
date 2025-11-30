@@ -30,12 +30,12 @@ class AuthService
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             Log::warning('Invalid credentials', ['email' => $credentials['email']]);
-            throw new Exception('Email or Password is not correct!', 400);
+            throw new Exception('Email or Password is not correct!', 401);
         }
 
         if (! $this->attemptLogin($credentials)) {
             Log::error('Unauthorized login attempt', ['email' => $credentials['email']]);
-            throw new Exception('Unauthorized', 401);
+            throw new Exception('Forbidden', 403);
         }
 
         $token = $this->tokenService->generateTokens($user);

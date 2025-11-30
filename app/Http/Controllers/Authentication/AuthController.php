@@ -66,7 +66,7 @@ class AuthController extends Controller
             return $this->successResponse($result);
         } catch (Exception $e) {
             Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
-            return $this->errorResponse($e->getMessage(), 500);
+            return $this->errorResponse($e->getMessage(), $e->getCode());
         }
     }
 
