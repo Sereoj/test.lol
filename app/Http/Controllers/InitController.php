@@ -20,6 +20,7 @@ class InitController extends Controller
     }
 
     // Инициализация приложения   
+    
     /**
      * @OA\Get(
      *     path="/api/v1/init",
@@ -31,14 +32,20 @@ class InitController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Init")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function init()
+public function init()
     {
         try {
             $info = $this->getFromCacheOrStore(self::CACHE_KEY_INIT_INFO, self::CACHE_MINUTES, function () {

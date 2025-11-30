@@ -21,6 +21,7 @@ class UserPostController extends Controller
     }
 
     // Получение списка постов пользователя   
+    
     /**
      * @OA\Get(
      *     path="/api/v1/user/{user}/posts",
@@ -55,15 +56,29 @@ class UserPostController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/UserPost")
+     *                 @OA\Items(type="object")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=10),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=150)
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function index(Request $request, User $user)
+public function index(Request $request, User $user)
     {
         $posts = ThumbUserMediaResource::collection($this->postService->getPostsByUser($user, $request->all()));
 

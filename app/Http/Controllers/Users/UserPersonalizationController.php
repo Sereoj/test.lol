@@ -19,6 +19,7 @@ class UserPersonalizationController extends Controller
     }
 
     // Обновление персонализации пользователя   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/user/personalization",
@@ -35,15 +36,38 @@ class UserPersonalizationController extends Controller
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/UserPersonalization")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Resource not found"),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Resource not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resource not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function update(UserPersonalizationRequest $request)
+public function update(UserPersonalizationRequest $request)
     {
         try {
             $user = Auth::user();

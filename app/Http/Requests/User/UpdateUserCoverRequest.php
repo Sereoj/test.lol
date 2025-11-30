@@ -6,6 +6,20 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateUserCoverRequest",
+ *     type="object",
+ *     title="UpdateUserCover Request",
+ *     required={"cover"},
+ *     @OA\Property(
+ *         property="cover",
+ *         type="string",
+ *         description="Cover (max: 5120)",
+ *         example="Example cover"
+ *     ),
+ * )
+ */
 class UpdateUserCoverRequest extends FormRequest
 {
     /**

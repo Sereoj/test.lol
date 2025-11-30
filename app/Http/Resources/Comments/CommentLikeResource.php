@@ -4,7 +4,30 @@ namespace App\Http\Resources\Comments;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="CommentLikeResource",
+ *     type="object",
+ *     title="CommentLike Resource",
+ *     @OA\Property(
+ *         property="id",
+ *         type="string",
+ *         description="Id"
+ *     ),
+ *     @OA\Property(
+ *         property="user_id",
+ *         type="string",
+ *         description="User id"
+ *     ),
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Type"
+ *     )
+ * )
+ */
 class CommentLikeResource extends JsonResource
 {
     /**

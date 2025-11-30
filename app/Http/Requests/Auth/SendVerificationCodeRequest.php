@@ -5,7 +5,23 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="SendVerificationCodeRequest",
+ *     type="object",
+ *     title="SendVerificationCode Request",
+ *     required={"email"},
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email",
+ *         example="user@example.com"
+ *     ),
+ * )
+ */
 class SendVerificationCodeRequest extends FormRequest
 {
     /**

@@ -5,7 +5,22 @@ namespace App\Http\Requests\Skill;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="RemoveSkillRequest",
+ *     type="object",
+ *     title="RemoveSkill Request",
+ *     required={"skill_id"},
+ *     @OA\Property(
+ *         property="skill_id",
+ *         type="string",
+ *         description="Skill id",
+ *         example="Example skill id"
+ *     ),
+ * )
+ */
 class RemoveSkillRequest extends FormRequest
 {
     /**

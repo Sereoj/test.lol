@@ -4,7 +4,60 @@ namespace App\Http\Resources\Media;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="MediaResource",
+ *     type="object",
+ *     title="Media Resource",
+ *     @OA\Property(
+ *         property="id",
+ *         type="string",
+ *         description="Id"
+ *     ),
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         description="Name"
+ *     ),
+ *     @OA\Property(
+ *         property="file_path",
+ *         type="string",
+ *         description="File path"
+ *     ),
+ *     @OA\Property(
+ *         property="mime_type",
+ *         type="string",
+ *         description="Mime type"
+ *     ),
+ *     @OA\Property(
+ *         property="size",
+ *         type="string",
+ *         description="Size"
+ *     ),
+ *     @OA\Property(
+ *         property="created_at",
+ *         type="string",
+ *         description="Created at"
+ *     ),
+ *     @OA\Property(
+ *         property="updated_at",
+ *         type="string",
+ *         description="Updated at"
+ *     ),
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Type"
+ *     ),
+ *     @OA\Property(
+ *         property="user_id",
+ *         type="string",
+ *         description="User id"
+ *     )
+ * )
+ */
 class MediaResource extends JsonResource
 {
     /**

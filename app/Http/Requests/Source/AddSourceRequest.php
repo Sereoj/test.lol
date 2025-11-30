@@ -5,7 +5,22 @@ namespace App\Http\Requests\Source;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="AddSourceRequest",
+ *     type="object",
+ *     title="AddSource Request",
+ *     required={"source_id"},
+ *     @OA\Property(
+ *         property="source_id",
+ *         type="string",
+ *         description="Source id",
+ *         example="Example source id"
+ *     ),
+ * )
+ */
 class AddSourceRequest extends FormRequest
 {
     /**

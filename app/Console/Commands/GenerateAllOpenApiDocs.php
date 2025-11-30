@@ -6,63 +6,125 @@ use Illuminate\Console\Command;
 
 class GenerateAllOpenApiDocs extends Command
 {
-    protected $signature = 'openapi:generate-all
-                            {--force : Overwrite existing annotations}';
+    protected $signature = 'openapi:generate
+                            {--force : Overwrite existing annotations}
+                            {--skip-requests : Skip Request schema generation}
+                            {--skip-resources : Skip Resource schema generation}
+                            {--skip-annotations : Skip controller annotation generation}
+                            {--only-swagger : Only generate Swagger documentation from existing annotations}';
 
-    protected $description = 'Generate all OpenAPI documentation (annotations + schemas + docs)';
+    protected $description = 'Generate OpenAPI documentation (annotations + schemas + docs)';
 
     public function handle()
     {
-        $this->info('========================================');
-        $this->info('  OpenAPI Auto-Generation');
-        $this->info('========================================');
+        $startTime = microtime(true);
+
+        $this->showHeader();
+
+        $steps = $this->getStepsToExecute();
+        $currentStep = 1;
+        $totalSteps = count($steps);
+
+        foreach ($steps as $step) {
+            $this->executeStep($step, $currentStep, $totalSteps);
+            $currentStep++;
+        }
+
+        $this->showFooter($startTime);
+
+        return Command::SUCCESS;
+    }
+
+    protected function showHeader(): void
+    {
+        $this->newLine();
+        $this->info('╔════════════════════════════════════════╗');
+        $this->info('║   OpenAPI Documentation Generator     ║');
+        $this->info('╚════════════════════════════════════════╝');
+        $this->newLine();
+    }
+
+    protected function getStepsToExecute(): array
+    {
+        if ($this->option('only-swagger')) {
+            return ['swagger'];
+        }
+
+        $steps = [];
+
+        if (!$this->option('skip-annotations')) {
+            $steps[] = 'annotations';
+        }
+
+        if (!$this->option('skip-requests')) {
+            $steps[] = 'requests';
+        }
+
+        if (!$this->option('skip-resources')) {
+            $steps[] = 'resources';
+        }
+
+        $steps[] = 'swagger';
+
+        return $steps;
+    }
+
+    protected function executeStep(string $step, int $current, int $total): void
+    {
+        $this->info("Step {$current}/{$total}: " . $this->getStepDescription($step));
+
+        match ($step) {
+            'annotations' => $this->call('openapi:generate-annotations', [
+                '--force' => $this->option('force'),
+            ]),
+            'requests' => $this->call('openapi:generate-request-schemas', [
+                '--force' => $this->option('force'),
+            ]),
+            'resources' => $this->call('openapi:generate-resource-schemas', [
+                '--force' => $this->option('force'),
+            ]),
+            'swagger' => $this->call('l5-swagger:generate'),
+            default => 0,
+        };
+
+        $this->newLine();
+    }
+
+    protected function getStepDescription(string $step): string
+    {
+        return match ($step) {
+            'annotations' => 'Generating controller annotations',
+            'requests' => 'Generating Request schemas',
+            'resources' => 'Generating Resource schemas',
+            'swagger' => 'Generating Swagger documentation',
+            default => 'Unknown step',
+        };
+    }
+
+    protected function showFooter(float $startTime): void
+    {
+        $duration = round(microtime(true) - $startTime, 2);
+
+        $this->info('╔════════════════════════════════════════╗');
+        $this->info('║  ✓ Documentation Generated!           ║');
+        $this->info('╚════════════════════════════════════════╝');
         $this->newLine();
 
-        // 1. Генерируем аннотации для контроллеров
-        $this->info('Step 1/5: Generating controller annotations...');
-        $this->call('openapi:generate-annotations', [
-            '--force' => $this->option('force'),
-        ]);
-
+        $this->line("⏱  Completed in {$duration}s");
         $this->newLine();
 
-        // 1.5. Исправляем форматирование аннотаций
-        $this->info('Step 1.5/5: Fixing annotation formatting...');
-        $this->call('openapi:fix-annotations');
-
+        $this->info('📚 Available endpoints:');
+        $this->line('  • Swagger UI:  ' . url('/api/documentation'));
+        $this->line('  • JSON spec:   ' . storage_path('api-docs/api-docs.json'));
+        $this->line('  • YAML spec:   ' . storage_path('api-docs/api-docs.yaml'));
         $this->newLine();
 
-        // 2. Генерируем схемы для Request классов
-        $this->info('Step 2/5: Generating Request schemas...');
-        $this->call('openapi:generate-request-schemas', [
-            '--force' => $this->option('force'),
-        ]);
-
+        $this->comment('💡 Quick commands:');
+        $this->line('  • Full regeneration:    php artisan openapi:generate --force');
+        $this->line('  • Only Swagger:         php artisan openapi:generate --only-swagger');
+        $this->line('  • Skip resources:       php artisan openapi:generate --skip-resources');
+        $this->line('  • Skip requests:        php artisan openapi:generate --skip-requests');
+        $this->line('  • Skip annotations:     php artisan openapi:generate --skip-annotations');
         $this->newLine();
-
-        // 3. Генерируем схемы для Resource классов
-        $this->info('Step 3/5: Generating Resource schemas...');
-        $this->call('openapi:generate-resource-schemas', [
-            '--force' => $this->option('force'),
-        ]);
-
-        $this->newLine();
-
-        // 4. Генерируем финальную документацию
-        $this->info('Step 4/5: Generating OpenAPI documentation...');
-        $this->call('l5-swagger:generate');
-
-        $this->newLine();
-        $this->info('========================================');
-        $this->info('✓ All OpenAPI documentation generated!');
-        $this->info('========================================');
-        $this->newLine();
-
-        $this->info('Available endpoints:');
-        $this->line('  - Swagger UI: /api/documentation');
-        $this->line('  - JSON spec:  /api/v1/openapi.json');
-        $this->line('  - YAML spec:  /api/v1/openapi.yaml');
-
-        return 0;
     }
 }

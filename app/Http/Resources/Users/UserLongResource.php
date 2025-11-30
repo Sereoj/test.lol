@@ -16,7 +16,110 @@ use App\Http\Resources\TaskResource;
 use App\Http\Resources\UserSettingResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UserLongResource",
+ *     type="object",
+ *     title="UserLong Resource",
+ *     @OA\Property(
+ *         property="id",
+ *         type="string",
+ *         description="Id"
+ *     ),
+ *     @OA\Property(
+ *         property="username",
+ *         type="string",
+ *         description="Username"
+ *     ),
+ *     @OA\Property(
+ *         property="slug",
+ *         type="string",
+ *         description="Slug"
+ *     ),
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         description="Email"
+ *     ),
+ *     @OA\Property(
+ *         property="avatars",
+ *         type="string",
+ *         description="Avatars"
+ *     ),
+ *     @OA\Property(
+ *         property="level",
+ *         type="object",
+ *         description="Level"
+ *     ),
+ *     @OA\Property(
+ *         property="achievements",
+ *         type="array",
+ *         description="Achievements"
+,
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="role",
+ *         type="object",
+ *         description="Role"
+ *     ),
+ *     @OA\Property(
+ *         property="badges",
+ *         type="array",
+ *         description="Badges"
+,
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="using_app",
+ *         type="array",
+ *         description="Using app"
+,
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="user_setting",
+ *         type="object",
+ *         description="User setting"
+ *     ),
+ *     @OA\Property(
+ *         property="status",
+ *         type="object",
+ *         description="Status"
+ *     ),
+ *     @OA\Property(
+ *         property="employment_status",
+ *         type="object",
+ *         description="Employment status"
+ *     ),
+ *     @OA\Property(
+ *         property="location",
+ *         type="object",
+ *         description="Location"
+ *     ),
+ *     @OA\Property(
+ *         property="tasks",
+ *         type="array",
+ *         description="Tasks"
+,
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="user_balance",
+ *         type="array",
+ *         description="User balance"
+,
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="online_status",
+ *         type="object",
+ *         description="Online status"
+ *     )
+ * )
+ */
 class UserLongResource extends JsonResource
 {
     /**

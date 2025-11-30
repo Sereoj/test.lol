@@ -6,6 +6,27 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * @OA\Schema(
+ *     schema="StoreCommentRequest",
+ *     type="object",
+ *     title="StoreComment Request",
+ *     required={"content"},
+ *     @OA\Property(
+ *         property="content",
+ *         type="string",
+ *         description="Content (max: 5000)",
+ *         example="Example content"
+ *     ),
+ *     @OA\Property(
+ *         property="parent_id",
+ *         type="string",
+ *         nullable=true,
+ *         description="Parent id",
+ *         example="Example parent id"
+ *     ),
+ * )
+ */
 class StoreCommentRequest extends FormRequest
 {
     /**

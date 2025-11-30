@@ -25,7 +25,7 @@ class UserSourceController extends Controller
         $this->userSourceService = $userSourceService;
     }
 
-        /**
+                    /**
      * @OA\Get(
      *     path="/api/v1/user/sources",
      *     tags={"Users"},
@@ -37,10 +37,17 @@ class UserSourceController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/UserSource")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function getUserSources()

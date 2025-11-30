@@ -2,9 +2,7 @@
 
 namespace App\Services\OpenApi;
 
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use ReflectionClass;
 use ReflectionMethod;
 
 class AnnotationGenerator
@@ -62,7 +60,10 @@ class AnnotationGenerator
 
         // Добавляем тело запроса для POST/PUT/PATCH
         if (in_array($httpMethod, ['Post', 'Put', 'Patch'])) {
-            $annotation .= $this->generateRequestBody($method, $controllerName);
+            $requestBody = $this->generateRequestBody($method);
+            if ($requestBody) {
+                $annotation .= $requestBody;
+            }
         }
 
         // Добавляем параметры запроса для GET
@@ -71,7 +72,7 @@ class AnnotationGenerator
         }
 
         // Добавляем responses
-        $annotation .= $this->generateResponses($httpMethod, $methodName, $controllerName);
+        $annotation .= $this->generateResponses($httpMethod, $methodName);
 
         $annotation .= "     * )\n";
         $annotation .= "     */\n";
@@ -106,35 +107,41 @@ class AnnotationGenerator
     }
 
     /**
-     * Генерирует тело запроса
+     * Генерирует тело запроса (только если найден кастомный FormRequest)
      */
-    protected function generateRequestBody(ReflectionMethod $method, string $controllerName): string
+    protected function generateRequestBody(ReflectionMethod $method): string
     {
         $params = $method->getParameters();
 
-        // Ищем Request класс в параметрах
+        // Ищем кастомный Request класс в параметрах
         foreach ($params as $param) {
             $type = $param->getType();
-            if ($type && !$type->isBuiltin()) {
-                $className = $type->getName();
-                if (Str::endsWith($className, 'Request')) {
-                    $schemaName = str_replace('Request', '', class_basename($className));
 
-                    return "     *     @OA\\RequestBody(\n" .
-                           "     *         required=true,\n" .
-                           "     *         @OA\\JsonContent(ref=\"#/components/schemas/{$schemaName}Request\")\n" .
-                           "     *     ),\n";
-                }
+            // Пропускаем параметры без типа или с builtin типами
+            if (!$type || $type->isBuiltin()) {
+                continue;
+            }
+
+            $className = $type->getName();
+
+            // Пропускаем базовый Laravel Request
+            if ($className === 'Illuminate\\Http\\Request') {
+                continue;
+            }
+
+            // Проверяем, что это кастомный FormRequest из App
+            if (Str::endsWith($className, 'Request') && Str::startsWith($className, 'App\\Http\\Requests\\')) {
+                $schemaName = str_replace('Request', '', class_basename($className));
+
+                return "     *     @OA\\RequestBody(\n" .
+                       "     *         required=true,\n" .
+                       "     *         @OA\\JsonContent(ref=\"#/components/schemas/{$schemaName}Request\")\n" .
+                       "     *     ),\n";
             }
         }
 
-        // Генерируем базовое тело запроса
-        return "     *     @OA\\RequestBody(\n" .
-               "     *         required=true,\n" .
-               "     *         @OA\\JsonContent(\n" .
-               "     *             @OA\\Property(property=\"data\", type=\"object\")\n" .
-               "     *         )\n" .
-               "     *     ),\n";
+        // Если нет кастомного Request класса, не добавляем RequestBody
+        return '';
     }
 
     /**
@@ -157,18 +164,17 @@ class AnnotationGenerator
     }
 
     /**
-     * Генерирует responses
+     * Генерирует responses без ссылок на схемы (inline objects)
+     * Это предотвращает ошибки "schema not found"
      */
-    protected function generateResponses(string $httpMethod, string $methodName, string $controllerName): string
+    protected function generateResponses(string $httpMethod, string $methodName): string
     {
-        $modelName = str_replace('Controller', '', $controllerName);
-
         $responses = "";
 
         // Success response
         if ($httpMethod === 'Get') {
             if (in_array($methodName, ['index', 'search'])) {
-                // Список
+                // Список с пагинацией
                 $responses .= "     *     @OA\\Response(\n" .
                             "     *         response=200,\n" .
                             "     *         description=\"Successful operation\",\n" .
@@ -177,7 +183,15 @@ class AnnotationGenerator
                             "     *             @OA\\Property(\n" .
                             "     *                 property=\"data\",\n" .
                             "     *                 type=\"array\",\n" .
-                            "     *                 @OA\\Items(ref=\"#/components/schemas/{$modelName}\")\n" .
+                            "     *                 @OA\\Items(type=\"object\")\n" .
+                            "     *             ),\n" .
+                            "     *             @OA\\Property(\n" .
+                            "     *                 property=\"meta\",\n" .
+                            "     *                 type=\"object\",\n" .
+                            "     *                 @OA\\Property(property=\"current_page\", type=\"integer\", example=1),\n" .
+                            "     *                 @OA\\Property(property=\"last_page\", type=\"integer\", example=10),\n" .
+                            "     *                 @OA\\Property(property=\"per_page\", type=\"integer\", example=15),\n" .
+                            "     *                 @OA\\Property(property=\"total\", type=\"integer\", example=150)\n" .
                             "     *             )\n" .
                             "     *         )\n" .
                             "     *     ),\n";
@@ -188,7 +202,7 @@ class AnnotationGenerator
                             "     *         description=\"Successful operation\",\n" .
                             "     *         @OA\\JsonContent(\n" .
                             "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=true),\n" .
-                            "     *             @OA\\Property(property=\"data\", ref=\"#/components/schemas/{$modelName}\")\n" .
+                            "     *             @OA\\Property(property=\"data\", type=\"object\")\n" .
                             "     *         )\n" .
                             "     *     ),\n";
             }
@@ -198,7 +212,8 @@ class AnnotationGenerator
                         "     *         description=\"Resource created successfully\",\n" .
                         "     *         @OA\\JsonContent(\n" .
                         "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=true),\n" .
-                        "     *             @OA\\Property(property=\"data\", ref=\"#/components/schemas/{$modelName}\")\n" .
+                        "     *             @OA\\Property(property=\"data\", type=\"object\"),\n" .
+                        "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Resource created successfully\")\n" .
                         "     *         )\n" .
                         "     *     ),\n";
         } elseif ($httpMethod === 'Delete') {
@@ -207,30 +222,55 @@ class AnnotationGenerator
                         "     *         description=\"Resource deleted successfully\",\n" .
                         "     *         @OA\\JsonContent(\n" .
                         "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=true),\n" .
-                        "     *             @OA\\Property(\n" .
-                        "     *                 property=\"data\",\n" .
-                        "     *                 type=\"object\",\n" .
-                        "     *                 @OA\\Property(property=\"message\", type=\"string\", example=\"Resource deleted successfully\")\n" .
-                        "     *             )\n" .
+                        "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Resource deleted successfully\")\n" .
                         "     *         )\n" .
                         "     *     ),\n";
         } else {
+            // PUT/PATCH
             $responses .= "     *     @OA\\Response(\n" .
                         "     *         response=200,\n" .
-                        "     *         description=\"Successful operation\",\n" .
+                        "     *         description=\"Resource updated successfully\",\n" .
                         "     *         @OA\\JsonContent(\n" .
                         "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=true),\n" .
-                        "     *             @OA\\Property(property=\"data\", ref=\"#/components/schemas/{$modelName}\")\n" .
+                        "     *             @OA\\Property(property=\"data\", type=\"object\"),\n" .
+                        "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Resource updated successfully\")\n" .
                         "     *         )\n" .
                         "     *     ),\n";
         }
 
         // Error responses
         if (in_array($methodName, ['show', 'update', 'destroy'])) {
-            $responses .= "     *     @OA\\Response(response=404, description=\"Resource not found\"),\n";
+            $responses .= "     *     @OA\\Response(\n" .
+                        "     *         response=404,\n" .
+                        "     *         description=\"Resource not found\",\n" .
+                        "     *         @OA\\JsonContent(\n" .
+                        "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=false),\n" .
+                        "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Resource not found\")\n" .
+                        "     *         )\n" .
+                        "     *     ),\n";
         }
 
-        $responses .= "     *     @OA\\Response(response=500, description=\"Server error\")\n";
+        // Добавляем validation error для методов с RequestBody
+        if (in_array($httpMethod, ['Post', 'Put', 'Patch'])) {
+            $responses .= "     *     @OA\\Response(\n" .
+                        "     *         response=422,\n" .
+                        "     *         description=\"Validation error\",\n" .
+                        "     *         @OA\\JsonContent(\n" .
+                        "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=false),\n" .
+                        "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Validation failed\"),\n" .
+                        "     *             @OA\\Property(property=\"errors\", type=\"object\")\n" .
+                        "     *         )\n" .
+                        "     *     ),\n";
+        }
+
+        $responses .= "     *     @OA\\Response(\n" .
+                    "     *         response=500,\n" .
+                    "     *         description=\"Server error\",\n" .
+                    "     *         @OA\\JsonContent(\n" .
+                    "     *             @OA\\Property(property=\"success\", type=\"boolean\", example=false),\n" .
+                    "     *             @OA\\Property(property=\"message\", type=\"string\", example=\"Internal server error\")\n" .
+                    "     *         )\n" .
+                    "     *     )\n";
 
         return $responses;
     }
@@ -288,8 +328,13 @@ class AnnotationGenerator
         $publicRoutes = [
             '/api/v1/auth/login',
             '/api/v1/auth/register',
+            '/api/v1/auth/refresh',
+            '/api/v1/auth/password/reset',
+            '/api/v1/auth/password/forgot',
+            '/api/v1/auth/verify',
             '/api/v1/init',
             '/api/v1/languages',
+            '/api/v1/statuses',
         ];
 
         foreach ($publicRoutes as $publicRoute) {

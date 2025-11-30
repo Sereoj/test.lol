@@ -7,7 +7,41 @@ use App\Rules\ValidMxRecord;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="RegisterRequest",
+ *     type="object",
+ *     title="Register Request",
+ *     required={"username", "email", "password"},
+ *     @OA\Property(
+ *         property="username",
+ *         type="string",
+ *         description="Username (max: 255)",
+ *         example="Example username"
+ *     ),
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email (min: 3) (max: 255)",
+ *         example="user@example.com"
+ *     ),
+ *     @OA\Property(
+ *         property="password",
+ *         type="string",
+ *         description="Password (min: 8)",
+ *         example="Example password"
+ *     ),
+ *     @OA\Property(
+ *         property="remember_me",
+ *         type="boolean",
+ *         description="Remember me",
+ *         example=true
+ *     ),
+ * )
+ */
 class RegisterRequest extends FormRequest
 {
     /**

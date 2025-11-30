@@ -7,6 +7,85 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateUserAccountRequest",
+ *     type="object",
+ *     title="UpdateUserAccount Request",
+ *     required={"current_password", "new_password_confirmation"},
+ *     @OA\Property(
+ *         property="current_password",
+ *         type="string",
+ *         description="Current password",
+ *         example="Example current password"
+ *     ),
+ *     @OA\Property(
+ *         property="new_password",
+ *         type="string",
+ *         description="New password (min: 8)",
+ *         example="Example new password"
+ *     ),
+ *     @OA\Property(
+ *         property="new_password_confirmation",
+ *         type="string",
+ *         description="New password confirmation",
+ *         example="Example new password confirmation"
+ *     ),
+ *     @OA\Property(
+ *         property="username",
+ *         type="string",
+ *         description="Username (max: 255)",
+ *         example="Example username"
+ *     ),
+ *     @OA\Property(
+ *         property="slug",
+ *         type="string",
+ *         description="Slug (max: 255)",
+ *         example="Example slug"
+ *     ),
+ *     @OA\Property(
+ *         property="description",
+ *         type="string",
+ *         description="Description (max: 255)",
+ *         example="Example description"
+ *     ),
+ *     @OA\Property(
+ *         property="website",
+ *         type="string",
+ *         format="uri",
+ *         nullable=true,
+ *         description="Website (max: 255)",
+ *         example="https://example.com"
+ *     ),
+ *     @OA\Property(
+ *         property="gender",
+ *         type="string",
+ *         nullable=true,
+ *         description="Gender",
+ *         example="Example gender"
+ *     ),
+ *     @OA\Property(
+ *         property="location_id",
+ *         type="string",
+ *         description="Location id",
+ *         example="Example location id"
+ *     ),
+ *     @OA\Property(
+ *         property="language",
+ *         type="string",
+ *         nullable=true,
+ *         description="Language",
+ *         example="Example language"
+ *     ),
+ *     @OA\Property(
+ *         property="age",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Age (min: 16) (max: 100)",
+ *         example=1
+ *     ),
+ * )
+ */
 class UpdateUserAccountRequest extends FormRequest
 {
     /**

@@ -5,7 +5,22 @@ namespace App\Http\Requests\Language;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="SetLanguageRequest",
+ *     type="object",
+ *     title="SetLanguage Request",
+ *     required={"language"},
+ *     @OA\Property(
+ *         property="language",
+ *         type="string",
+ *         description="Language",
+ *         example="Example language"
+ *     ),
+ * )
+ */
 class SetLanguageRequest extends FormRequest
 {
     /**

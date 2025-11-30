@@ -53,13 +53,13 @@ class GenerateOpenApiAnnotations extends Command
             $processedControllers++;
         }
 
-        $this->newLine();
-        $this->info("✓ Processed {$processedControllers} controllers");
-        $this->info("✓ Generated annotations for {$processedMethods} methods");
-        $this->newLine();
-        $this->info("Run 'php artisan l5-swagger:generate' to update documentation");
+        if ($processedMethods > 0) {
+            $this->info("✓ Processed {$processedControllers} controllers, {$processedMethods} methods");
+        } else {
+            $this->comment("  No new annotations generated (use --force to overwrite)");
+        }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -161,6 +161,13 @@ class GenerateOpenApiAnnotations extends Command
             // Читаем файл
             $content = File::get($filePath);
 
+            // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что файл имеет объявление класса
+            // Ищем class с учетом возможного docblock перед ним
+            if (!preg_match('/class\s+' . preg_quote($reflection->getShortName()) . '\s+extends/s', $content)) {
+                $this->error("  ✗ Skipping {$reflection->getShortName()}: class declaration not found!");
+                return false;
+            }
+
             // Генерируем аннотацию
             $httpMethodFormatted = ucfirst(strtolower($methodData['http_method']));
             $annotation = $this->generator->generateMethodAnnotation(
@@ -173,6 +180,7 @@ class GenerateOpenApiAnnotations extends Command
             $methodName = $methodData['method'];
 
             // Паттерн для поиска метода с учетом однострочных комментариев перед ним
+            // ВАЖНО: Паттерн НЕ должен матчить объявление класса
             $pattern = '/((?:\/\/[^\n]*\n\s*)*)(\/\*\*.*?\*\/\s*)?(\s*)(public|protected|private)\s+function\s+' . preg_quote($methodName) . '\s*\(/s';
 
             if (preg_match($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
@@ -207,6 +215,13 @@ class GenerateOpenApiAnnotations extends Command
                     $afterComments = substr($fullMatch, strlen($singleLineComments));
                     $replacement = $newContent . $afterComments;
                     $content = substr_replace($content, $replacement, $offset, strlen($fullMatch));
+                }
+
+                // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что мы не удалили объявление класса
+                // Ищем class с учетом возможного docblock перед ним
+                if (!preg_match('/class\s+' . preg_quote($reflection->getShortName()) . '\s+extends/s', $content)) {
+                    $this->error("  ✗ ERROR: Class declaration would be deleted! Skipping {$reflection->getShortName()}::{$methodName}");
+                    return false;
                 }
 
                 // Сохраняем файл

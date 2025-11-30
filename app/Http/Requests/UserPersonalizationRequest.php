@@ -3,7 +3,37 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UserPersonalizationRequest",
+ *     type="object",
+ *     title="UserPersonalization Request",
+ *     required={},
+ *     @OA\Property(
+ *         property="badge_id",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Badge id",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="employment_status_id",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Employment status id",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="status_id",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Status id",
+ *         example=1
+ *     ),
+ * )
+ */
 class UserPersonalizationRequest extends FormRequest
 {
     /**

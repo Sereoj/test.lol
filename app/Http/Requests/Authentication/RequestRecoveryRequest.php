@@ -6,6 +6,21 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * @OA\Schema(
+ *     schema="RecoveryRequest",
+ *     type="object",
+ *     title="Recovery Request",
+ *     required={"email"},
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email",
+ *         example="user@example.com"
+ *     ),
+ * )
+ */
 class RequestRecoveryRequest extends FormRequest
 {
     /**

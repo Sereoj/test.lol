@@ -5,7 +5,22 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="SearchRequest",
+ *     type="object",
+ *     title="Search Request",
+ *     required={"query"},
+ *     @OA\Property(
+ *         property="query",
+ *         type="string",
+ *         description="Query (min: 3)",
+ *         example="Example query"
+ *     ),
+ * )
+ */
 class SearchRequest extends FormRequest
 {
     /**

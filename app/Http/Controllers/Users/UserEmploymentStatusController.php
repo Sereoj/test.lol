@@ -23,7 +23,7 @@ class UserEmploymentStatusController extends Controller
     public function __construct(UserEmploymentStatusService $userEmploymentStatusService)
     {
         $this->userEmploymentStatusService = $userEmploymentStatusService;
-    }            /**
+    }                        /**
      * @OA\Delete(
      *     path="/api/v1/user/employment-status/remove",
      *     tags={"Users"},
@@ -35,14 +35,17 @@ class UserEmploymentStatusController extends Controller
      *         description="Resource deleted successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *             )
+     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function removeEmploymentStatus(RemoveEmploymentStatusRequest $request)

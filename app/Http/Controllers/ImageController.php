@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 
 class ImageController extends Controller
-{    /**
+{                /**
      * @OA\Get(
      *     path="/api/v1/storage/originals/{filename}",
      *     tags={"Images"},
@@ -26,14 +26,20 @@ class ImageController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Image")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function getOriginal($filename)
+public function getOriginal($filename)
     {
         $path = '/originals/' . $filename;
 

@@ -12,7 +12,9 @@ class SitemapController extends Controller
     public function __construct(SitemapService $sitemapService)
     {
         $this->sitemapService = $sitemapService;
-    }    /**
+    }
+
+                /**
      * @OA\Get(
      *     path="/api/v1/sitemap",
      *     tags={"Sitemaps"},
@@ -39,21 +41,33 @@ class SitemapController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/Sitemap")
+     *                 @OA\Items(type="object")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=10),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=150)
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-
-    public function index()
+public function index()
     {
         try {
             return $this->successResponse($this->sitemapService->generateUrls());
-        } catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             Log::error('Sitemap: ' . $exception->getMessage(), [
                 'message' => $exception->getMessage(),
             ]);

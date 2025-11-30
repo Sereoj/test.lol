@@ -6,7 +6,81 @@ use App\Http\Resources\Users\UserShortWithBalanceResource;
 use App\Models\Media\Media;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="ThumbMediaResource",
+ *     type="object",
+ *     title="Thumb Media Resource",
+ *     @OA\Property(
+ *         property="title",
+ *         type="string",
+ *         description="Title"
+ *     ),
+ *     @OA\Property(
+ *         property="slug",
+ *         type="string",
+ *         description="Slug"
+ *     ),
+ *     @OA\Property(
+ *         property="is_adult_content",
+ *         type="boolean",
+ *         description="Is adult content"
+ *     ),
+ *     @OA\Property(
+ *         property="is_nsfl_content",
+ *         type="boolean",
+ *         description="Is nsfl content"
+ *     ),
+ *     @OA\Property(
+ *         property="is_free",
+ *         type="boolean",
+ *         description="Is free"
+ *     ),
+ *     @OA\Property(
+ *         property="has_copyright",
+ *         type="boolean",
+ *         description="Has copyright"
+ *     ),
+ *     @OA\Property(
+ *         property="user",
+ *         type="object",
+ *         description="User"
+ *     ),
+ *     @OA\Property(
+ *         property="media",
+ *         type="array",
+ *         description="Media",
+ *         @OA\Items(type="object")
+ *     ),
+ *     @OA\Property(
+ *         property="likes_count",
+ *         type="integer",
+ *         description="Likes count"
+ *     ),
+ *     @OA\Property(
+ *         property="views_count",
+ *         type="integer",
+ *         description="Views count"
+ *     ),
+ *     @OA\Property(
+ *         property="comments_count",
+ *         type="integer",
+ *         description="Comments count"
+ *     ),
+ *     @OA\Property(
+ *         property="created_at",
+ *         type="string",
+ *         description="Created at"
+ *     ),
+ *     @OA\Property(
+ *         property="updated_at",
+ *         type="string",
+ *         description="Updated at"
+ *     )
+ * )
+ */
 class ThumbMediaResource extends JsonResource
 {
     /**

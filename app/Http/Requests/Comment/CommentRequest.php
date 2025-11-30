@@ -7,7 +7,29 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="CommentRequest",
+ *     type="object",
+ *     title="Comment Request",
+ *     required={"content"},
+ *     @OA\Property(
+ *         property="content",
+ *         type="string",
+ *         description="Content (max: 3500)",
+ *         example="Example content"
+ *     ),
+ *     @OA\Property(
+ *         property="parent_id",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Parent id",
+ *         example=1
+ *     ),
+ * )
+ */
 class CommentRequest extends FormRequest
 {
     /**

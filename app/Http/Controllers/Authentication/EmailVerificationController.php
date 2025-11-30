@@ -20,49 +20,7 @@ class EmailVerificationController extends Controller
     }
 
     // Отправка кода подтверждения на email   
-    /**
-     * @OA\Post(
-     *     path="/api/v1/send-verification-code",
-     *     tags={"EmailVerifications"},
-     *     summary="SendVerificationCode email verification",
-     *     description="SendVerificationCode email verification",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/SendVerificationCodeRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/EmailVerification")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function sendVerificationCode(SendVerificationCodeRequest $request)
-    {
-        try {
-            $email = $request->input('email');
-            $result = $this->emailVerificationService->sendVerificationCode($email);
-
-            if ($result['status']) {
-                Log::info('Verification code sent successfully', ['email' => $email]);
-                return $this->successResponse(['message' => $result['message']]);
-            } else {
-                Log::warning('Failed to send verification code', ['email' => $email, 'error' => $result['error'] ?? '']);
-                return $this->errorResponse($result['message'], 500);
-            }
-        } catch (Exception $e) {
-            Log::error('Error sending verification code: ' . $e->getMessage(), ['email' => $request->input('email')]);
-            return $this->errorResponse('Error sending verification code: ' . $e->getMessage(), 500);
-        }
-    }
-
-    // Проверка подтверждения email   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/verify-email",
@@ -75,18 +33,37 @@ class EmailVerificationController extends Controller
      *         @OA\JsonContent(ref="#/components/schemas/VerifyEmailRequest")
      *     ),
      *     @OA\Response(
-     *         response=201,
+     *         response=200,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/EmailVerification")
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Email verified successfully")
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function verifyEmail(VerifyEmailRequest $request)
+public function verifyEmail(VerifyEmailRequest $request)
     {
         try {
             $email = $request->input('email');

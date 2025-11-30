@@ -5,7 +5,34 @@ namespace App\Http\Requests\Authentication;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="RecoverAccountRequest",
+ *     type="object",
+ *     title="RecoverAccount Request",
+ *     required={"token", "password", "password_confirmation"},
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Token",
+ *         example="Example token"
+ *     ),
+ *     @OA\Property(
+ *         property="password",
+ *         type="string",
+ *         description="Password (min: 8)",
+ *         example="Example password"
+ *     ),
+ *     @OA\Property(
+ *         property="password_confirmation",
+ *         type="string",
+ *         description="Password confirmation",
+ *         example="Example password confirmation"
+ *     ),
+ * )
+ */
 class RecoverAccountRequest extends FormRequest
 {
     /**

@@ -17,17 +17,16 @@ class GenerateResourceSchemas extends Command
 
     public function handle()
     {
-        $this->info('Generating OpenAPI schemas for Resource classes...');
-
         $path = base_path($this->option('path'));
 
         if (!File::isDirectory($path)) {
             $this->error("Directory not found: {$path}");
-            return 1;
+            return Command::FAILURE;
         }
 
         $resourceFiles = File::allFiles($path);
         $processed = 0;
+        $skipped = 0;
 
         foreach ($resourceFiles as $file) {
             if ($file->getExtension() !== 'php') {
@@ -48,13 +47,19 @@ class GenerateResourceSchemas extends Command
             if ($this->generateSchemaForResource($className, $file->getPathname())) {
                 $processed++;
                 $this->line("  ✓ " . class_basename($className));
+            } else {
+                $skipped++;
             }
         }
 
-        $this->newLine();
-        $this->info("✓ Generated schemas for {$processed} Resource classes");
+        if ($processed > 0) {
+            $this->info("✓ Generated schemas for {$processed} Resource classes");
+        }
+        if ($skipped > 0 && $this->option('verbose')) {
+            $this->comment("  Skipped {$skipped} classes (already exist or no toArray)");
+        }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -116,6 +121,12 @@ class GenerateResourceSchemas extends Command
             $schemaName = str_replace('Resource', '', class_basename($className));
             $schema = $this->generateSchema($schemaName, $fields);
 
+            // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что файл имеет объявление класса
+            if (!preg_match('/class\s+' . preg_quote(class_basename($className)) . '/s', $content)) {
+                $this->warn("  ⚠ Skipping " . class_basename($className) . ": class declaration not found!");
+                return false;
+            }
+
             // Добавляем use statement
             if (!Str::contains($content, 'use OpenApi\Attributes as OA;')) {
                 $content = $this->addUseStatement($content);
@@ -131,6 +142,12 @@ class GenerateResourceSchemas extends Command
                 } else {
                     // Добавляем новый docblock
                     $content = preg_replace($pattern, $schema . "\n$1", $content);
+                }
+
+                // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что мы не удалили объявление класса
+                if (!preg_match('/class\s+' . preg_quote(class_basename($className)) . '/s', $content)) {
+                    $this->error("  ✗ ERROR: Class declaration would be deleted! Skipping " . class_basename($className));
+                    return false;
                 }
 
                 File::put($filePath, $content);

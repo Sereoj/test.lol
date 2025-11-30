@@ -5,7 +5,35 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="ResetPasswordRequest",
+ *     type="object",
+ *     title="ResetPassword Request",
+ *     required={"email", "token", "new_password"},
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email",
+ *         example="user@example.com"
+ *     ),
+ *     @OA\Property(
+ *         property="token",
+ *         type="string",
+ *         description="Token",
+ *         example="Example token"
+ *     ),
+ *     @OA\Property(
+ *         property="new_password",
+ *         type="string",
+ *         description="New password",
+ *         example="Example new password"
+ *     ),
+ * )
+ */
 class ResetPasswordRequest extends FormRequest
 {
     /**

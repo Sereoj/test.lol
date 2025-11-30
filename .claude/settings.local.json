@@ -3,7 +3,17 @@
     "allow": [
       "Bash(composer require:*)",
       "Bash(where:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(composer show:*)",
+      "Bash(php artisan package:discover:*)",
+      "Bash(php artisan list:*)",
+      "Bash(test:*)",
+      "Bash(cmd.exe /c \"php -v 2>nul || echo PHP not found\")",
+      "Bash(git checkout:*)",
+      "Bash(find:*)",
+      "Bash(php artisan openapi:fix-corrupted-controllers:*)",
+      "Bash(cmd.exe /c \"php artisan openapi:generate-all\")",
+      "Bash(findstr:*)"
     ],
     "deny": [],
     "ask": []

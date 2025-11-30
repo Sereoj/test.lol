@@ -5,7 +5,77 @@ namespace App\Http\Requests\User;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateUserProfileRequest",
+ *     type="object",
+ *     title="UpdateUserProfile Request",
+ *     required={"username", "seo_meta", "slug", "description", "email", "verification", "experience", "gender", "language", "age"},
+ *     @OA\Property(
+ *         property="username",
+ *         type="string",
+ *         description="Username (max: 255)",
+ *         example="Example username"
+ *     ),
+ *     @OA\Property(
+ *         property="seo_meta",
+ *         type="string",
+ *         description="Seo meta",
+ *         example="Example seo meta"
+ *     ),
+ *     @OA\Property(
+ *         property="slug",
+ *         type="string",
+ *         description="Slug (max: 255)",
+ *         example="Example slug"
+ *     ),
+ *     @OA\Property(
+ *         property="description",
+ *         type="string",
+ *         description="Description (max: 255)",
+ *         example="Example description"
+ *     ),
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email",
+ *         example="user@example.com"
+ *     ),
+ *     @OA\Property(
+ *         property="verification",
+ *         type="boolean",
+ *         description="Verification",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="experience",
+ *         type="integer",
+ *         description="Experience",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="gender",
+ *         type="string",
+ *         description="Gender",
+ *         example="Example gender"
+ *     ),
+ *     @OA\Property(
+ *         property="language",
+ *         type="string",
+ *         description="Language (max: 2)",
+ *         example="Example language"
+ *     ),
+ *     @OA\Property(
+ *         property="age",
+ *         type="integer",
+ *         description="Age",
+ *         example=1
+ *     ),
+ * )
+ */
 class UpdateUserProfileRequest extends FormRequest
 {
     /**

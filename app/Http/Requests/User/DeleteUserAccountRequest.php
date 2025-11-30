@@ -6,6 +6,20 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
+/**
+ * @OA\Schema(
+ *     schema="DeleteUserAccountRequest",
+ *     type="object",
+ *     title="DeleteUserAccount Request",
+ *     required={"password"},
+ *     @OA\Property(
+ *         property="password",
+ *         type="string",
+ *         description="Password",
+ *         example="Example password"
+ *     ),
+ * )
+ */
 class DeleteUserAccountRequest extends FormRequest
 {
     /**

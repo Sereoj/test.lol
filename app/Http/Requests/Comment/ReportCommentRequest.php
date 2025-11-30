@@ -5,7 +5,23 @@ namespace App\Http\Requests\Comment;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="ReportCommentRequest",
+ *     type="object",
+ *     title="ReportComment Request",
+ *     required={},
+ *     @OA\Property(
+ *         property="reason",
+ *         type="string",
+ *         nullable=true,
+ *         description="Reason (max: 600)",
+ *         example="Example reason"
+ *     ),
+ * )
+ */
 class ReportCommentRequest extends FormRequest
 {
     /**

@@ -5,7 +5,22 @@ namespace App\Http\Requests\Step;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="StepOneRequest",
+ *     type="object",
+ *     title="StepOne Request",
+ *     required={"source_id"},
+ *     @OA\Property(
+ *         property="source_id",
+ *         type="string",
+ *         description="Source id",
+ *         example="Example source id"
+ *     ),
+ * )
+ */
 class StepOneRequest extends FormRequest
 {
     /**

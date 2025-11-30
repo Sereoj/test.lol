@@ -5,7 +5,50 @@ namespace App\Http\Requests\Media;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="MediaRequest",
+ *     type="object",
+ *     title="Media Request",
+ *     required={},
+ *     @OA\Property(
+ *         property="file.*",
+ *         type="string",
+ *         description="File.* (max: 20480)",
+ *         example="Example file.*"
+ *     ),
+ *     @OA\Property(
+ *         property="is_adult",
+ *         type="boolean",
+ *         nullable=true,
+ *         description="Is adult",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="is_subscription",
+ *         type="boolean",
+ *         nullable=true,
+ *         description="Is subscription",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="is_paid",
+ *         type="boolean",
+ *         nullable=true,
+ *         description="Is paid",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="is_author",
+ *         type="boolean",
+ *         nullable=true,
+ *         description="Is author",
+ *         example=true
+ *     ),
+ * )
+ */
 class MediaRequest extends FormRequest
 {
     /**

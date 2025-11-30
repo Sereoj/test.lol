@@ -26,108 +26,7 @@ class SubscriptionController extends Controller
     }
 
     // Получение активной подписки пользователя   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/subscriptions/active",
-     *     tags={"Subscriptions"},
-     *     summary="GetActiveSubscription subscription",
-     *     description="GetActiveSubscription subscription",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function getActiveSubscription(Request $request): JsonResponse
-    {
-        try {
-            $userId = Auth::id();
-            $cacheKey = self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId;
-            
-            $this->subscriptionService->checkAndUpdateSubscriptionStatus();
-            
-            $subscription = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
-                return $this->subscriptionService->getActiveSubscription();
-            });
-            
-            Log::info('Active subscription retrieved successfully', ['user_id' => $userId]);
-            
-            return $this->successResponse($subscription);
-        } catch (Exception $e) {
-            Log::error('Error retrieving active subscription: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse('Error retrieving active subscription: ' . $e->getMessage(), 500);
-        }
-    }
-
-    // Создание новой подписки   
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/subscriptions",
-     *     tags={"Subscriptions"},
-     *     summary="CreateSubscription subscription",
-     *     description="CreateSubscription subscription",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function createSubscription(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'plan' => 'required|string',
-                'amount' => 'required|numeric',
-                'currency' => 'required|string|max:3',
-                'duration' => 'required|integer',
-            ]);
-            
-            $userId = Auth::id();
-            
-            $subscription = $this->subscriptionService->createSubscription(
-                $validated['plan'],
-                $validated['amount'],
-                $validated['currency'],
-                $validated['duration']
-            );
-            
-            $this->forgetCache(self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId);
-            
-            Log::info('Subscription created successfully', [
-                'user_id' => $userId,
-                'plan' => $validated['plan'],
-                'duration' => $validated['duration']
-            ]);
-            
-            return $this->successResponse($subscription, 201);
-        } catch (ValidationException $e) {
-            Log::warning('Validation error during subscription creation', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
-            return $this->errorResponse($e->errors(), 422);
-        } catch (Exception $e) {
-            Log::error('Error creating subscription: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse('Error creating subscription: ' . $e->getMessage(), 500);
-        }
-    }
-
-    // Продление подписки   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/user/subscriptions/{subscriptionId}/extend",
@@ -142,23 +41,35 @@ class SubscriptionController extends Controller
      *         description="SubscriptionId",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function extendSubscription(Request $request, int $subscriptionId): JsonResponse
+public function extendSubscription(Request $request, int $subscriptionId): JsonResponse
     {
         try {
             $validated = $request->validate([

@@ -5,7 +5,116 @@ namespace App\Http\Requests\Post;
 use App\Models\Posts\Post;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="StorePostRequest",
+ *     type="object",
+ *     title="StorePost Request",
+ *     required={"title", "status", "price"},
+ *     @OA\Property(
+ *         property="title",
+ *         type="string",
+ *         description="Title (min: 3) (max: 30)",
+ *         example="Example title"
+ *     ),
+ *     @OA\Property(
+ *         property="content",
+ *         type="string",
+ *         nullable=true,
+ *         description="Content (max: 1500)",
+ *         example="Example content"
+ *     ),
+ *     @OA\Property(
+ *         property="status",
+ *         type="string",
+ *         description="Status",
+ *         example="Example status"
+ *     ),
+ *     @OA\Property(
+ *         property="is_adult_content",
+ *         type="boolean",
+ *         description="Is adult content",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="is_nsfl_content",
+ *         type="boolean",
+ *         description="Is nsfl content",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="has_copyright",
+ *         type="boolean",
+ *         description="Has copyright",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="price",
+ *         type="number",
+ *         nullable=true,
+ *         description="Price (min: 0)",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="is_free",
+ *         type="boolean",
+ *         description="Is free",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="category_id",
+ *         type="string",
+ *         nullable=true,
+ *         description="Category id",
+ *         example="Example category id"
+ *     ),
+ *     @OA\Property(
+ *         property="settings",
+ *         type="string",
+ *         nullable=true,
+ *         description="Settings",
+ *         example="Example settings"
+ *     ),
+ *     @OA\Property(
+ *         property="tags_id",
+ *         type="array",
+ *         description="Tags id",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="tags_id.*",
+ *         type="string",
+ *         description="Tags id.*",
+ *         example="Example tags id.*"
+ *     ),
+ *     @OA\Property(
+ *         property="apps_id",
+ *         type="array",
+ *         description="Apps id",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="apps_id.*",
+ *         type="string",
+ *         description="Apps id.*",
+ *         example="Example apps id.*"
+ *     ),
+ *     @OA\Property(
+ *         property="media",
+ *         type="array",
+ *         description="Media (max: 4)",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="media.*",
+ *         type="string",
+ *         description="Media.*",
+ *         example="Example media.*"
+ *     ),
+ * )
+ */
 class StorePostRequest extends FormRequest
 {
     /**

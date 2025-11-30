@@ -5,7 +5,44 @@ namespace App\Http\Requests\Post\Stat;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="PostStatSummaryRequest",
+ *     type="object",
+ *     title="PostStatSummary Request",
+ *     required={"date_range.start_date", "date_range.end_date"},
+ *     @OA\Property(
+ *         property="category_id",
+ *         type="integer",
+ *         nullable=true,
+ *         description="Category id",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="date_range",
+ *         type="array",
+ *         nullable=true,
+ *         description="Date range",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="date_range.start_date",
+ *         type="string",
+ *         format="date",
+ *         description="Date range.start date",
+ *         example="2024-01-01"
+ *     ),
+ *     @OA\Property(
+ *         property="date_range.end_date",
+ *         type="string",
+ *         format="date",
+ *         description="Date range.end date",
+ *         example="2024-01-01"
+ *     ),
+ * )
+ */
 class PostStatSummaryRequest extends FormRequest
 {
     /**

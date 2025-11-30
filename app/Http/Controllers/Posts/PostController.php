@@ -58,7 +58,7 @@ class PostController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/Post")
+     *                 @OA\Items(ref="#/components/schemas/ThumbMediaResource")
      *             )
      *         )
      *     ),
@@ -83,7 +83,7 @@ class PostController extends Controller
                 'current_page' => $page,
                 'last_page' => $lastPage
             ]);
-        }catch (\Exception $exception){
+        } catch (\Exception $exception) {
 
             return $this->errorResponse($exception->getMessage());
         }
@@ -106,7 +106,7 @@ class PostController extends Controller
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", ref="#/components/schemas/StorePostResource")
      *         )
      *     ),
      *     @OA\Response(response=500, description="Server error")
@@ -119,8 +119,7 @@ class PostController extends Controller
             $post = $this->postService->createPost($request->validated());
 
             return $this->successResponse(new StorePostResource($post), [], 201);
-        } catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage());
         }
     }
@@ -145,7 +144,7 @@ class PostController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Resource not found"),
@@ -183,7 +182,7 @@ class PostController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(response=404, description="Resource not found"),
@@ -261,14 +260,16 @@ class PostController extends Controller
      *     ),
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *         @OA\JsonContent(
+     *             @OA\Property(property="action", type="string", enum={"like", "unlike"}, example="like")
+     *         )
      *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", ref="#/components/schemas/PostStatResource")
      *         )
      *     ),
      *     @OA\Response(response=500, description="Server error")
@@ -286,8 +287,7 @@ class PostController extends Controller
                 default => $this->postService->likePost($userId, $postId),
             };
             return $this->successResponse(new PostStatResource($post));
-        } catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage());
         }
     }
@@ -318,7 +318,7 @@ class PostController extends Controller
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", ref="#/components/schemas/PostResource")
      *         )
      *     ),
      *     @OA\Response(response=500, description="Server error")
@@ -357,7 +357,7 @@ class PostController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(response=500, description="Server error")

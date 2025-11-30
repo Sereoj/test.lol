@@ -27,6 +27,7 @@ class PurchaseController extends Controller
     }
 
     // Метод для покупки поста   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/user/posts/{postId}/purchase",
@@ -41,23 +42,35 @@ class PurchaseController extends Controller
      *         description="PostId",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Purchase")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function purchasePost(Request $request, int $postId): JsonResponse
+public function purchasePost(Request $request, int $postId): JsonResponse
     {
         try {
             $validated = $request->validate([

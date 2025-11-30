@@ -3,7 +3,22 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateUserBadgeRequest",
+ *     type="object",
+ *     title="UpdateUserBadge Request",
+ *     required={"badge_id"},
+ *     @OA\Property(
+ *         property="badge_id",
+ *         type="string",
+ *         description="Badge id",
+ *         example="Example badge id"
+ *     ),
+ * )
+ */
 class UpdateUserBadgeRequest extends FormRequest
 {
     /**

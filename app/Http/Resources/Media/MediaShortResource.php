@@ -4,7 +4,25 @@ namespace App\Http\Resources\Media;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="MediaShortResource",
+ *     type="object",
+ *     title="MediaShort Resource",
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Type"
+ *     ),
+ *     @OA\Property(
+ *         property="src",
+ *         type="string",
+ *         description="Src"
+ *     )
+ * )
+ */
 class MediaShortResource extends JsonResource
 {
     /**

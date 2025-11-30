@@ -15,44 +15,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use OpenApi\Attributes as OA;
 
-        /**
-     * @OA\Get(
-     *     path="/api/v1/user/me",
-     *     tags={"Authentication"},
-     *     summary="User auth",
-     *     description="User auth",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Auth")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-public function user(Request $request)
+class AuthController extends Controller
+{
+    protected AuthService $authService;
+    protected UserService $userService;
+
+    private const CACHE_MINUTES = 60;
+    private const CACHE_KEY_USER = 'user_';
+
+    public function __construct(AuthService $authService, UserService $userService)
     {
-        try {
-            $userId = $request->user()->id;
-            $cacheKey = self::CACHE_KEY_USER . $userId;
-
-            $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
-                return new UserShortWithBalanceResource($this->userService->getById($userId));
-            });
-
-            Log::info('User info retrieved successfully', ['user_id' => $userId]);
-
-            return $this->successResponse($user);
-        } catch (Exception $e) {
-            Log::error('Error retrieving user info: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
+        $this->authService = $authService;
+        $this->userService = $userService;
     }
 
-    // Выход из системы   
+    // Выход из системы
+    
     /**
      * @OA\Post(
      *     path="/api/v1/auth/logout",
@@ -60,23 +38,35 @@ public function user(Request $request)
      *     summary="Logout auth",
      *     description="Logout auth",
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Auth")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function logout(Request $request)
+public function logout(Request $request)
     {
         try {
             $userId = $request->user()->id;

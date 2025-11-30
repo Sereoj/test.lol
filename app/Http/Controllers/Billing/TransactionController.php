@@ -25,6 +25,7 @@ class TransactionController extends Controller
     }
 
     // Получение транзакций пользователя   
+    
     /**
      * @OA\Get(
      *     path="/api/v1/user/transactions",
@@ -37,14 +38,20 @@ class TransactionController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Transaction")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function getTransactions(Request $request): JsonResponse
+public function getTransactions(Request $request): JsonResponse
     {
         try {
             $userId = Auth::id();

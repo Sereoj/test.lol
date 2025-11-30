@@ -7,7 +7,118 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdatePostRequest",
+ *     type="object",
+ *     title="UpdatePost Request",
+ *     required={"price"},
+ *     @OA\Property(
+ *         property="title",
+ *         type="string",
+ *         nullable=true,
+ *         description="Title (min: 3) (max: 100)",
+ *         example="Example title"
+ *     ),
+ *     @OA\Property(
+ *         property="content",
+ *         type="string",
+ *         nullable=true,
+ *         description="Content (max: 3000)",
+ *         example="Example content"
+ *     ),
+ *     @OA\Property(
+ *         property="status",
+ *         type="string",
+ *         nullable=true,
+ *         description="Status",
+ *         example="Example status"
+ *     ),
+ *     @OA\Property(
+ *         property="is_adult_content",
+ *         type="boolean",
+ *         description="Is adult content",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="is_nsfl_content",
+ *         type="boolean",
+ *         description="Is nsfl content",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="has_copyright",
+ *         type="boolean",
+ *         description="Has copyright",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="price",
+ *         type="number",
+ *         nullable=true,
+ *         description="Price (min: 0)",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="is_free",
+ *         type="boolean",
+ *         description="Is free",
+ *         example=true
+ *     ),
+ *     @OA\Property(
+ *         property="category_id",
+ *         type="string",
+ *         nullable=true,
+ *         description="Category id",
+ *         example="Example category id"
+ *     ),
+ *     @OA\Property(
+ *         property="settings",
+ *         type="string",
+ *         nullable=true,
+ *         description="Settings",
+ *         example="Example settings"
+ *     ),
+ *     @OA\Property(
+ *         property="tags_id",
+ *         type="array",
+ *         description="Tags id",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="tags_id.*",
+ *         type="string",
+ *         description="Tags id.*",
+ *         example="Example tags id.*"
+ *     ),
+ *     @OA\Property(
+ *         property="apps_id",
+ *         type="array",
+ *         description="Apps id",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="apps_id.*",
+ *         type="string",
+ *         description="Apps id.*",
+ *         example="Example apps id.*"
+ *     ),
+ *     @OA\Property(
+ *         property="media",
+ *         type="array",
+ *         description="Media",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="media.*",
+ *         type="string",
+ *         description="Media.*",
+ *         example="Example media.*"
+ *     ),
+ * )
+ */
 class UpdatePostRequest extends FormRequest
 {
     /**

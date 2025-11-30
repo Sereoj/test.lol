@@ -24,7 +24,7 @@ class UserAchievementController extends Controller
         $this->achievementService = $achievementService;
     }
 
-        /**
+                    /**
      * @OA\Get(
      *     path="/api/v1/achievements",
      *     tags={"Users"},
@@ -51,11 +51,26 @@ class UserAchievementController extends Controller
      *             @OA\Property(
      *                 property="data",
      *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/UserAchievement")
+     *                 @OA\Items(type="object")
+     *             ),
+     *             @OA\Property(
+     *                 property="meta",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=10),
+     *                 @OA\Property(property="per_page", type="integer", example=15),
+     *                 @OA\Property(property="total", type="integer", example=150)
      *             )
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function index()

@@ -4,6 +4,21 @@ namespace App\Http\Requests\Challenge;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ParticipateRequest",
+ *     type="object",
+ *     title="Participate Request",
+ *     required={},
+ *     @OA\Property(
+ *         property="submission_data",
+ *         type="array",
+ *         nullable=true,
+ *         description="Submission data",
+ *         @OA\Items(type="string")
+ *     ),
+ * )
+ */
 class ParticipateRequest extends FormRequest
 {
     /**

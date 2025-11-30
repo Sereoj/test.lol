@@ -5,7 +5,34 @@ namespace App\Http\Requests\EmploymentStatus;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="StoreEmploymentStatusRequest",
+ *     type="object",
+ *     title="StoreEmploymentStatus Request",
+ *     required={"name", "name.ru", "name.en"},
+ *     @OA\Property(
+ *         property="name",
+ *         type="array",
+ *         description="Name",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="name.ru",
+ *         type="string",
+ *         description="Name.ru",
+ *         example="Example name.ru"
+ *     ),
+ *     @OA\Property(
+ *         property="name.en",
+ *         type="string",
+ *         description="Name.en",
+ *         example="Example name.en"
+ *     ),
+ * )
+ */
 class StoreEmploymentStatusRequest extends FormRequest
 {
     /**

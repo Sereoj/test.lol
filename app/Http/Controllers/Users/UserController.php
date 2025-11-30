@@ -29,7 +29,7 @@ class UserController extends Controller
         $this->authService = $authService;
     }
 
-                    /**
+                                    /**
      * @OA\Put(
      *     path="/api/v1/users/{userId}/change-role",
      *     tags={"Users"},
@@ -43,19 +43,32 @@ class UserController extends Controller
      *         description="UserId",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
+     *         description="Resource updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/User")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource updated successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function changeRole(Request $request, $userId)

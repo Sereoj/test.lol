@@ -13,56 +13,7 @@ use OpenApi\Attributes as OA;
 class UserLanguageController extends Controller
 {
     // Получение списка языков   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/languages",
-     *     tags={"Users"},
-     *     summary="Get all user languages",
-     *     description="Get all user languages",
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Page number",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Items per page",
-     *         @OA\Schema(type="integer", example=15)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/UserLanguage")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function index()
-    {
-        return $this->successResponse([
-            'languages' => [
-                [
-                    'label' => 'Русский',
-                    'value' => 'ru'
-                ],
-                [
-                    'label' => 'English',
-                    'value' => 'en'
-                ],
-            ],
-        ]);
-    }
-    // Смена языка пользователя   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/languages",
@@ -78,14 +29,30 @@ class UserLanguageController extends Controller
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/UserLanguage")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function switchLanguage(SetLanguageRequest $request)
+public function switchLanguage(SetLanguageRequest $request)
     {
         try {
             if (Auth::check()) {

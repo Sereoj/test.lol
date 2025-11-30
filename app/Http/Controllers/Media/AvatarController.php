@@ -25,7 +25,7 @@ class AvatarController extends Controller
         $this->avatarService = $avatarService;
     }
 
-        /**
+                    /**
      * @OA\Post(
      *     path="/api/v1/avatar/{avatarId}/set-active",
      *     tags={"Avatars"},
@@ -39,21 +39,32 @@ class AvatarController extends Controller
      *         description="AvatarId",
      *         @OA\Schema(type="string")
      *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Avatar")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function setActive($avatarId)

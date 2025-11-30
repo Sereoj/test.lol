@@ -5,7 +5,40 @@ namespace App\Http\Requests\Location;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="StoreLocationRequest",
+ *     type="object",
+ *     title="StoreLocation Request",
+ *     required={"name", "name.ru", "name.en", "address"},
+ *     @OA\Property(
+ *         property="name",
+ *         type="array",
+ *         description="Name",
+ *         @OA\Items(type="string")
+ *     ),
+ *     @OA\Property(
+ *         property="name.ru",
+ *         type="string",
+ *         description="Name.ru",
+ *         example="Example name.ru"
+ *     ),
+ *     @OA\Property(
+ *         property="name.en",
+ *         type="string",
+ *         description="Name.en",
+ *         example="Example name.en"
+ *     ),
+ *     @OA\Property(
+ *         property="address",
+ *         type="string",
+ *         description="Address",
+ *         example="Example address"
+ *     ),
+ * )
+ */
 class StoreLocationRequest extends FormRequest
 {
     /**

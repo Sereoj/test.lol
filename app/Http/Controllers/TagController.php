@@ -22,7 +22,7 @@ class TagController extends Controller
         $this->tagService = $tagService;
     }
 
-                /**
+                            /**
      * @OA\Put(
      *     path="/api/v1/tags/{tag}",
      *     tags={"Tags"},
@@ -42,14 +42,38 @@ class TagController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Successful operation",
+     *         description="Resource updated successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Tag")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource updated successfully")
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Resource not found"),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Resource not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Resource not found")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function update(UpdateTagRequest $request, $id)

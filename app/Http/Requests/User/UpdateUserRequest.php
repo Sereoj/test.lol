@@ -4,7 +4,35 @@ namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UpdateUserRequest",
+ *     type="object",
+ *     title="UpdateUser Request",
+ *     required={"name", "email", "password"},
+ *     @OA\Property(
+ *         property="name",
+ *         type="string",
+ *         description="Name (max: 255)",
+ *         example="Example name"
+ *     ),
+ *     @OA\Property(
+ *         property="email",
+ *         type="string",
+ *         format="email",
+ *         description="Email (max: 255)",
+ *         example="user@example.com"
+ *     ),
+ *     @OA\Property(
+ *         property="password",
+ *         type="string",
+ *         description="Password (min: 8)",
+ *         example="Example password"
+ *     ),
+ * )
+ */
 class UpdateUserRequest extends FormRequest
 {
     /**

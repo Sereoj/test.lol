@@ -4,7 +4,55 @@ namespace App\Http\Resources\User;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UserNotificationSettingsResource",
+ *     type="object",
+ *     title="UserNotificationSettings Resource",
+ *     @OA\Property(
+ *         property="email_enabled",
+ *         type="string",
+ *         description="Email enabled"
+ *     ),
+ *     @OA\Property(
+ *         property="push_enabled",
+ *         type="string",
+ *         description="Push enabled"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_new_message",
+ *         type="string",
+ *         description="Notify on new message"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_new_follower",
+ *         type="string",
+ *         description="Notify on new follower"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_post_like",
+ *         type="string",
+ *         description="Notify on post like"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_comment",
+ *         type="string",
+ *         description="Notify on comment"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_comment_like",
+ *         type="string",
+ *         description="Notify on comment like"
+ *     ),
+ *     @OA\Property(
+ *         property="notify_on_mention",
+ *         type="string",
+ *         description="Notify on mention"
+ *     )
+ * )
+ */
 class UserNotificationSettingsResource extends JsonResource
 {
     /**

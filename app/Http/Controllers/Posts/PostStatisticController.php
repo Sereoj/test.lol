@@ -27,7 +27,7 @@ class PostStatisticController extends Controller
         $this->postStatisticsService = $postStatisticsService;
     }
 
-                /**
+                            /**
      * @OA\Get(
      *     path="/api/v1/posts/statistics/recent",
      *     tags={"Posts"},
@@ -39,10 +39,17 @@ class PostStatisticController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/PostStatistic")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function recent(Request $request)

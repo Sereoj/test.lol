@@ -5,7 +5,22 @@ namespace App\Http\Requests\Comment;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="CommentReactRequest",
+ *     type="object",
+ *     title="CommentReact Request",
+ *     required={"type"},
+ *     @OA\Property(
+ *         property="type",
+ *         type="string",
+ *         description="Type",
+ *         example="Example type"
+ *     ),
+ * )
+ */
 class CommentReactRequest extends FormRequest
 {
     /**

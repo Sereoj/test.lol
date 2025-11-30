@@ -4,8 +4,31 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
+use OpenApi\Attributes as OA;
 use Illuminate\Http\Exceptions\HttpResponseException;   
 
+/**
+ * @OA\Schema(
+ *     schema="getPostStatisticsRequest",
+ *     type="object",
+ *     title="getPostStatistics Request",
+ *     required={"date_range.start_date", "date_range.end_date"},
+ *     @OA\Property(
+ *         property="date_range.start_date",
+ *         type="string",
+ *         format="date",
+ *         description="Date range.start date",
+ *         example="2024-01-01"
+ *     ),
+ *     @OA\Property(
+ *         property="date_range.end_date",
+ *         type="string",
+ *         format="date",
+ *         description="Date range.end date",
+ *         example="2024-01-01"
+ *     ),
+ * )
+ */
 class getPostStatisticsRequest extends FormRequest
 {
     /**

@@ -31,186 +31,7 @@ class PostSearchController extends Controller
         $this->searchSuggestionService = $searchSuggestionService;
     }
 
-        /**
-     * @OA\Get(
-     *     path="/api/v1/search",
-     *     tags={"Posts"},
-     *     summary="Search post search",
-     *     description="Search post search",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="page",
-     *         in="query",
-     *         description="Page number",
-     *         @OA\Schema(type="integer", example=1)
-     *     ),
-     *     @OA\Parameter(
-     *         name="per_page",
-     *         in="query",
-     *         description="Items per page",
-     *         @OA\Schema(type="integer", example=15)
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="array",
-     *                 @OA\Items(ref="#/components/schemas/PostSearch")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-public function search(SearchRequest $request)
-    {
-        try {
-            $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query);
-
-            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = $this->searchService->search($query);
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
-                return $searchResults;
-            });
-
-            Log::info("Results returned for query: {$query}");
-
-            return $this->successResponse($results);
-        } catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Поиск постов по тегам   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/search/tags",
-     *     tags={"Posts"},
-     *     summary="SearchTags post search",
-     *     description="SearchTags post search",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function searchTags(SearchRequest $request)
-    {
-        try {
-            $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_tags_'. md5($query);
-
-            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = ShortSearchTagResource::collection($this->searchService->searchInTags($query));
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
-                return $searchResults;
-            });
-
-            Log::info("Results returned for query: {$query}");
-
-            return $this->successResponse($results);
-        }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Поиск постов по запросу   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/search/posts",
-     *     tags={"Posts"},
-     *     summary="SearchPosts post search",
-     *     description="SearchPosts post search",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function searchPosts(SearchRequest $request)
-    {
-        try {
-            $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
-
-            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = ThumbUserMediaResource::collection($this->searchService->searchInPosts($query));
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
-                return $searchResults;
-            });
-
-            Log::info("Results returned for query: {$query}");
-
-            return $this->successResponse($results);
-        }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Поиск постов по пользователям   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/search/users",
-     *     tags={"Posts"},
-     *     summary="SearchUsers post search",
-     *     description="SearchUsers post search",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function searchUsers(SearchRequest $request)
-    {
-        try {
-            $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_users_'. md5($query);
-
-            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
-                $searchResults = $this->searchService->searchInUsers($query);
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
-                return $searchResults;
-            });
-
-            Log::info("Results returned for query: {$query}");
-                //return $this->successResponse($results);
-            return $this->successResponse(UserSearchResource::collection($results));
-        }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Предложение популярных запросов   
-    /**
+                                    /**
      * @OA\Get(
      *     path="/api/v1/search/suggest",
      *     tags={"Posts"},
@@ -222,14 +43,20 @@ public function search(SearchRequest $request)
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function suggest(Request $request)
+public function suggest(Request $request)
     {
         try {
             $query = $request->input('query');

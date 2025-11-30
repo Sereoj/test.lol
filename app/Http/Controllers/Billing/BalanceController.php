@@ -29,190 +29,7 @@ class BalanceController extends Controller
     }
 
     // Получение баланса пользователя   
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/balance",
-     *     tags={"Balances"},
-     *     summary="GetBalance balance",
-     *     description="GetBalance balance",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function getBalance(Request $request): JsonResponse
-    {
-        try {
-            $currency = $request->input('currency');
-            $userId = Auth::id();
-
-            if (!$currency || !is_string($currency) || strlen($currency) !== 3) {
-                Log::warning('Invalid currency format', ['currency' => $currency, 'user_id' => $userId]);
-                return $this->errorResponse('Некорректная или отсутствующая валюта', 400);
-            }
-
-            $currency = strtoupper($currency);
-            $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
-            
-            $balance = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId, $currency) {
-                return $this->balanceService->getUserBalance($userId, $currency);
-            });
-
-            if (isset($balance['error'])) {
-                Log::warning('Balance retrieval error', ['currency' => $currency, 'user_id' => $userId, 'error' => $balance['error']]);
-                return $this->errorResponse($balance['error'], 404);
-            }
-            
-            Log::info('Balance retrieved successfully', ['currency' => $currency, 'user_id' => $userId]);
-            return $this->successResponse(['balance' => $balance]);
-        } catch (Exception $e) {
-            Log::error('Error retrieving balance: ' . $e->getMessage(), [
-                'currency' => $request->input('currency'), 
-                'user_id' => Auth::id()
-            ]);
-            return $this->errorResponse('Error retrieving balance: ' . $e->getMessage(), 500);
-        }
-    }
-
-    // Пополнение баланса пользователя   
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/balance/topup",
-     *     tags={"Balances"},
-     *     summary="TopUpBalance balance",
-     *     description="TopUpBalance balance",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function topUpBalance(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'amount' => 'required|numeric|min:1',
-                'currency' => 'required|string|size:3',
-                'gateway' => 'required|string',
-            ]);
-
-            $userId = Auth::id();
-            $currency = strtoupper($validated['currency']);
-            
-            $topup = $this->balanceService->topUpBalance(
-                $validated['amount'],
-                $currency,
-                $validated['gateway']
-            );
-            
-            // Очищаем кеш баланса пользователя
-            $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
-            $this->forgetCache($cacheKey);
-            
-            Log::info('Balance topped up successfully', [
-                'user_id' => $userId,
-                'amount' => $validated['amount'],
-                'currency' => $currency,
-                'gateway' => $validated['gateway']
-            ]);
-
-            return $this->successResponse(['topup' => $topup]);
-        } catch (ValidationException $e) {
-            Log::warning('Validation error during balance top-up', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
-            return $this->errorResponse($e->errors(), 422);
-        } catch (Exception $e) {
-            Log::error('Error topping up balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 400);
-        }
-    }
-
-    // Перевод баланса между пользователями   
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/balance/transfer",
-     *     tags={"Balances"},
-     *     summary="TransferBalance balance",
-     *     description="TransferBalance balance",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
-     *         )
-     *     ),
-     *     @OA\Response(response=500, description="Server error")
-     * )
-     */
-
-    public function transferBalance(Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'recipient_id' => 'required|exists:users,id|different:user_id',
-                'amount' => 'required|numeric|min:1',
-                'currency' => 'required|string|size:3',
-            ]);
-
-            $userId = Auth::id();
-            $recipientId = $validated['recipient_id'];
-            $currency = strtoupper($validated['currency']);
-            
-            $transfer = $this->balanceService->transferBalance(
-                $userId,
-                $recipientId,
-                $validated['amount'],
-                $currency
-            );
-            
-            // Очищаем кеш баланса отправителя и получателя
-            $this->forgetCache([
-                sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency),
-                sprintf(self::CACHE_KEY_USER_BALANCE, $recipientId, $currency)
-            ]);
-            
-            Log::info('Balance transferred successfully', [
-                'sender_id' => $userId,
-                'recipient_id' => $recipientId,
-                'amount' => $validated['amount'],
-                'currency' => $currency
-            ]);
-
-            return $this->successResponse(['transfer' => $transfer]);
-        } catch (ValidationException $e) {
-            Log::warning('Validation error during balance transfer', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
-            return $this->errorResponse($e->errors(), 422);
-        } catch (Exception $e) {
-            Log::error('Error transferring balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 400);
-        }
-    }
-
-    // Снятие средств с баланса пользователя   
+    
     /**
      * @OA\Post(
      *     path="/api/v1/user/balance/withdraw",
@@ -220,23 +37,35 @@ class BalanceController extends Controller
      *     summary="WithdrawBalance balance",
      *     description="WithdrawBalance balance",
      *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/Request")
-     *     ),
      *     @OA\Response(
      *         response=201,
      *         description="Resource created successfully",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
+     *             @OA\Property(property="data", type="object"),
+     *             @OA\Property(property="message", type="string", example="Resource created successfully")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validation failed"),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
-
-    public function withdrawBalance(Request $request): JsonResponse
+public function withdrawBalance(Request $request): JsonResponse
     {
         try {
             $validated = $request->validate([

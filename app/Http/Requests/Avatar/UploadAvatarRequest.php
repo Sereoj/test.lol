@@ -5,7 +5,22 @@ namespace App\Http\Requests\Avatar;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="UploadAvatarRequest",
+ *     type="object",
+ *     title="UploadAvatar Request",
+ *     required={"avatar"},
+ *     @OA\Property(
+ *         property="avatar",
+ *         type="string",
+ *         description="Avatar (max: 4092)",
+ *         example="Example avatar"
+ *     ),
+ * )
+ */
 class UploadAvatarRequest extends FormRequest
 {
     /**

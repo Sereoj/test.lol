@@ -4,6 +4,71 @@ namespace App\Http\Requests\Challenge;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * @OA\Schema(
+ *     schema="ChallengeRequest",
+ *     type="object",
+ *     title="Challenge Request",
+ *     required={"title"},
+ *     @OA\Property(
+ *         property="title",
+ *         type="string",
+ *         description="Title (max: 255)",
+ *         example="Example title"
+ *     ),
+ *     @OA\Property(
+ *         property="description",
+ *         type="string",
+ *         nullable=true,
+ *         description="Description",
+ *         example="Example description"
+ *     ),
+ *     @OA\Property(
+ *         property="cover_path",
+ *         type="string",
+ *         nullable=true,
+ *         description="Cover path (max: 255)",
+ *         example="Example cover path"
+ *     ),
+ *     @OA\Property(
+ *         property="prize_amount",
+ *         type="number",
+ *         nullable=true,
+ *         description="Prize amount (min: 0)",
+ *         example=1
+ *     ),
+ *     @OA\Property(
+ *         property="prize_currency",
+ *         type="string",
+ *         nullable=true,
+ *         description="Prize currency (max: 5)",
+ *         example="Example prize currency"
+ *     ),
+ *     @OA\Property(
+ *         property="start_date",
+ *         type="string",
+ *         format="date",
+ *         nullable=true,
+ *         description="Start date",
+ *         example="2024-01-01"
+ *     ),
+ *     @OA\Property(
+ *         property="end_date",
+ *         type="string",
+ *         format="date",
+ *         nullable=true,
+ *         description="End date",
+ *         example="2024-01-01"
+ *     ),
+ *     @OA\Property(
+ *         property="status",
+ *         type="string",
+ *         nullable=true,
+ *         description="Status",
+ *         example="Example status"
+ *     ),
+ * )
+ */
 class ChallengeRequest extends FormRequest
 {
     /**

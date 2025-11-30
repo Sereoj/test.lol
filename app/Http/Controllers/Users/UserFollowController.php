@@ -25,7 +25,7 @@ class UserFollowController extends Controller
         $this->followService = $followService;
     }
 
-                /**
+                            /**
      * @OA\Get(
      *     path="/api/v1/user/{user}/following",
      *     tags={"Users"},
@@ -44,10 +44,17 @@ class UserFollowController extends Controller
      *         description="Successful operation",
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", ref="#/components/schemas/UserFollow")
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
-     *     @OA\Response(response=500, description="Server error")
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Internal server error")
+     *         )
+     *     )
      * )
      */
 public function followers()

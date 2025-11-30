@@ -17,17 +17,16 @@ class GenerateRequestSchemas extends Command
 
     public function handle()
     {
-        $this->info('Generating OpenAPI schemas for Request classes...');
-
         $path = base_path($this->option('path'));
 
         if (!File::isDirectory($path)) {
             $this->error("Directory not found: {$path}");
-            return 1;
+            return Command::FAILURE;
         }
 
         $requestFiles = File::allFiles($path);
         $processed = 0;
+        $skipped = 0;
 
         foreach ($requestFiles as $file) {
             if ($file->getExtension() !== 'php') {
@@ -43,13 +42,19 @@ class GenerateRequestSchemas extends Command
             if ($this->generateSchemaForRequest($className, $file->getPathname())) {
                 $processed++;
                 $this->line("  ✓ " . class_basename($className));
+            } else {
+                $skipped++;
             }
         }
 
-        $this->newLine();
-        $this->info("✓ Generated schemas for {$processed} Request classes");
+        if ($processed > 0) {
+            $this->info("✓ Generated schemas for {$processed} Request classes");
+        }
+        if ($skipped > 0 && $this->option('verbose')) {
+            $this->comment("  Skipped {$skipped} classes (already exist or no rules)");
+        }
 
-        return 0;
+        return Command::SUCCESS;
     }
 
     /**
@@ -106,6 +111,12 @@ class GenerateRequestSchemas extends Command
             // Читаем файл
             $content = File::get($filePath);
 
+            // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что файл имеет объявление класса
+            if (!preg_match('/class\s+' . preg_quote(class_basename($className)) . '/s', $content)) {
+                $this->warn("  ⚠ Skipping " . class_basename($className) . ": class declaration not found!");
+                return false;
+            }
+
             // Добавляем use statement
             if (!Str::contains($content, 'use OpenApi\Attributes as OA;')) {
                 $content = $this->addUseStatement($content);
@@ -121,6 +132,12 @@ class GenerateRequestSchemas extends Command
                 } else {
                     // Добавляем новый docblock
                     $content = preg_replace($pattern, $schema . "\n$1", $content);
+                }
+
+                // КРИТИЧЕСКАЯ ПРОВЕРКА: убеждаемся, что мы не удалили объявление класса
+                if (!preg_match('/class\s+' . preg_quote(class_basename($className)) . '/s', $content)) {
+                    $this->error("  ✗ ERROR: Class declaration would be deleted! Skipping " . class_basename($className));
+                    return false;
                 }
 
                 File::put($filePath, $content);
