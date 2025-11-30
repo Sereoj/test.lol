@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с задачами пользователей
 class UserTaskController extends Controller
@@ -25,77 +26,36 @@ class UserTaskController extends Controller
         $this->userTaskService = $userTaskService;
     }
 
-    /**
-     * Получить все задачи пользователя.
+                        /**
+     * @OA\Post(
+     *     path="/api/v1/user/tasks/{task}/progress",
+     *     tags={"Users"},
+     *     summary="UpdateTaskProgress user task",
+     *     description="UpdateTaskProgress user task",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="task",
+     *         in="path",
+     *         required=true,
+     *         description="Task",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/UserTask")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function index(Request $request)
-    {
-        $user = Auth::user();
-        $cacheKey = self::CACHE_KEY_USER_TASKS . $user->id . '_' . md5($request->fullUrl());
-
-        $tasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user, $request) {
-            $filters = [
-                'period' => $request->input('period'),
-                'type' => $request->input('type'),
-                'experience_reward' => $request->input('experience_reward'),
-                'virtual_balance_reward' => $request->input('virtual_balance_reward'),
-            ];
-
-            return $this->userTaskService->getUserTasks($user, $filters);
-        });
-
-        return $this->successResponse($tasks);
-    }
-
-    /**
-     * Получить выполненные задачи пользователя.
-     */
-    public function completedTasks()
-    {
-        $user = Auth::user();
-        $cacheKey = self::CACHE_KEY_COMPLETED_TASKS . $user->id;
-
-        $completedTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
-            return $this->userTaskService->getCompletedTasks($user);
-        });
-
-        return $this->successResponse($completedTasks);
-    }
-
-    /**
-     * Получить задачи в процессе выполнения.
-     */
-    public function inProgressTasks()
-    {
-        $user = Auth::user();
-        $cacheKey = self::CACHE_KEY_IN_PROGRESS_TASKS . $user->id;
-
-        $inProgressTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
-            return $this->userTaskService->getInProgressTasks($user);
-        });
-
-        return $this->successResponse($inProgressTasks);
-    }
-
-    /**
-     * Получить не начатые задачи.
-     */
-    public function notStartedTasks()
-    {
-        $user = Auth::user();
-        $cacheKey = self::CACHE_KEY_NOT_STARTED_TASKS . $user->id;
-
-        $notStartedTasks = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
-            return $this->userTaskService->getNotStartedTasks($user);
-        });
-
-        return $this->successResponse($notStartedTasks);
-    }
-
-    /**
-     * Обновить прогресс задачи.
-     */
-    public function updateTaskProgress(Request $request, $taskId)
+public function updateTaskProgress(Request $request, $taskId)
     {
         $user = Auth::user();
 

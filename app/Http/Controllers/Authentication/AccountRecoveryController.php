@@ -14,67 +14,29 @@ class AccountRecoveryController extends Controller
 {
     protected AccountRecoveryService $accountRecoveryService;
 
-    /**
-     * Конструктор контроллера восстановления аккаунта
-     * 
-     * @param AccountRecoveryService $accountRecoveryService
+            /**
+     * @OA\Post(
+     *     path="/api/v1/account/recovery/recover",
+     *     tags={"AccountRecoveries"},
+     *     summary="RecoverAccount account recovery",
+     *     description="RecoverAccount account recovery",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/RecoverAccountRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/AccountRecovery")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function __construct(AccountRecoveryService $accountRecoveryService)
-    {
-        $this->accountRecoveryService = $accountRecoveryService;
-    }
-
-    /**
-     * Проверка статуса аккаунта (активен/удален)
-     * 
-     * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function checkStatus(Request $request)
-    {
-        try {
-            $request->validate([
-                'email' => 'required|email'
-            ]);
-
-            $email = $request->input('email');
-            $result = $this->accountRecoveryService->checkAccountStatus($email);
-            
-            return $this->successResponse($result);
-        } catch (Exception $e) {
-            Log::error('Ошибка проверки статуса аккаунта: ' . $e->getMessage());
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Запрос на восстановление удаленного аккаунта
-     * 
-     * @param RequestRecoveryRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function requestRecovery(RequestRecoveryRequest $request)
-    {
-        try {
-            $email = $request->input('email');
-            $result = $this->accountRecoveryService->sendRecoveryRequest($email);
-            
-            Log::info('Запрос на восстановление аккаунта отправлен', ['email' => $email]);
-            
-            return $this->successResponse($result);
-        } catch (Exception $e) {
-            Log::error('Ошибка запроса восстановления аккаунта: ' . $e->getMessage());
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-    
-    /**
-     * Восстановление удаленного аккаунта по токену
-     * 
-     * @param RecoverAccountRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function recoverAccount(RecoverAccountRequest $request)
+public function recoverAccount(RecoverAccountRequest $request)
     {
         try {
             $token = $request->input('token');

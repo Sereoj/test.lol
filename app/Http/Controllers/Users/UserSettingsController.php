@@ -11,10 +11,30 @@ use App\Models\Users\UserSetting;
 // Контроллер для работы с настройками пользователя
 class UserSettingsController extends Controller
 {
-    /**
-     * Обновление настроек пользователя
+        /**
+     * @OA\Patch(
+     *     path="/api/v1/user/settings",
+     *     tags={"Users"},
+     *     summary="Update user settings",
+     *     description="Update user settings",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/UserSettings")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function update(Request $request)
+public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'is_private' => 'sometimes|boolean',

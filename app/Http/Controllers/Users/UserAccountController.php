@@ -24,90 +24,31 @@ class UserAccountController extends Controller
         $this->userAccountService = $userAccountService;
     }
 
-    /**
-     * Получить информацию об аккаунте пользователя
+                    /**
+     * @OA\Post(
+     *     path="/api/v1/user/account/restore",
+     *     tags={"Users"},
+     *     summary="Restore user account",
+     *     description="Restore user account",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/UserAccount")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function index()
-    {
-        try {
-            $userId = Auth::id();
-            $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
-
-            $userAccount = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
-                return new UserAccountResource($this->userAccountService->getUserById($userId));
-            });
-
-            Log::info('User account retrieved successfully', ['user_id' => $userId]);
-
-            return $this->successResponse($userAccount);
-        } catch (Exception $e) {
-            Log::error('Error retrieving user account: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Обновление аккаунта пользователя
-     */
-    public function update(UpdateUserAccountRequest $request)
-    {
-        try {
-            $userId = Auth::id();
-            $validatedData = $request->validated();
-
-            $userAccount = $this->userAccountService->updateUserAccount($userId, $validatedData);
-
-            // Обновляем кэш
-            $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
-            $this->forgetCache($cacheKey);
-
-            Log::info('User account updated successfully', ['user_id' => $userId]);
-
-            return $this->successResponse([
-                'message' => 'Данные аккаунта успешно обновлены',
-                'user' => new UserAccountResource($userAccount)
-            ]);
-        } catch (Exception $e) {
-            Log::error('Error updating user account: ' . $e->getMessage(), [
-                'user_id' => Auth::id(),
-                'data' => $request->validated()
-            ]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Удаление аккаунта пользователя
-     */
-    public function destroy(DeleteUserAccountRequest $request)
-    {
-        try {
-            $userId = Auth::id();
-            $validatedData = $request->validated();
-
-            $this->userAccountService->deleteUserAccount($userId, $validatedData);
-
-            // Очищаем кэш
-            $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
-            $this->forgetCache($cacheKey);
-
-            Log::info('User account deleted successfully', ['user_id' => $userId]);
-
-            return $this->successResponse([
-                'success' => true,
-                'message' => 'Аккаунт успешно удален'
-            ]);
-        } catch (Exception $e) {
-            Log::error('Error deleting user account: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Восстановление удаленного аккаунта пользователя
-     * (используется только для авторизованных пользователей)
-     */
-    public function restore()
+public function restore()
     {
         try {
             $userId = Auth::id();

@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Services\Authentication\EmailVerificationService;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use OpenApi\Attributes as OA;
 
 class EmailVerificationController extends Controller
 {
@@ -18,7 +19,30 @@ class EmailVerificationController extends Controller
         $this->emailVerificationService = $emailVerificationService;
     }
 
-    // Отправка кода подтверждения на email
+    // Отправка кода подтверждения на email   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/send-verification-code",
+     *     tags={"EmailVerifications"},
+     *     summary="SendVerificationCode email verification",
+     *     description="SendVerificationCode email verification",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/SendVerificationCodeRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/EmailVerification")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function sendVerificationCode(SendVerificationCodeRequest $request)
     {
         try {
@@ -38,7 +62,30 @@ class EmailVerificationController extends Controller
         }
     }
 
-    // Проверка подтверждения email
+    // Проверка подтверждения email   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/verify-email",
+     *     tags={"EmailVerifications"},
+     *     summary="VerifyEmail email verification",
+     *     description="VerifyEmail email verification",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/VerifyEmailRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/EmailVerification")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function verifyEmail(VerifyEmailRequest $request)
     {
         try {

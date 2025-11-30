@@ -13,6 +13,7 @@ use App\Services\Posts\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use OpenApi\Attributes as OA;
 
 /**
  * @group Посты
@@ -29,7 +30,42 @@ class PostController extends Controller
         $this->postService = $postService;
     }
 
-    // Получение списка всех постов
+    // Получение списка всех постов   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts",
+     *     tags={"Posts"},
+     *     summary="Get all posts",
+     *     description="Get all posts",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Post")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function index(Request $request)
     {
         try {
@@ -53,7 +89,30 @@ class PostController extends Controller
         }
     }
 
-    // Создание нового поста
+    // Создание нового поста   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts",
+     *     tags={"Posts"},
+     *     summary="Create new post",
+     *     description="Create new post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StorePostRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function store(StorePostRequest $request)
     {
         try {
@@ -66,14 +125,72 @@ class PostController extends Controller
         }
     }
 
-    // Получение конкретного поста
+    // Получение конкретного поста   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts/{id}",
+     *     tags={"Posts"},
+     *     summary="Get post by ID",
+     *     description="Get post by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function show($id)
     {
         $post = $this->postService->getPost($id);
         return $this->successResponse(new PostResource($post));
     }
 
-    // Обновление поста
+    // Обновление поста   
+    /**
+     * @OA\Put(
+     *     path="/api/v1/posts/{id}",
+     *     tags={"Posts"},
+     *     summary="Update post",
+     *     description="Update post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdatePostRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function update(UpdatePostRequest $request, int $id)
     {
         $post = $this->postService->updatePost($id, $request->validated());
@@ -84,7 +201,38 @@ class PostController extends Controller
         );
     }
 
-    // Удаление поста
+    // Удаление поста   
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/posts/{id}",
+     *     tags={"Posts"},
+     *     summary="Delete post",
+     *     description="Delete post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resource deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function destroy(int $id)
     {
         $this->postService->deletePost($id);
@@ -96,7 +244,37 @@ class PostController extends Controller
         ]);
     }
 
-    // Добавление лайка или дизлайка к посту
+    // Добавление лайка или дизлайка к посту   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{id}/like",
+     *     tags={"Posts"},
+     *     summary="ToggleLike post",
+     *     description="ToggleLike post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function toggleLike(Request $request, $postId)
     {
         try {
@@ -114,7 +292,39 @@ class PostController extends Controller
         }
     }
 
-    // Репост поста
+    // Репост поста   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{id}/repost",
+     *     tags={"Posts"},
+     *     summary="Repost post",
+     *     description="Repost post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function repost(int $id)
     {
         $post = $this->postService->repostPost($id);
@@ -127,7 +337,33 @@ class PostController extends Controller
         ]);
     }
 
-    // Скачивание медиа-файлов
+    // Скачивание медиа-файлов   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts/{id}/download",
+     *     tags={"Posts"},
+     *     summary="Download post",
+     *     description="Download post",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Post")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function download(Request $request, int $id)
     {
         $fileResponse = $this->postService->download($id, $request->input('media'));

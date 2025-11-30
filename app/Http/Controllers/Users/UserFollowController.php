@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с подписками на пользователей
 class UserFollowController extends Controller
@@ -24,116 +25,32 @@ class UserFollowController extends Controller
         $this->followService = $followService;
     }
 
-    /**
-     * Подписка на пользователя.
+                /**
+     * @OA\Get(
+     *     path="/api/v1/user/{user}/following",
+     *     tags={"Users"},
+     *     summary="Followers user follow",
+     *     description="Followers user follow",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="user",
+     *         in="path",
+     *         required=true,
+     *         description="User",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/UserFollow")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function follow(Request $request, $userId)
-    {
-        try {
-            $followerId = Auth::id();
-
-            // Проверка, не подписан ли пользователь уже
-            $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING, $followerId, $userId);
-            $isFollowing = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($followerId, $userId) {
-                return $this->followService->isFollowing($followerId, $userId);
-            });
-
-            if ($isFollowing) {
-                Log::info('User already following', ['follower_id' => $followerId, 'user_id' => $userId]);
-                return $this->successResponse([
-                    'status' => 'already_subscribed',
-                    'message' => 'You are already following this user'
-                ]);
-            }
-
-            $result = $this->followService->followUser($followerId, $userId);
-
-            if ($result) {
-                // Обновляем кеш
-                $this->forgetCache([
-                    sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId),
-                    sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $followerId)
-                ]);
-
-                // Устанавливаем кеш подписки
-                $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
-                    return true;
-                }, true);
-
-                Log::info('User followed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
-
-                return $this->successResponse([
-                    'status' => 'subscribed',
-                    'message' => 'User followed successfully'
-                ]);
-            }
-
-            Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
-            return $this->errorResponse('User not found', 404);
-        } catch (Exception $e) {
-            Log::error('Error following user: ' . $e->getMessage(), [
-                'follower_id' => Auth::id(),
-                'user_id' => $userId
-            ]);
-            return $this->errorResponse('An error occurred while following user: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Отписка от пользователя.
-     */
-    public function unfollow(Request $request, $userId)
-    {
-        try {
-            $followerId = Auth::id();
-
-            // Проверка, не отписан ли пользователь уже
-            $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING, $followerId, $userId);
-            $isFollowing = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($followerId, $userId) {
-                return $this->followService->isFollowing($followerId, $userId);
-            });
-
-            if (!$isFollowing) {
-                Log::info('User not following', ['follower_id' => $followerId, 'user_id' => $userId]);
-                return $this->successResponse([
-                    'status' => 'not_following',
-                    'message' => 'You are not following this user'
-                ]);
-            }
-
-            $result = $this->followService->unfollowUser($followerId, $userId);
-
-            if ($result) {
-                // Очищаем кеш
-                $this->forgetCache([
-                    $cacheKey,
-                    sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId),
-                    sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $followerId)
-                ]);
-
-                Log::info('User unfollowed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
-
-                return $this->successResponse([
-                    'status' => 'unsubscribed',
-                    'message' => 'User unfollowed successfully'
-                ]);
-            }
-
-            Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
-            return $this->errorResponse('User not found', 404);
-        } catch (Exception $e) {
-            Log::error('Error unfollowing user: ' . $e->getMessage(), [
-                'follower_id' => Auth::id(),
-                'user_id' => $userId
-            ]);
-            return $this->errorResponse('An error occurred while unfollowing user: ' . $e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Получить список подписчиков пользователя.
-     */
-    public function followers()
+public function followers()
     {
         try {
             $userId = Auth::id();

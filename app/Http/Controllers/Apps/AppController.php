@@ -8,6 +8,7 @@ use App\Http\Resources\ShortAppResource;
 use App\Services\Apps\AppService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с приложениями
 class AppController extends Controller
@@ -23,7 +24,42 @@ class AppController extends Controller
         $this->appService = $appService;
     }
 
-    // Получение списка всех приложений
+    // Получение списка всех приложений   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/apps",
+     *     tags={"Apps"},
+     *     summary="Get all apps",
+     *     description="Get all apps",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/App")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function index()
     {
         try {
@@ -40,7 +76,30 @@ class AppController extends Controller
         }
     }
 
-    // Создание нового приложения
+    // Создание нового приложения   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/apps",
+     *     tags={"Apps"},
+     *     summary="Create new app",
+     *     description="Create new app",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/AppRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/App")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function store(AppRequest $request)
     {
         try {
@@ -57,7 +116,34 @@ class AppController extends Controller
         }
     }
 
-    // Получение информации о конкретном приложении
+    // Получение информации о конкретном приложении   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/apps/{id}",
+     *     tags={"Apps"},
+     *     summary="Get app by ID",
+     *     description="Get app by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/App")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function show($id)
     {
         try {
@@ -76,7 +162,38 @@ class AppController extends Controller
         }
     }
 
-    // Обновление информации о приложении
+    // Обновление информации о приложении   
+    /**
+     * @OA\Put(
+     *     path="/api/v1/apps/{id}",
+     *     tags={"Apps"},
+     *     summary="Update app",
+     *     description="Update app",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/AppRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/App")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function update(AppRequest $request, $id)
     {
         try {
@@ -96,7 +213,38 @@ class AppController extends Controller
         }
     }
 
-    // Удаление приложения
+    // Удаление приложения   
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/apps/{id}",
+     *     tags={"Apps"},
+     *     summary="Delete app",
+     *     description="Delete app",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resource deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function destroy($id)
     {
         try {

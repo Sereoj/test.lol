@@ -9,6 +9,7 @@ use App\Services\Content\AchievementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с достижениями пользователей
 class UserAchievementController extends Controller
@@ -23,10 +24,41 @@ class UserAchievementController extends Controller
         $this->achievementService = $achievementService;
     }
 
-    /**
-     * Получить все достижения пользователя.
+        /**
+     * @OA\Get(
+     *     path="/api/v1/achievements",
+     *     tags={"Users"},
+     *     summary="Get all user achievements",
+     *     description="Get all user achievements",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/UserAchievement")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function index()
+public function index()
     {
         try {
             $user = Auth::user();

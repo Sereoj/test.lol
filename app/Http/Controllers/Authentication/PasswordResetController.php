@@ -8,6 +8,7 @@ use App\Http\Requests\Auth\SendPasswordResetRequest;
 use App\Services\Authentication\PasswordResetService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для сброса пароля
 class PasswordResetController extends Controller
@@ -19,32 +20,29 @@ class PasswordResetController extends Controller
         $this->passwordResetService = $passwordResetService;
     }
 
-    /**
-     * Send a password reset email to the user.
-     *
-     * @return \Illuminate\Http\JsonResponse
+            /**
+     * @OA\Post(
+     *     path="/api/v1/auth/reset-password",
+     *     tags={"PasswordResets"},
+     *     summary="ResetPassword password reset",
+     *     description="ResetPassword password reset",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/ResetPasswordRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/PasswordReset")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function sendPasswordResetEmail(SendPasswordResetRequest $request)
-    {
-        try {
-            $email = $request->input('email');
-            $this->passwordResetService->sendPasswordResetEmail($email);
-            
-            Log::info('Password reset email sent successfully', ['email' => $email]);
-
-            return $this->successResponse(['message' => 'Password reset email sent successfully']);
-        } catch (Exception $e) {
-            Log::error('Error sending password reset email: ' . $e->getMessage(), ['email' => $request->input('email')]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Reset the user's password.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function resetPassword(ResetPasswordRequest $request)
+public function resetPassword(ResetPasswordRequest $request)
     {
         try {
             $email = $request->input('email');

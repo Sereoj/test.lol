@@ -21,7 +21,39 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     type="object",
+ *     title="User",
+ *     description="User model",
+ *     @OA\Property(property="id", type="integer", example=1, description="User ID"),
+ *     @OA\Property(property="username", type="string", example="john_doe", description="Username"),
+ *     @OA\Property(property="slug", type="string", example="john-doe", description="URL slug"),
+ *     @OA\Property(property="description", type="string", example="Web developer", description="User description"),
+ *     @OA\Property(property="cover", type="string", example="covers/user1.jpg", description="Cover image path"),
+ *     @OA\Property(property="website", type="string", example="https://example.com", description="User website"),
+ *     @OA\Property(property="email", type="string", format="email", example="john@example.com", description="Email address"),
+ *     @OA\Property(property="email_verified_at", type="string", format="date-time", nullable=true, description="Email verification timestamp"),
+ *     @OA\Property(property="verification", type="boolean", example=true, description="Verification status"),
+ *     @OA\Property(property="experience", type="integer", example=100, description="User experience points"),
+ *     @OA\Property(property="gender", type="string", example="male", description="User gender"),
+ *     @OA\Property(property="language", type="string", example="en", description="Preferred language"),
+ *     @OA\Property(property="age", type="integer", example=25, description="User age"),
+ *     @OA\Property(property="provider", type="string", nullable=true, example="google", description="OAuth provider"),
+ *     @OA\Property(property="provider_id", type="string", nullable=true, description="OAuth provider ID"),
+ *     @OA\Property(property="role_id", type="integer", nullable=true, description="Role ID"),
+ *     @OA\Property(property="status_id", type="integer", nullable=true, description="Status ID"),
+ *     @OA\Property(property="employment_status_id", type="integer", nullable=true, description="Employment status ID"),
+ *     @OA\Property(property="location_id", type="integer", nullable=true, description="Location ID"),
+ *     @OA\Property(property="url", type="string", example="https://cdn.example.com/covers/user1.jpg", description="Full URL to cover image"),
+ *     @OA\Property(property="created_at", type="string", format="date-time", description="Creation timestamp"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time", description="Last update timestamp"),
+ *     @OA\Property(property="deleted_at", type="string", format="date-time", nullable=true, description="Deletion timestamp")
+ * )
+ */
 class User extends Authenticatable
 {
     use HasApiTokens;

@@ -13,6 +13,7 @@ use App\Services\Posts\SearchSuggestionService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для поиска постов
 class PostSearchController extends Controller
@@ -30,10 +31,41 @@ class PostSearchController extends Controller
         $this->searchSuggestionService = $searchSuggestionService;
     }
 
-    /**
-     * Поиск постов по запросу.
+        /**
+     * @OA\Get(
+     *     path="/api/v1/search",
+     *     tags={"Posts"},
+     *     summary="Search post search",
+     *     description="Search post search",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/PostSearch")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function search(SearchRequest $request)
+public function search(SearchRequest $request)
     {
         try {
             $query = $request->input('query');
@@ -54,7 +86,26 @@ class PostSearchController extends Controller
         }
     }
 
-    // Поиск постов по тегам
+    // Поиск постов по тегам   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/search/tags",
+     *     tags={"Posts"},
+     *     summary="SearchTags post search",
+     *     description="SearchTags post search",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function searchTags(SearchRequest $request)
     {
         try {
@@ -76,7 +127,26 @@ class PostSearchController extends Controller
         }
     }
 
-    // Поиск постов по запросу
+    // Поиск постов по запросу   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/search/posts",
+     *     tags={"Posts"},
+     *     summary="SearchPosts post search",
+     *     description="SearchPosts post search",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function searchPosts(SearchRequest $request)
     {
         try {
@@ -98,7 +168,26 @@ class PostSearchController extends Controller
         }
     }
 
-    // Поиск постов по пользователям
+    // Поиск постов по пользователям   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/search/users",
+     *     tags={"Posts"},
+     *     summary="SearchUsers post search",
+     *     description="SearchUsers post search",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function searchUsers(SearchRequest $request)
     {
         try {
@@ -120,7 +209,26 @@ class PostSearchController extends Controller
         }
     }
 
-    // Предложение популярных запросов
+    // Предложение популярных запросов   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/search/suggest",
+     *     tags={"Posts"},
+     *     summary="Suggest post search",
+     *     description="Suggest post search",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/PostSearch")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function suggest(Request $request)
     {
         try {

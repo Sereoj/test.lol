@@ -7,6 +7,7 @@ use App\Http\Requests\Statuses\StoreStatusRequest;
 use App\Http\Requests\Status\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Services\StatusService;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы со статусами
 class StatusController extends Controller
@@ -22,7 +23,42 @@ class StatusController extends Controller
         $this->statusService = $statusService;
     }
 
-    // Получение списка всех статусов
+    // Получение списка всех статусов   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/statuses",
+     *     tags={"Statuses"},
+     *     summary="Get all statuses",
+     *     description="Get all statuses",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Status")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function index()
     {
         $statuses = $this->getFromCacheOrStore(self::CACHE_KEY_STATUSES_LIST, self::CACHE_MINUTES, function () {
@@ -32,7 +68,30 @@ class StatusController extends Controller
         return $this->successResponse(StatusResource::collection($statuses));
     }
 
-    // Создание нового статуса
+    // Создание нового статуса   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/statuses",
+     *     tags={"Statuses"},
+     *     summary="Create new status",
+     *     description="Create new status",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StoreStatusRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Status")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function store(StoreStatusRequest $request)
     {
         $status = $this->statusService->create($request->validated());
@@ -40,7 +99,34 @@ class StatusController extends Controller
         return $this->successResponse(new StatusResource($status), 201);
     }
 
-    // Получение конкретного статуса
+    // Получение конкретного статуса   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/statuses/{id}",
+     *     tags={"Statuses"},
+     *     summary="Get status by ID",
+     *     description="Get status by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Status")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function show($id)
     {
         $cacheKey = self::CACHE_KEY_STATUS . $id;
@@ -56,7 +142,38 @@ class StatusController extends Controller
         return $this->errorResponse('Status not found', 404);
     }
 
-    // Обновление статуса
+    // Обновление статуса   
+    /**
+     * @OA\Put(
+     *     path="/api/v1/statuses/{id}",
+     *     tags={"Statuses"},
+     *     summary="Update status",
+     *     description="Update status",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateStatusRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Status")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function update(UpdateStatusRequest $request, $id)
     {
         $status = $this->statusService->update($id, $request->validated());
@@ -73,7 +190,38 @@ class StatusController extends Controller
         return $this->errorResponse('Status not found', 404);
     }
 
-    // Удаление статуса
+    // Удаление статуса   
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/statuses/{id}",
+     *     tags={"Statuses"},
+     *     summary="Delete status",
+     *     description="Delete status",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resource deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function destroy($id)
     {
         $this->statusService->delete($id);

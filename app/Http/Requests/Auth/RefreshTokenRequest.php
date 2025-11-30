@@ -5,7 +5,22 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use OpenApi\Attributes as OA;
 
+/**
+ * @OA\Schema(
+ *     schema="RefreshTokenRequest",
+ *     type="object",
+ *     title="RefreshToken Request",
+ *     required={"refresh_token"},
+ *     @OA\Property(
+ *         property="refresh_token",
+ *         type="string",
+ *         description="Refresh token",
+ *         example="Example refresh token"
+ *     ),
+ * )
+ */
 class RefreshTokenRequest extends FormRequest
 {
     /**

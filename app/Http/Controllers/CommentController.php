@@ -10,6 +10,7 @@ use App\Http\Resources\Comments\CommentCollection;
 use App\Http\Resources\Comments\CommentResource;
 use App\Services\Comments\CommentService;
 use Illuminate\Http\Request;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с комментариями
 class CommentController extends Controller
@@ -21,7 +22,49 @@ class CommentController extends Controller
         $this->commentService = $commentService;
     }
 
-    // Получение списка комментариев для поста
+    // Получение списка комментариев для поста   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts/{post_id}/comments",
+     *     tags={"Comments"},
+     *     summary="Get all comments",
+     *     description="Get all comments",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Comment")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function index(Request $request)
     {
         $page = $request->input('page', 1);
@@ -42,7 +85,41 @@ class CommentController extends Controller
         ]);
     }
 
-    // Получение конкретного комментария
+    // Получение конкретного комментария   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}",
+     *     tags={"Comments"},
+     *     summary="Get comment by ID",
+     *     description="Get comment by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function show($post_id, $comment_id)
     {
         try {
@@ -53,7 +130,45 @@ class CommentController extends Controller
         }
     }
 
-    // Обновление комментария
+    // Обновление комментария   
+    /**
+     * @OA\Patch(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}",
+     *     tags={"Comments"},
+     *     summary="Update comment",
+     *     description="Update comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/CommentRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function update(CommentRequest $request, $post_id, $comment_id)
     {
         try {
@@ -62,7 +177,36 @@ class CommentController extends Controller
         } catch (\Exception $e) {
             return $this->errorResponse('Failed to update comment', 500);
         }
-    }
+    }    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{post_id}/comments",
+     *     tags={"Comments"},
+     *     summary="Create new comment",
+     *     description="Create new comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/CommentRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
 
     public function store(CommentRequest $request, $slug)
     {
@@ -75,7 +219,45 @@ class CommentController extends Controller
         }
     }
 
-    // Удаление комментария
+    // Удаление комментария   
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}",
+     *     tags={"Comments"},
+     *     summary="Delete comment",
+     *     description="Delete comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resource deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function destroy($post_id, int $comment_id)
     {
         try {
@@ -88,7 +270,44 @@ class CommentController extends Controller
         }
     }
 
-    // Добавление реакции на комментарий
+    // Добавление реакции на комментарий   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}/react",
+     *     tags={"Comments"},
+     *     summary="React comment",
+     *     description="React comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/CommentReactRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function react(CommentReactRequest $request,$post_id, $comment_id)
     {
         try {
@@ -103,7 +322,44 @@ class CommentController extends Controller
         );*/
     }
 
-    // Отправка жалобы на комментарий
+    // Отправка жалобы на комментарий   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}/report",
+     *     tags={"Comments"},
+     *     summary="Report comment",
+     *     description="Report comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/ReportCommentRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function report(ReportCommentRequest $request,$post_id, $comment_id)
     {
         return $this->successResponse(
@@ -111,7 +367,46 @@ class CommentController extends Controller
         );
     }
 
-    // Репост комментария
+    // Репост комментария   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/posts/{post_id}/comments/{comment_id}/repost",
+     *     tags={"Comments"},
+     *     summary="Repost comment",
+     *     description="Repost comment",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="post_id",
+     *         in="path",
+     *         required=true,
+     *         description="Post id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="comment_id",
+     *         in="path",
+     *         required=true,
+     *         description="Comment id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Comment")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function repost($post_id, $comment_id)
     {
         return $this->successResponse(

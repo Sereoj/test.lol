@@ -6,6 +6,7 @@ use App\Http\Requests\Tag\StoreTagRequest;
 use App\Http\Requests\Tag\UpdateTagRequest;
 use App\Http\Resources\Tag\TagShortResource;
 use App\Services\Content\TagService;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с тегами
 class TagController extends Controller
@@ -21,66 +22,37 @@ class TagController extends Controller
         $this->tagService = $tagService;
     }
 
-    /**
-     * Получение списка всех тегов
-     *
-     * @return \Illuminate\Http\JsonResponse
+                /**
+     * @OA\Put(
+     *     path="/api/v1/tags/{tag}",
+     *     tags={"Tags"},
+     *     summary="Update tag",
+     *     description="Update tag",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="tag",
+     *         in="path",
+     *         required=true,
+     *         description="Tag",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UpdateTagRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Tag")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function index()
-    {
-        $tags = $this->getFromCacheOrStore(self::CACHE_KEY_TAGS, self::CACHE_MINUTES, function () {
-            return TagShortResource::collection($this->tagService->getAllTags());
-        });
-
-        return $this->successResponse($tags);
-    }
-
-    public function popularTags()
-    {
-        $popular = $this->getFromCacheOrStore('popular_tags', self::CACHE_MINUTES, function () {
-           return TagShortResource::collection($this->tagService->getPopularTags());
-        });
-
-        return $this->successResponse($popular);
-    }
-
-    /**
-     * Создание нового тега
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function store(StoreTagRequest $request)
-    {
-        $tag = $this->tagService->createTag($request->all());
-
-        $this->forgetCache(self::CACHE_KEY_TAGS);
-
-        return $this->successResponse(new TagShortResource($tag), [], 201);
-    }
-
-    /**
-     * Получение конкретного тега
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function show($id)
-    {
-        $cacheKey = self::CACHE_KEY_TAG . $id;
-
-        $tag = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
-            return $this->tagService->getTagById($id);
-        });
-
-        return $this->successResponse($tag);
-    }
-
-    /**
-     * Обновление конкретного тега
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function update(UpdateTagRequest $request, $id)
+public function update(UpdateTagRequest $request, $id)
     {
         $tag = $this->tagService->updateTag($id, $request->all());
 

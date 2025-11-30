@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use OpenApi\Attributes as OA;
 
 class StepController extends Controller
 {
@@ -25,7 +26,30 @@ class StepController extends Controller
         $this->avatarController = $avatarController;
     }
 
-    // Шаг 1: Добавление источников
+    // Шаг 1: Добавление источников   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/step/one",
+     *     tags={"Steps"},
+     *     summary="One step",
+     *     description="One step",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StepOneRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Step")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function one(StepOneRequest $request)
     {
         try {
@@ -47,7 +71,30 @@ class StepController extends Controller
         }
     }
 
-    // Шаг 2: Добавление навыков
+    // Шаг 2: Добавление навыков   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/step/two",
+     *     tags={"Steps"},
+     *     summary="Two step",
+     *     description="Two step",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/StepTwoRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Step")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function two(StepTwoRequest $request)
     {
         try {
@@ -69,7 +116,30 @@ class StepController extends Controller
         }
     }
 
-    // Шаг 3: Загрузка аватара
+    // Шаг 3: Загрузка аватара   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/step/three",
+     *     tags={"Steps"},
+     *     summary="Three step",
+     *     description="Three step",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/UploadAvatarRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Step")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function three(UploadAvatarRequest $request)
     {
         try {

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с балансом пользователя
 class BalanceController extends Controller
@@ -27,7 +28,26 @@ class BalanceController extends Controller
         $this->paymentGatewayService = $paymentGatewayService;
     }
 
-    // Получение баланса пользователя
+    // Получение баланса пользователя   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/user/balance",
+     *     tags={"Balances"},
+     *     summary="GetBalance balance",
+     *     description="GetBalance balance",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function getBalance(Request $request): JsonResponse
     {
         try {
@@ -62,7 +82,30 @@ class BalanceController extends Controller
         }
     }
 
-    // Пополнение баланса пользователя
+    // Пополнение баланса пользователя   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/balance/topup",
+     *     tags={"Balances"},
+     *     summary="TopUpBalance balance",
+     *     description="TopUpBalance balance",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function topUpBalance(Request $request): JsonResponse
     {
         try {
@@ -102,7 +145,30 @@ class BalanceController extends Controller
         }
     }
 
-    // Перевод баланса между пользователями
+    // Перевод баланса между пользователями   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/balance/transfer",
+     *     tags={"Balances"},
+     *     summary="TransferBalance balance",
+     *     description="TransferBalance balance",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function transferBalance(Request $request): JsonResponse
     {
         try {
@@ -146,7 +212,30 @@ class BalanceController extends Controller
         }
     }
 
-    // Снятие средств с баланса пользователя
+    // Снятие средств с баланса пользователя   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/balance/withdraw",
+     *     tags={"Balances"},
+     *     summary="WithdrawBalance balance",
+     *     description="WithdrawBalance balance",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Balance")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function withdrawBalance(Request $request): JsonResponse
     {
         try {

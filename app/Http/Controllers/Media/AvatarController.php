@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с аватарами пользователей
 class AvatarController extends Controller
@@ -24,85 +25,38 @@ class AvatarController extends Controller
         $this->avatarService = $avatarService;
     }
 
-    /**
-     * Загрузка аватара для авторизованного пользователя.
-     *
-     * @param UploadAvatarRequest $request
-     * @return JsonResponse
+        /**
+     * @OA\Post(
+     *     path="/api/v1/avatar/{avatarId}/set-active",
+     *     tags={"Avatars"},
+     *     summary="SetActive avatar",
+     *     description="SetActive avatar",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="avatarId",
+     *         in="path",
+     *         required=true,
+     *         description="AvatarId",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="data", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Avatar")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function uploadAvatar(UploadAvatarRequest $request)
-    {
-        try {
-            $user = Auth::user();
-
-            $file = $request->file('avatar');
-            $avatar = new AvatarResource($this->avatarService->uploadAvatar($user->id, $file));
-
-            $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
-
-            Log::info('Avatar uploaded successfully', ['user_id' => $user->id, 'avatar_id' => $avatar->id]);
-
-            return $this->successResponse(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar]);
-        } catch (Exception $e) {
-            Log::error('Error uploading avatar: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Получение всех аватаров для авторизованного пользователя.
-     *
-     * @return JsonResponse
-     */
-    public function getUserAvatars()
-    {
-        try {
-            $user = Auth::user();
-            $cacheKey = self::CACHE_KEY_USER_AVATARS . $user->id;
-
-            $avatars = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
-                return AvatarResource::collection($this->avatarService->getUserAvatars($user->id));
-            });
-
-            Log::info('User avatars retrieved successfully', ['user_id' => $user->id]);
-
-            return $this->successResponse($avatars);
-        } catch (Exception $e) {
-            Log::error('Error retrieving user avatars: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Удаление аватара для авторизованного пользователя.
-     *
-     * @param  int  $avatarId
-     * @return JsonResponse
-     */
-    public function deleteAvatar($avatarId)
-    {
-        try {
-            $user = Auth::user();
-            $this->avatarService->deleteAvatar($user->id, $avatarId);
-
-            $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
-
-            Log::info('Avatar deleted successfully', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
-
-            return $this->successResponse(['message' => 'Avatar deleted successfully']);
-        } catch (Exception $e) {
-            Log::error('Error deleting avatar: ' . $e->getMessage(), ['user_id' => Auth::id(), 'avatar_id' => $avatarId]);
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    /**
-     * Установка активного аватара для авторизованного пользователя.
-     *
-     * @param  int  $avatarId
-     * @return JsonResponse
-     */
-    public function setActive($avatarId)
+public function setActive($avatarId)
     {
         try {
             $user = Auth::user();

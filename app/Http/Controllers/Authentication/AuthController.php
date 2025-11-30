@@ -13,81 +13,27 @@ use App\Services\Users\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
-/**
- * @group Аутентификация
- *
- * API для регистрации, авторизации и управления токенами
- */
-class AuthController extends Controller
-{
-    protected UserService $userService;
-    protected AuthService $authService;
-
-    private const CACHE_MINUTES = 10;
-    private const CACHE_KEY_USER = 'user_short_';
-
-    public function __construct(UserService $userService, AuthService $authService)
-    {
-        $this->userService = $userService;
-        $this->authService = $authService;
-    }
-
-    // Регистрация нового пользователя
-    public function register(RegisterRequest $request)
-    {
-        try {
-            $userData = $request->validated();
-            $user = $this->userService->create($userData);
-
-            Log::info('User registered successfully', ['user_id' => $user->id]);
-
-            $result = $this->authService->register($user, $request->input('remember_me', false));
-
-            return $this->successResponse($result, [], 201);
-        } catch (Exception $e) {
-            Log::error('User registration failed: ' . $e->getMessage(), ['data' => [
-                'email' => $userData['email'],
-            ]]);
-            $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Авторизация пользователя
-    public function login(LoginRequest $request)
-    {
-        try {
-            $credentials = $request->validated();
-
-            $result = $this->authService->login($credentials);
-
-            Log::info('User logged in successfully', ['email' => $credentials['email']]);
-
-            return $this->successResponse($result);
-        } catch (Exception $e) {
-            Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
-            return $this->errorResponse($e->getMessage(), $e->getCode());
-        }
-    }
-
-    // Обновление токена
-    public function refreshToken(RefreshTokenRequest $request)
-    {
-        try {
-            $refreshToken = $request->input('refresh_token');
-
-            $result = $this->authService->refreshToken($refreshToken);
-            Log::info('Token refreshed successfully');
-
-            return $this->successResponse($result);
-        } catch (Exception $e) {
-            Log::error('An error occurred during token refresh: ' . $e->getMessage());
-            return $this->errorResponse($e->getMessage(), 500);
-        }
-    }
-
-    // Получение информации о пользователе
-    public function user(Request $request)
+        /**
+     * @OA\Get(
+     *     path="/api/v1/user/me",
+     *     tags={"Authentication"},
+     *     summary="User auth",
+     *     description="User auth",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Auth")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+public function user(Request $request)
     {
         try {
             $userId = $request->user()->id;
@@ -106,7 +52,30 @@ class AuthController extends Controller
         }
     }
 
-    // Выход из системы
+    // Выход из системы   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/auth/logout",
+     *     tags={"Authentication"},
+     *     summary="Logout auth",
+     *     description="Logout auth",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Auth")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function logout(Request $request)
     {
         try {

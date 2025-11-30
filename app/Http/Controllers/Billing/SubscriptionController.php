@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с подписками
 class SubscriptionController extends Controller
@@ -24,7 +25,26 @@ class SubscriptionController extends Controller
         $this->subscriptionService = $subscriptionService;
     }
 
-    // Получение активной подписки пользователя
+    // Получение активной подписки пользователя   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/user/subscriptions/active",
+     *     tags={"Subscriptions"},
+     *     summary="GetActiveSubscription subscription",
+     *     description="GetActiveSubscription subscription",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function getActiveSubscription(Request $request): JsonResponse
     {
         try {
@@ -46,7 +66,30 @@ class SubscriptionController extends Controller
         }
     }
 
-    // Создание новой подписки
+    // Создание новой подписки   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/subscriptions",
+     *     tags={"Subscriptions"},
+     *     summary="CreateSubscription subscription",
+     *     description="CreateSubscription subscription",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function createSubscription(Request $request): JsonResponse
     {
         try {
@@ -84,7 +127,37 @@ class SubscriptionController extends Controller
         }
     }
 
-    // Продление подписки
+    // Продление подписки   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/subscriptions/{subscriptionId}/extend",
+     *     tags={"Subscriptions"},
+     *     summary="ExtendSubscription subscription",
+     *     description="ExtendSubscription subscription",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="subscriptionId",
+     *         in="path",
+     *         required=true,
+     *         description="SubscriptionId",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Subscription")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function extendSubscription(Request $request, int $subscriptionId): JsonResponse
     {
         try {

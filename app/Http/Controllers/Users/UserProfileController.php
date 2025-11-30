@@ -11,6 +11,7 @@ use App\Services\Users\UserService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с профилем пользователя
 class UserProfileController extends Controller
@@ -26,10 +27,33 @@ class UserProfileController extends Controller
         $this->userService = $userService;
     }
 
-    /**
-     * Получить профиль пользователя.
+        /**
+     * @OA\Get(
+     *     path="/api/v1/profile/{slug}",
+     *     tags={"Users"},
+     *     summary="Get user profile by ID",
+     *     description="Get user profile by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="slug",
+     *         in="path",
+     *         required=true,
+     *         description="Slug",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/UserProfile")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
      */
-    public function show($slug)
+public function show($slug)
     {
         try {
             $user = $this->userService->getBySlug($slug);

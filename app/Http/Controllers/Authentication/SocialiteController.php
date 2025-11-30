@@ -8,12 +8,38 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с социальными сетями
 class SocialiteController extends Controller
 {
     private const CACHE_MINUTES = 60;
-    private const CACHE_KEY_SOCIAL_USER = 'social_user_';
+    private const CACHE_KEY_SOCIAL_USER = 'social_user_';    /**
+     * @OA\Get(
+     *     path="/api/v1/auth/redirect/{provider}",
+     *     tags={"Socialites"},
+     *     summary="RedirectToProvider socialite",
+     *     description="RedirectToProvider socialite",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="provider",
+     *         in="path",
+     *         required=true,
+     *         description="Provider",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Socialite")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
 
     public function redirectToProvider($provider)
     {
@@ -29,7 +55,33 @@ class SocialiteController extends Controller
         }
     }
 
-    // Обработка обратного вызова от социальной сети
+    // Обработка обратного вызова от социальной сети   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/auth/callback/{provider}",
+     *     tags={"Socialites"},
+     *     summary="HandleProviderCallback socialite",
+     *     description="HandleProviderCallback socialite",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="provider",
+     *         in="path",
+     *         required=true,
+     *         description="Provider",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Socialite")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function handleProviderCallback($provider)
     {
         try {

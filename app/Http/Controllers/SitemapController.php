@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\SitemapService;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 class SitemapController extends Controller
 {
@@ -11,7 +12,41 @@ class SitemapController extends Controller
     public function __construct(SitemapService $sitemapService)
     {
         $this->sitemapService = $sitemapService;
-    }
+    }    /**
+     * @OA\Get(
+     *     path="/api/v1/sitemap",
+     *     tags={"Sitemaps"},
+     *     summary="Get all sitemaps",
+     *     description="Get all sitemaps",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="per_page",
+     *         in="query",
+     *         description="Items per page",
+     *         @OA\Schema(type="integer", example=15)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Sitemap")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
 
     public function index()
     {

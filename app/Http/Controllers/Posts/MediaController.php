@@ -8,6 +8,7 @@ use App\Http\Resources\Media\MediaResource;
 use App\Services\Media\MediaService;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use OpenApi\Attributes as OA;
 
 // Контроллер для работы с медиа-файлами
 class MediaController extends Controller
@@ -22,7 +23,44 @@ class MediaController extends Controller
         $this->mediaService = $mediaService;
     }
 
-    // Загрузка медиа-файлов
+    /**
+     * Загрузка медиа-файлов
+     *
+     * @OA\Post(
+     *     path="/api/v1/media",
+     *     tags={"Media"},
+     *     summary="Upload media files",
+     *     description="Upload one or more media files",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(
+     *                     property="file",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary"),
+     *                     description="Media files to upload"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Media uploaded successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(ref="#/components/schemas/Media")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
     public function store(MediaRequest $request)
     {
         try {
@@ -46,7 +84,34 @@ class MediaController extends Controller
         }
     }
 
-    // Получение медиа-файлов
+    // Получение медиа-файлов   
+    /**
+     * @OA\Get(
+     *     path="/api/v1/media/{id}",
+     *     tags={"Media"},
+     *     summary="Get media by ID",
+     *     description="Get media by ID",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Media")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function show($id)
     {
         try {
@@ -65,7 +130,38 @@ class MediaController extends Controller
         }
     }
 
-    // Обновление медиа-файлов
+    // Обновление медиа-файлов   
+    /**
+     * @OA\Put(
+     *     path="/api/v1/media/{id}",
+     *     tags={"Media"},
+     *     summary="Update media",
+     *     description="Update media",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/MediaRequest")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful operation",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Media")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function update(MediaRequest $request, $id)
     {
         try {
@@ -83,7 +179,38 @@ class MediaController extends Controller
         }
     }
 
-    // Удаление медиа-файлов
+    // Удаление медиа-файлов   
+    /**
+     * @OA\Delete(
+     *     path="/api/v1/media/{id}",
+     *     tags={"Media"},
+     *     summary="Delete media",
+     *     description="Delete media",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="Id",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Resource deleted successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="message", type="string", example="Resource deleted successfully")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Resource not found"),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function destroy($id)
     {
         try {

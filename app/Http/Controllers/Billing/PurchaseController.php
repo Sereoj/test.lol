@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use OpenApi\Attributes as OA;
 
 // Контроллер для покупок и оплаты
 class PurchaseController extends Controller
@@ -25,7 +26,37 @@ class PurchaseController extends Controller
         $this->purchaseService = $purchaseService;
     }
 
-    // Метод для покупки поста
+    // Метод для покупки поста   
+    /**
+     * @OA\Post(
+     *     path="/api/v1/user/posts/{postId}/purchase",
+     *     tags={"Purchases"},
+     *     summary="PurchasePost purchase",
+     *     description="PurchasePost purchase",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="postId",
+     *         in="path",
+     *         required=true,
+     *         description="PostId",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(ref="#/components/schemas/Request")
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Resource created successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="data", ref="#/components/schemas/Purchase")
+     *         )
+     *     ),
+     *     @OA\Response(response=500, description="Server error")
+     * )
+     */
+
     public function purchasePost(Request $request, int $postId): JsonResponse
     {
         try {
