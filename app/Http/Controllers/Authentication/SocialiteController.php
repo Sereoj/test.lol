@@ -8,45 +8,29 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Laravel\Socialite\Facades\Socialite;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с социальными сетями
 class SocialiteController extends Controller
 {
     private const CACHE_MINUTES = 60;
-    private const CACHE_KEY_SOCIAL_USER = 'social_user_';                    /**
-     * @OA\Get(
-     *     path="/api/v1/auth/callback/{provider}",
-     *     tags={"Socialites"},
-     *     summary="HandleProviderCallback socialite",
-     *     description="HandleProviderCallback socialite",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="provider",
-     *         in="path",
-     *         required=true,
-     *         description="Provider",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function handleProviderCallback($provider)
+    private const CACHE_KEY_SOCIAL_USER = 'social_user_';
+
+    public function redirectToProvider($provider)
+    {
+        try {
+            Log::info('Redirecting to social provider', ['provider' => $provider, 'user_id' => Auth::id()]);
+            return Socialite::driver($provider)->redirect();
+        } catch (Exception $e) {
+            Log::error('Error redirecting to social provider: ' . $e->getMessage(), [
+                'provider' => $provider,
+                'user_id' => Auth::id()
+            ]);
+            return $this->errorResponse('Unable to connect to ' . $provider . '. Please try again.', 500);
+        }
+    }
+
+    // Обработка обратного вызова от социальной сети
+    public function handleProviderCallback($provider)
     {
         try {
             $socialUser = Socialite::driver($provider)->user();

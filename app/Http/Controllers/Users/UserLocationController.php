@@ -8,7 +8,6 @@ use App\Http\Resources\LocationResource;
 use App\Services\Locations\LocationService;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с местоположениями пользователей
 class UserLocationController extends Controller
@@ -24,47 +23,97 @@ class UserLocationController extends Controller
         $this->locationService = $locationService;
     }
 
-                                /**
-     * @OA\Delete(
-     *     path="/api/v1/locations/{id}",
-     *     tags={"Users"},
-     *     summary="Delete user location",
-     *     description="Delete user location",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получить все местоположения.
      */
-public function destroy(int $id)
+    public function index()
+    {
+        try {
+            $locations = $this->getFromCacheOrStore(self::CACHE_KEY_LOCATIONS_ALL, self::CACHE_MINUTES, function () {
+                return LocationResource::collection($this->locationService->getAllLocations());
+            });
+
+            Log::info('Locations retrieved successfully');
+
+            return $this->successResponse($locations);
+        } catch (Exception $e) {
+            Log::error('Error retrieving locations: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Получить указанное местоположение.
+     */
+    public function show(int $id)
+    {
+        try {
+            $cacheKey = self::CACHE_KEY_LOCATION . $id;
+            $location = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->locationService->getLocationById($id);
+            });
+
+            Log::info('Location retrieved successfully', ['id' => $id]);
+
+            return $this->successResponse($location);
+        } catch (Exception $e) {
+            Log::error('Error retrieving location: ' . $e->getMessage(), ['id' => $id]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Сохранить новое местоположение.
+     */
+    public function store(StoreLocationRequest $request)
+    {
+        try {
+            $location = $this->locationService->storeLocation($request->all());
+            Log::info('Location stored successfully', [
+                'location_id' => $location->id,
+                'data' => $request->all(),
+                'timestamp' => now(),
+            ]);
+
+            $this->forgetCache(self::CACHE_KEY_LOCATIONS_ALL);
+
+            return $this->successResponse(['message' => 'Location stored successfully', 'location' => $location], 201);
+        } catch (Exception $e) {
+            Log::error('Error storing location: ' . $e->getMessage(), ['data' => $request->all()]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Обновить указанное местоположение.
+     */
+    public function update(StoreLocationRequest $request, int $id)
+    {
+        try {
+            $request->validate([
+                'name' => 'required|string|max:255',
+                'address' => 'required|string',
+            ]);
+
+            $location = $this->locationService->updateLocation($id, $request->all());
+            Log::info('Location updated successfully', ['id' => $id, 'data' => $request->all()]);
+
+            $this->forgetCache([
+                self::CACHE_KEY_LOCATION . $id,
+                self::CACHE_KEY_LOCATIONS_ALL
+            ]);
+
+            return $this->successResponse(['message' => 'Location updated successfully', 'location' => $location]);
+        } catch (Exception $e) {
+            Log::error('Error updating location: ' . $e->getMessage(), ['id' => $id, 'data' => $request->all()]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Удалить указанное местоположение.
+     */
+    public function destroy(int $id)
     {
         try {
             $this->locationService->deleteLocation($id);

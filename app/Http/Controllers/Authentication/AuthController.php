@@ -13,60 +13,101 @@ use App\Services\Users\UserService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
+/**
+ * @group Аутентификация
+ *
+ * API для регистрации, авторизации и управления токенами
+ */
 class AuthController extends Controller
 {
-    protected AuthService $authService;
     protected UserService $userService;
+    protected AuthService $authService;
 
-    private const CACHE_MINUTES = 60;
-    private const CACHE_KEY_USER = 'user_';
+    private const CACHE_MINUTES = 10;
+    private const CACHE_KEY_USER = 'user_short_';
 
-    public function __construct(AuthService $authService, UserService $userService)
+    public function __construct(UserService $userService, AuthService $authService)
     {
-        $this->authService = $authService;
         $this->userService = $userService;
+        $this->authService = $authService;
+    }
+
+    // Регистрация нового пользователя
+    public function register(RegisterRequest $request)
+    {
+        try {
+            $userData = $request->validated();
+            $user = $this->userService->create($userData);
+
+            Log::info('User registered successfully', ['user_id' => $user->id]);
+
+            $result = $this->authService->register($user, $request->input('remember_me', false));
+
+            return $this->successResponse($result, [], 201);
+        } catch (Exception $e) {
+            Log::error('User registration failed: ' . $e->getMessage(), ['data' => [
+                'email' => $userData['email'],
+            ]]);
+            $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Авторизация пользователя
+    public function login(LoginRequest $request)
+    {
+        try {
+            $credentials = $request->validated();
+
+            $result = $this->authService->login($credentials);
+
+            Log::info('User logged in successfully', ['email' => $credentials['email']]);
+
+            return $this->successResponse($result);
+        } catch (Exception $e) {
+            Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
+            return $this->errorResponse($e->getMessage(), $e->getCode());
+        }
+    }
+
+    // Обновление токена
+    public function refreshToken(RefreshTokenRequest $request)
+    {
+        try {
+            $refreshToken = $request->input('refresh_token');
+
+            $result = $this->authService->refreshToken($refreshToken);
+            Log::info('Token refreshed successfully');
+
+            return $this->successResponse($result);
+        } catch (Exception $e) {
+            Log::error('An error occurred during token refresh: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Получение информации о пользователе
+    public function user(Request $request)
+    {
+        try {
+            $userId = $request->user()->id;
+            $cacheKey = self::CACHE_KEY_USER . $userId;
+
+            $user = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
+                return new UserShortWithBalanceResource($this->userService->getById($userId));
+            });
+
+            Log::info('User info retrieved successfully', ['user_id' => $userId]);
+
+            return $this->successResponse($user);
+        } catch (Exception $e) {
+            Log::error('Error retrieving user info: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
     }
 
     // Выход из системы
-    
-    /**
-     * @OA\Post(
-     *     path="/api/v1/auth/logout",
-     *     tags={"Authentication"},
-     *     summary="Logout auth",
-     *     description="Logout auth",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object"),
-     *             @OA\Property(property="message", type="string", example="Resource created successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function logout(Request $request)
+    public function logout(Request $request)
     {
         try {
             $userId = $request->user()->id;

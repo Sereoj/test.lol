@@ -8,7 +8,6 @@ use App\Http\Resources\ShortAppResource;
 use App\Services\Apps\AppService;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с приложениями
 class AppController extends Controller
@@ -24,49 +23,81 @@ class AppController extends Controller
         $this->appService = $appService;
     }
 
-    // Получение списка всех приложений   
-    
-    /**
-     * @OA\Delete(
-     *     path="/api/v1/apps/{id}",
-     *     tags={"Apps"},
-     *     summary="Delete app",
-     *     description="Delete app",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function destroy($id)
+    // Получение списка всех приложений
+    public function index()
+    {
+        try {
+            $apps = $this->getFromCacheOrStore(self::CACHE_KEY_APPS_LIST, self::CACHE_MINUTES, function () {
+                return ShortAppResource::collection($this->appService->getAllApps());
+            });
+
+            Log::info('Apps list retrieved successfully');
+
+            return $this->successResponse($apps);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch apps: ' . $e->getMessage());
+            return $this->errorResponse('Failed to fetch apps', 500);
+        }
+    }
+
+    // Создание нового приложения
+    public function store(AppRequest $request)
+    {
+        try {
+            $app = $this->appService->createApp($request->validated());
+
+            $this->forgetCache(self::CACHE_KEY_APPS_LIST);
+
+            Log::info('App created successfully', ['app_id' => $app->id]);
+
+            return $this->successResponse($app,[], 201);
+        } catch (Exception $e) {
+            Log::error('Failed to create app: ' . $e->getMessage(), ['data' => $request->validated()]);
+            return $this->errorResponse('Failed to create app', 500);
+        }
+    }
+
+    // Получение информации о конкретном приложении
+    public function show($id)
+    {
+        try {
+            $cacheKey = self::CACHE_KEY_APP . $id;
+
+            $app = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->appService->getAppById($id);
+            });
+
+            Log::info('App retrieved successfully', ['app_id' => $id]);
+
+            return $this->successResponse($app);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch app: ' . $e->getMessage(), ['app_id' => $id]);
+            return $this->errorResponse('Failed to fetch app', 500);
+        }
+    }
+
+    // Обновление информации о приложении
+    public function update(AppRequest $request, $id)
+    {
+        try {
+            $this->appService->updateApp($id, $request->validated());
+
+            $this->forgetCache([
+                self::CACHE_KEY_APP . $id,
+                self::CACHE_KEY_APPS_LIST
+            ]);
+
+            Log::info('App updated successfully', ['app_id' => $id]);
+
+            return $this->successResponse(['message' => 'App updated successfully']);
+        } catch (Exception $e) {
+            Log::error('Failed to update app: ' . $e->getMessage(), ['app_id' => $id, 'data' => $request->validated()]);
+            return $this->errorResponse('Failed to update app', 500);
+        }
+    }
+
+    // Удаление приложения
+    public function destroy($id)
     {
         try {
             $this->appService->deleteApp($id);

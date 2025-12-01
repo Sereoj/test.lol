@@ -7,7 +7,6 @@ use App\Http\Requests\StoreLevelRequest;
 use App\Services\Users\UserLevelService;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с уровнями пользователей
 class UserLevelController extends Controller
@@ -22,46 +21,29 @@ class UserLevelController extends Controller
         $this->levelService = $levelService;
     }
 
-                            /**
-     * @OA\Post(
-     *     path="/api/v1/levels",
-     *     tags={"Users"},
-     *     summary="Create new user level",
-     *     description="Create new user level",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/StoreLevelRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object"),
-     *             @OA\Property(property="message", type="string", example="Resource created successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получить все уровни.
      */
-public function store(StoreLevelRequest $request)
+    public function index()
+    {
+        try {
+            $levels = $this->getFromCacheOrStore(self::CACHE_KEY_LEVELS_LIST, self::CACHE_MINUTES, function () {
+                return $this->levelService->getAll();
+            });
+
+            Log::info('Levels retrieved successfully');
+
+            return $this->successResponse($levels);
+        } catch (Exception $e) {
+            Log::error('Error retrieving levels: ' . $e->getMessage());
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Создать новый уровень.
+     */
+    public function store(StoreLevelRequest $request)
     {
         try {
             $level = $this->levelService->createLevel($request->name, $request->experience_required);

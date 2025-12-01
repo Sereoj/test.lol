@@ -11,7 +11,6 @@ use App\Services\Users\UserEmploymentStatusService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с трудовым статусом пользователя
 class UserEmploymentStatusController extends Controller
@@ -23,32 +22,57 @@ class UserEmploymentStatusController extends Controller
     public function __construct(UserEmploymentStatusService $userEmploymentStatusService)
     {
         $this->userEmploymentStatusService = $userEmploymentStatusService;
-    }                        /**
-     * @OA\Delete(
-     *     path="/api/v1/user/employment-status/remove",
-     *     tags={"Users"},
-     *     summary="RemoveEmploymentStatus user employment status",
-     *     description="RemoveEmploymentStatus user employment status",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    }
+
+    public function index()
+    {
+
+       $employmentStatuses = new UserEmploymentStatusResource($this->userEmploymentStatusService->getAllEmploymentStatuses());
+
+        return $this->successResponse($employmentStatuses);
+    }
+
+    /**
+     * Назначить трудовой статус пользователю.
      */
-public function removeEmploymentStatus(RemoveEmploymentStatusRequest $request)
+    public function assignEmploymentStatus(AssignEmploymentStatusRequest $request)
+    {
+        try {
+            $user = Auth::user();
+            $employmentStatusId = $request->input('employment_status_id');
+
+            $user = $this->userEmploymentStatusService->assignEmploymentStatusToUser($user->id, $employmentStatusId);
+
+            if ($user) {
+                $this->forgetCache(self::CACHE_KEY_USER_EMPLOYMENT_STATUS . $user->id);
+
+                Log::info('Employment status assigned successfully', [
+                    'user_id' => $user->id,
+                    'employment_status_id' => $employmentStatusId
+                ]);
+
+                return $this->successResponse('Employment status assigned successfully');
+            }
+
+            Log::warning('User or EmploymentStatus not found', [
+                'user_id' => Auth::id(),
+                'employment_status_id' => $employmentStatusId
+            ]);
+
+            return $this->errorResponse('User or EmploymentStatus not found', 404);
+        } catch (Exception $e) {
+            Log::error('Error assigning employment status: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'employment_status_id' => $request->input('employment_status_id')
+            ]);
+            return $this->errorResponse('An error occurred while assigning employment status: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Удалить трудовой статус пользователя.
+     */
+    public function removeEmploymentStatus(RemoveEmploymentStatusRequest $request)
     {
         try {
             $user = Auth::user();

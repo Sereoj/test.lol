@@ -7,7 +7,6 @@ use App\Http\Requests\UserPersonalizationRequest;
 use App\Services\Users\UserPersonalizationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с персонализацией пользователя
 class UserPersonalizationController extends Controller
@@ -18,56 +17,8 @@ class UserPersonalizationController extends Controller
         $this->userPersonalizationService = $userPersonalizationService;
     }
 
-    // Обновление персонализации пользователя   
-    
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/personalization",
-     *     tags={"Users"},
-     *     summary="Update user personalization",
-     *     description="Update user personalization",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/UserPersonalizationRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object"),
-     *             @OA\Property(property="message", type="string", example="Resource created successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function update(UserPersonalizationRequest $request)
+    // Обновление персонализации пользователя
+    public function update(UserPersonalizationRequest $request)
     {
         try {
             $user = Auth::user();

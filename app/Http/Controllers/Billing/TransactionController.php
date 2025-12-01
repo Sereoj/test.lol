@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с транзакциями
 class TransactionController extends Controller
@@ -24,34 +23,8 @@ class TransactionController extends Controller
         $this->transactionService = $transactionService;
     }
 
-    // Получение транзакций пользователя   
-    
-    /**
-     * @OA\Get(
-     *     path="/api/v1/user/transactions",
-     *     tags={"Transactions"},
-     *     summary="GetTransactions transaction",
-     *     description="GetTransactions transaction",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function getTransactions(Request $request): JsonResponse
+    // Получение транзакций пользователя
+    public function getTransactions(Request $request): JsonResponse
     {
         try {
             $userId = Auth::id();

@@ -8,7 +8,6 @@ use App\Http\Resources\StatusResource;
 use App\Http\Resources\UserStatusResource;
 use App\Services\Users\UserStatusService;
 use Illuminate\Support\Facades\Auth;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы со статусами пользователей
 class UserStatusController extends Controller
@@ -18,32 +17,34 @@ class UserStatusController extends Controller
     public function __construct(UserStatusService $userStatusService)
     {
         $this->userStatusService = $userStatusService;
-    }                        /**
-     * @OA\Delete(
-     *     path="/api/v1/user/statuses/detach",
-     *     tags={"Users"},
-     *     summary="Detach user status",
-     *     description="Detach user status",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function detach()
+    }
+
+    public function index()
+    {
+        try {
+            $statuses = new UserStatusResource($this->userStatusService->getAll());
+            return $this->successResponse($statuses);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to retrieve statuses: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function assign(AssignStatusRequest $request)
+    {
+        try {
+            $user = Auth::user();
+            $status = $this->userStatusService->assignStatus($user, $request->input('status_id'));
+            return $this->successResponse(
+                [
+                    'message' => 'Status assigned successfully',
+                    'status' => new StatusResource($status)
+                ]);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Failed to assign status: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function detach()
     {
         try {
             $user = Auth::user();

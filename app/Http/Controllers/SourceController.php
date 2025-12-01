@@ -7,7 +7,6 @@ use App\Http\Requests\Source\UpdateSourceRequest;
 use App\Services\Content\SourceService;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с источниками
 class SourceController extends Controller
@@ -23,47 +22,104 @@ class SourceController extends Controller
         $this->sourceService = $sourceService;
     }
 
-                                    /**
-     * @OA\Delete(
-     *     path="/api/v1/sources/{id}",
-     *     tags={"Sources"},
-     *     summary="Delete source",
-     *     description="Delete source",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получение списка всех источников
+     *
+     * @return \Illuminate\Http\JsonResponse
      */
-public function destroy(int $id)
+    public function index()
+    {
+        try {
+            $sources = $this->getFromCacheOrStore(self::CACHE_KEY_SOURCES, self::CACHE_MINUTES, function () {
+                return $this->sourceService->getAll();
+            });
+
+            Log::info('Sources retrieved successfully');
+
+            return $this->successResponse($sources);
+        } catch (Exception $e) {
+            Log::error('Error retrieving sources: '.$e->getMessage());
+
+            return $this->errorResponse('Failed to retrieve sources. Please try again later.', 500);
+        }
+    }
+
+    /**
+     * Получение конкретного источника
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function show(int $id)
+    {
+        try {
+            $cacheKey = self::CACHE_KEY_SOURCE . $id;
+            $source = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->sourceService->getById($id);
+            });
+
+            Log::info('Source retrieved successfully', ['id' => $id]);
+
+            return $this->successResponse($source);
+        } catch (Exception $e) {
+            Log::error('Error retrieving source: '.$e->getMessage(), ['id' => $id]);
+
+            return $this->errorResponse('Source not found', 404);
+        }
+    }
+
+    /**
+     * Создание нового источника
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(CreateSourceRequest $request)
+    {
+        try {
+            $source = $this->sourceService->create($request->all());
+
+            $this->forgetCache(self::CACHE_KEY_SOURCES);
+
+            Log::info('Source created successfully', ['source' => $source]);
+
+            return $this->successResponse($source, [], 201);
+        } catch (Exception $e) {
+            Log::error('Error creating source: '.$e->getMessage(), ['data' => $request->all()]);
+
+            return $this->errorResponse('Failed to create source. Please try again later.', 500);
+        }
+    }
+
+    /**
+     * Обновление конкретного источника
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function update(UpdateSourceRequest $request, int $id)
+    {
+        try {
+            $source = $this->sourceService->update($id, $request->only('name', 'iconUrl'));
+
+            $this->forgetCache([
+                self::CACHE_KEY_SOURCE . $id,
+                self::CACHE_KEY_SOURCES
+            ]);
+
+            Log::info('Source updated successfully', ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
+
+            return $this->successResponse($source);
+        } catch (Exception $e) {
+            Log::error('Error updating source: '.$e->getMessage(), ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
+
+            return $this->errorResponse('Failed to update source. Please try again later.', 500);
+        }
+    }
+
+    /**
+     * Удаление конкретного источника
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(int $id)
     {
         try {
             $this->sourceService->delete($id);

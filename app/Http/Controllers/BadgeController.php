@@ -9,7 +9,6 @@ use App\Services\Content\BadgeService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с бейджами
 class BadgeController extends Controller
@@ -26,47 +25,73 @@ class BadgeController extends Controller
         $this->badgeService = $badgeService;
     }
 
-                                        /**
-     * @OA\Delete(
-     *     path="/api/v1/badges/{id}",
-     *     tags={"Badges"},
-     *     summary="Delete badge",
-     *     description="Delete badge",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получить список всех бейджей
      */
-public function destroy($id)
+    public function index()
+    {
+        $badges = $this->getFromCacheOrStore(self::CACHE_KEY_BADGES_LIST, self::CACHE_MINUTES_LIST, function () {
+            return BadgeResource::collection($this->badgeService->getAll());
+        });
+
+        return $this->successResponse($badges);
+    }
+
+    /**
+     * Получить бейдж по ID
+     */
+    public function show($id)
+    {
+        $cacheKey = self::CACHE_KEY_BADGE . $id;
+
+        $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SINGLE, function () use ($id) {
+            return new BadgeResource($this->badgeService->getById($id));
+        });
+
+        if ($badge) {
+            return $this->successResponse($badge);
+        }
+
+        return $this->errorResponse('Badge not found', 404);
+    }
+
+    /**
+     * Создать новый бейдж
+     */
+    public function store(StoreBadgeRequest $request)
+    {
+        $data = $request->validated();
+        $badge = $this->badgeService->create($data);
+
+        $this->forgetCache(self::CACHE_KEY_BADGES_LIST);
+
+        return $this->successResponse($badge, [], 201);
+    }
+
+    /**
+     * Обновить существующий бейдж
+     */
+    public function update(UpdateBadgeRequest $request, $id)
+    {
+        $data = $request->validated();
+        $badge = $this->badgeService->update($id, $data);
+
+        if ($badge) {
+            $this->forgetCache([
+                self::CACHE_KEY_BADGE . $id,
+                self::CACHE_KEY_BADGES_LIST
+            ]);
+
+            return $this->successResponse($badge);
+        }
+
+        return $this->errorResponse('Badge not found', 404);
+    }
+
+    /**
+     * Удалить бейдж
+     */
+    public function destroy($id)
     {
         $result = $this->badgeService->delete($id);
 

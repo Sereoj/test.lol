@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с статистикой постов
 class PostStatisticController extends Controller
@@ -27,32 +26,56 @@ class PostStatisticController extends Controller
         $this->postStatisticsService = $postStatisticsService;
     }
 
-                            /**
-     * @OA\Get(
-     *     path="/api/v1/posts/statistics/recent",
-     *     tags={"Posts"},
-     *     summary="Recent post statistic",
-     *     description="Recent post statistic",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получить статистику по конкретному посту
      */
-public function recent(Request $request)
+    public function getPostStatistics(int $post, getPostStatisticsRequest $request)
+    {
+        $userId = Auth::id();
+
+        $filters = [
+            'date_range' => [
+                'start_date' => Carbon::parse($request->input('date_range.start_date'))->toIso8601String(),
+                'end_date' => Carbon::parse($request->input('date_range.end_date'))->toIso8601String(),
+            ],
+        ];
+
+        $cacheKey = self::CACHE_KEY_POST_SUMMARY . $userId . '_' . $post . '_' . md5(json_encode($filters));
+
+        $statistics = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($post, $filters) {
+            return $this->postStatisticsService->getPostStatistics($post, $filters);
+        });
+
+        return $this->successResponse($statistics);
+    }
+
+    /**
+     * Получить сводную статистику для постов с фильтрами.
+     */
+    public function summary(PostStatSummaryRequest $request)
+    {
+        $userId = Auth::id();
+        $filters = [
+            'category_id' => $request->input('category_id'),
+            'date_range' => [
+                'start_date' => Carbon::parse($request->input('date_range.start_date'))->toIso8601String(),
+                'end_date' => Carbon::parse($request->input('date_range.end_date'))->toIso8601String(),
+            ],
+        ];
+
+        $cacheKey = self::CACHE_KEY_POST_STAT_SUMMARY . $userId . '_' . md5(json_encode($filters));
+
+        $statistics = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId, $filters) {
+            return $this->postStatisticsService->getSummaryStatistics($userId, $filters);
+        });
+
+        return $this->successResponse($statistics);
+    }
+
+    /**
+     * Получить последние статистики постов.
+     */
+    public function recent(Request $request)
     {
         $userId = Auth::id();
         $limit = $request->input('limit', 10);

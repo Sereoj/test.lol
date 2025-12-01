@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с источниками пользователей
 class UserSourceController extends Controller
@@ -25,32 +24,75 @@ class UserSourceController extends Controller
         $this->userSourceService = $userSourceService;
     }
 
-                    /**
-     * @OA\Get(
-     *     path="/api/v1/user/sources",
-     *     tags={"Users"},
-     *     summary="GetUserSources user source",
-     *     description="GetUserSources user source",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Добавить источник пользователю.
      */
-public function getUserSources()
+    public function addSource(AddSourceRequest $request)
+    {
+        try {
+            $user = Auth::user();
+
+            $this->userSourceService->addSourceToUser($user, $request->input('source_id'));
+            
+            $this->forgetCache(self::CACHE_KEY_USER_SOURCES . $user->id);
+            
+            Log::info('Source added successfully', [
+                'user_id' => $user->id, 
+                'source_id' => $request->input('source_id')
+            ]);
+
+            return $this->successResponse(['message' => 'Source added successfully']);
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Source not found', [
+                'user_id' => Auth::id(), 
+                'source_id' => $request->input('source_id')
+            ]);
+            return $this->errorResponse('Source not found', 404);
+        } catch (Exception $e) {
+            Log::error('An error occurred while adding source: ' . $e->getMessage(), [
+                'user_id' => Auth::id(), 
+                'source_id' => $request->input('source_id')
+            ]);
+            return $this->errorResponse('An error occurred while adding source: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Удалить источник у пользователя.
+     */
+    public function removeSource(RemoveSourceRequest $request)
+    {
+        try {
+            $user = Auth::user();
+            $this->userSourceService->removeSourceFromUser($user->id, $request->input('source_id'));
+            
+            $this->forgetCache(self::CACHE_KEY_USER_SOURCES . $user->id);
+            
+            Log::info('Source removed successfully', [
+                'user_id' => $user->id, 
+                'source_id' => $request->input('source_id')
+            ]);
+
+            return $this->successResponse(['message' => 'Source removed successfully']);
+        } catch (ModelNotFoundException $e) {
+            Log::warning('Source not found', [
+                'user_id' => Auth::id(), 
+                'source_id' => $request->input('source_id')
+            ]);
+            return $this->errorResponse('Source not found', 404);
+        } catch (Exception $e) {
+            Log::error('An error occurred while removing source: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'source_id' => $request->input('source_id')
+            ]);
+            return $this->errorResponse('An error occurred while removing source: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Получить источники пользователя.
+     */
+    public function getUserSources()
     {
         try {
             $user = Auth::user();

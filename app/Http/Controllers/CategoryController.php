@@ -6,7 +6,6 @@ use App\Http\Requests\Category\CategoryRequest;
 use App\Http\Resources\ShortCategoryResource;
 use App\Services\Content\CategoryService;
 use Illuminate\Support\Facades\Cache;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с категориями
 class CategoryController extends Controller
@@ -20,47 +19,60 @@ class CategoryController extends Controller
     public function __construct(CategoryService $categoryService)
     {
         $this->categoryService = $categoryService;
-    }                            /**
-     * @OA\Delete(
-     *     path="/api/v1/categories/{category}",
-     *     tags={"Categories"},
-     *     summary="Delete category",
-     *     description="Delete category",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="category",
-     *         in="path",
-     *         required=true,
-     *         description="Category",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function destroy($id)
+    }
+
+    public function index()
+    {
+        $categories = $this->getFromCacheOrStore(self::CACHE_KEY_CATEGORIES_LIST, self::CACHE_MINUTES, function () {
+            return ShortCategoryResource::collection($this->categoryService->getAll());
+        });
+
+        return $this->successResponse($categories);
+    }
+
+    public function store(CategoryRequest $request)
+    {
+        $data = $request->validated();
+        $category = $this->categoryService->create($data);
+
+        $this->forgetCache(self::CACHE_KEY_CATEGORIES_LIST);
+
+        return $this->successResponse($category, [], 201);
+    }
+
+    public function show($id)
+    {
+        $cacheKey = self::CACHE_KEY_CATEGORY . $id;
+
+        $category = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+            return $this->categoryService->getById($id)->id;
+        });
+
+        if ($category) {
+            return $this->successResponse($category);
+        }
+
+        return $this->errorResponse('Category not found', 404);
+    }
+
+    public function update(CategoryRequest $request, $id)
+    {
+        $data = $request->validated();
+        $category = $this->categoryService->update($id, $data);
+
+        if ($category) {
+            $this->forgetCache([
+                self::CACHE_KEY_CATEGORY . $id,
+                self::CACHE_KEY_CATEGORIES_LIST
+            ]);
+
+            return $this->successResponse($category);
+        }
+
+        return $this->errorResponse('Category not found', 404);
+    }
+
+    public function destroy($id)
     {
         $result = $this->categoryService->delete($id);
 

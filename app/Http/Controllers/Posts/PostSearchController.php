@@ -13,7 +13,6 @@ use App\Services\Posts\SearchSuggestionService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для поиска постов
 class PostSearchController extends Controller
@@ -31,32 +30,98 @@ class PostSearchController extends Controller
         $this->searchSuggestionService = $searchSuggestionService;
     }
 
-                                    /**
-     * @OA\Get(
-     *     path="/api/v1/search/suggest",
-     *     tags={"Posts"},
-     *     summary="Suggest post search",
-     *     description="Suggest post search",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Поиск постов по запросу.
      */
-public function suggest(Request $request)
+    public function search(SearchRequest $request)
+    {
+        try {
+            $query = $request->input('query');
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query);
+
+            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
+                $searchResults = $this->searchService->search($query);
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                return $searchResults;
+            });
+
+            Log::info("Results returned for query: {$query}");
+
+            return $this->successResponse($results);
+        } catch (Exception $e) {
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Поиск постов по тегам
+    public function searchTags(SearchRequest $request)
+    {
+        try {
+            $query = $request->input('query');
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_tags_'. md5($query);
+
+            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
+                $searchResults = ShortSearchTagResource::collection($this->searchService->searchInTags($query));
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                return $searchResults;
+            });
+
+            Log::info("Results returned for query: {$query}");
+
+            return $this->successResponse($results);
+        }catch (Exception $e) {
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Поиск постов по запросу
+    public function searchPosts(SearchRequest $request)
+    {
+        try {
+            $query = $request->input('query');
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
+
+            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
+                $searchResults = ThumbUserMediaResource::collection($this->searchService->searchInPosts($query));
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                return $searchResults;
+            });
+
+            Log::info("Results returned for query: {$query}");
+
+            return $this->successResponse($results);
+        }catch (Exception $e) {
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Поиск постов по пользователям
+    public function searchUsers(SearchRequest $request)
+    {
+        try {
+            $query = $request->input('query');
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_users_'. md5($query);
+
+            $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
+                $searchResults = $this->searchService->searchInUsers($query);
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                return $searchResults;
+            });
+
+            Log::info("Results returned for query: {$query}");
+                //return $this->successResponse($results);
+            return $this->successResponse(UserSearchResource::collection($results));
+        }catch (Exception $e) {
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    // Предложение популярных запросов
+    public function suggest(Request $request)
     {
         try {
             $query = $request->input('query');

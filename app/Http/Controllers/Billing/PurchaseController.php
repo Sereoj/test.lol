@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для покупок и оплаты
 class PurchaseController extends Controller
@@ -26,51 +25,8 @@ class PurchaseController extends Controller
         $this->purchaseService = $purchaseService;
     }
 
-    // Метод для покупки поста   
-    
-    /**
-     * @OA\Post(
-     *     path="/api/v1/user/posts/{postId}/purchase",
-     *     tags={"Purchases"},
-     *     summary="PurchasePost purchase",
-     *     description="PurchasePost purchase",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="postId",
-     *         in="path",
-     *         required=true,
-     *         description="PostId",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object"),
-     *             @OA\Property(property="message", type="string", example="Resource created successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function purchasePost(Request $request, int $postId): JsonResponse
+    // Метод для покупки поста
+    public function purchasePost(Request $request, int $postId): JsonResponse
     {
         try {
             $validated = $request->validate([

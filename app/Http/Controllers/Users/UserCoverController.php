@@ -23,40 +23,71 @@ class UserCoverController extends Controller
         $this->userCoverService = $userCoverService;
     }
 
-                    /**
-     * @OA\Get(
-     *     path="/api/v1/cover",
-     *     tags={"Users"},
-     *     summary="Get user cover by ID",
-     *     description="Get user cover by ID",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Загрузить новую обложку для пользователя
      */
-public function show()
+    public function upload(UpdateUserCoverRequest $request)
+    {
+        try {
+            $userId = Auth::id();
+            $coverFile = $request->file('cover');
+            
+            $user = $this->userCoverService->uploadCover($userId, $coverFile);
+            
+            // Обновляем кэш
+            $cacheKey = self::CACHE_KEY_USER_COVER . $userId;
+            $this->forgetCache($cacheKey);
+            
+            Log::info('User cover uploaded successfully', [
+                'user_id' => $userId,
+                'file_name' => $coverFile->getClientOriginalName(),
+                'file_size' => $coverFile->getSize()
+            ]);
+
+            return $this->successResponse([
+                'message' => 'Обложка успешно загружена',
+                'user' => new UserCoverResource($user)
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error uploading user cover: ' . $e->getMessage(), [
+                'user_id' => Auth::id()
+            ]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Удалить текущую обложку пользователя
+     */
+    public function remove()
+    {
+        try {
+            $userId = Auth::id();
+            
+            $user = $this->userCoverService->removeCover($userId);
+            
+            // Обновляем кэш
+            $cacheKey = self::CACHE_KEY_USER_COVER . $userId;
+            $this->forgetCache($cacheKey);
+            
+            Log::info('User cover removed successfully', ['user_id' => $userId]);
+
+            return $this->successResponse([
+                'message' => 'Обложка успешно удалена',
+                'user' => new UserCoverResource($user)
+            ]);
+        } catch (Exception $e) {
+            Log::error('Error removing user cover: ' . $e->getMessage(), [
+                'user_id' => Auth::id()
+            ]);
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Получить текущую обложку пользователя
+     */
+    public function show()
     {
         try {
             $userId = Auth::id();

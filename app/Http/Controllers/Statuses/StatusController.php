@@ -7,7 +7,6 @@ use App\Http\Requests\Statuses\StoreStatusRequest;
 use App\Http\Requests\Status\UpdateStatusRequest;
 use App\Http\Resources\StatusResource;
 use App\Services\StatusService;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы со статусами
 class StatusController extends Controller
@@ -23,48 +22,59 @@ class StatusController extends Controller
         $this->statusService = $statusService;
     }
 
-    // Получение списка всех статусов   
-    
-    /**
-     * @OA\Delete(
-     *     path="/api/v1/statuses/{id}",
-     *     tags={"Statuses"},
-     *     summary="Delete status",
-     *     description="Delete status",
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function destroy($id)
+    // Получение списка всех статусов
+    public function index()
+    {
+        $statuses = $this->getFromCacheOrStore(self::CACHE_KEY_STATUSES_LIST, self::CACHE_MINUTES, function () {
+            return $this->statusService->getAll();
+        });
+
+        return $this->successResponse(StatusResource::collection($statuses));
+    }
+
+    // Создание нового статуса
+    public function store(StoreStatusRequest $request)
+    {
+        $status = $this->statusService->create($request->validated());
+        $this->forgetCache(self::CACHE_KEY_STATUSES_LIST); // Очистка кэша после создания
+        return $this->successResponse(new StatusResource($status), 201);
+    }
+
+    // Получение конкретного статуса
+    public function show($id)
+    {
+        $cacheKey = self::CACHE_KEY_STATUS . $id;
+
+        $status = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+            return $this->statusService->getById($id);
+        });
+
+        if ($status) {
+            return $this->successResponse(new StatusResource($status));
+        }
+
+        return $this->errorResponse('Status not found', 404);
+    }
+
+    // Обновление статуса
+    public function update(UpdateStatusRequest $request, $id)
+    {
+        $status = $this->statusService->update($id, $request->validated());
+
+        if ($status) {
+            $this->forgetCache([
+                self::CACHE_KEY_STATUS . $id,
+                self::CACHE_KEY_STATUSES_LIST
+            ]);
+
+            return $this->successResponse(new StatusResource($status));
+        }
+
+        return $this->errorResponse('Status not found', 404);
+    }
+
+    // Удаление статуса
+    public function destroy($id)
     {
         $this->statusService->delete($id);
         $this->forgetCache(self::CACHE_KEY_STATUS . $id);

@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 use App\Services\InitService;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use OpenApi\Attributes as OA;
 
 // Контроллер для инициализации приложения  
 class InitController extends Controller
@@ -19,33 +18,8 @@ class InitController extends Controller
         $this->initService = $initService;
     }
 
-    // Инициализация приложения   
-    
-    /**
-     * @OA\Get(
-     *     path="/api/v1/init",
-     *     tags={"Inits"},
-     *     summary="Init init",
-     *     description="Init init",
-     *     @OA\Response(
-     *         response=200,
-     *         description="Successful operation",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function init()
+    // Инициализация приложения
+    public function init()
     {
         try {
             $info = $this->getFromCacheOrStore(self::CACHE_KEY_INIT_INFO, self::CACHE_MINUTES, function () {

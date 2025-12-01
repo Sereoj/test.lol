@@ -7,52 +7,28 @@ use App\Http\Requests\Language\SetLanguageRequest;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с языком пользователя
 class UserLanguageController extends Controller
 {
-    // Получение списка языков   
-    
-    /**
-     * @OA\Post(
-     *     path="/api/v1/languages",
-     *     tags={"Users"},
-     *     summary="SwitchLanguage user language",
-     *     description="SwitchLanguage user language",
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/SetLanguageRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="data", type="object"),
-     *             @OA\Property(property="message", type="string", example="Resource created successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function switchLanguage(SetLanguageRequest $request)
+    // Получение списка языков
+    public function index()
+    {
+        return $this->successResponse([
+            'languages' => [
+                [
+                    'label' => 'Русский',
+                    'value' => 'ru'
+                ],
+                [
+                    'label' => 'English',
+                    'value' => 'en'
+                ],
+            ],
+        ]);
+    }
+    // Смена языка пользователя
+    public function switchLanguage(SetLanguageRequest $request)
     {
         try {
             if (Auth::check()) {

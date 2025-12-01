@@ -8,7 +8,6 @@ use App\Http\Requests\Auth\VerifyEmailRequest;
 use App\Services\Authentication\EmailVerificationService;
 use Illuminate\Support\Facades\Log;
 use Exception;
-use OpenApi\Attributes as OA;
 
 class EmailVerificationController extends Controller
 {
@@ -19,51 +18,28 @@ class EmailVerificationController extends Controller
         $this->emailVerificationService = $emailVerificationService;
     }
 
-    // Отправка кода подтверждения на email   
-    
-    /**
-     * @OA\Post(
-     *     path="/api/v1/verify-email",
-     *     tags={"EmailVerifications"},
-     *     summary="VerifyEmail email verification",
-     *     description="VerifyEmail email verification",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(ref="#/components/schemas/VerifyEmailRequest")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource created successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(
-     *                 property="data",
-     *                 type="object",
-     *                 @OA\Property(property="message", type="string", example="Email verified successfully")
-     *             )
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=422,
-     *         description="Validation error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Validation failed"),
-     *             @OA\Property(property="errors", type="object")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
-     */
-public function verifyEmail(VerifyEmailRequest $request)
+    // Отправка кода подтверждения на email
+    public function sendVerificationCode(SendVerificationCodeRequest $request)
+    {
+        try {
+            $email = $request->input('email');
+            $result = $this->emailVerificationService->sendVerificationCode($email);
+
+            if ($result['status']) {
+                Log::info('Verification code sent successfully', ['email' => $email]);
+                return $this->successResponse(['message' => $result['message']]);
+            } else {
+                Log::warning('Failed to send verification code', ['email' => $email, 'error' => $result['error'] ?? '']);
+                return $this->errorResponse($result['message'], 500);
+            }
+        } catch (Exception $e) {
+            Log::error('Error sending verification code: ' . $e->getMessage(), ['email' => $request->input('email')]);
+            return $this->errorResponse('Error sending verification code: ' . $e->getMessage(), 500);
+        }
+    }
+
+    // Проверка подтверждения email
+    public function verifyEmail(VerifyEmailRequest $request)
     {
         try {
             $email = $request->input('email');

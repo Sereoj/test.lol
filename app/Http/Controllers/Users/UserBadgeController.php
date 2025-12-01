@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 use Illuminate\Support\Facades\Cache;
-use OpenApi\Attributes as OA;
 
 // Контроллер для работы с наградами пользователей
 class UserBadgeController extends Controller
@@ -28,47 +27,141 @@ class UserBadgeController extends Controller
         $this->userBadgeService = $userBadgeService;
     }
 
-                                    /**
-     * @OA\Delete(
-     *     path="/api/v1/user-badges/{id}",
-     *     tags={"Users"},
-     *     summary="Delete user badge",
-     *     description="Delete user badge",
-     *     security={{"bearerAuth":{}}},
-     *     @OA\Parameter(
-     *         name="id",
-     *         in="path",
-     *         required=true,
-     *         description="Id",
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Resource deleted successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=true),
-     *             @OA\Property(property="message", type="string", example="Resource deleted successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="Resource not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Resource not found")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=500,
-     *         description="Server error",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="success", type="boolean", example=false),
-     *             @OA\Property(property="message", type="string", example="Internal server error")
-     *         )
-     *     )
-     * )
+    /**
+     * Получить все badge пользователей.
      */
-public function destroy($id)
+    public function index()
+    {
+        try {
+            // Кешируем список наград
+            $badges = $this->getFromCacheOrStore(self::CACHE_KEY_USER_BADGES_ALL, self::CACHE_MINUTES, function () {
+                return $this->userBadgeService->getAllUserBadges(Auth::id());
+            });
+
+            Log::info('All user badges retrieved successfully');
+
+            return $this->successResponse($badges);
+        } catch (Exception $e) {
+            Log::error('Error retrieving all user badges: ' . $e->getMessage());
+            return $this->errorResponse('Failed to retrieve user badges', 500);
+        }
+    }
+
+    /**
+     * Создать badge пользователя.
+     */
+    public function store(StoreUserBadgeRequest $request)
+    {
+        try {
+            $userId = Auth::id();
+            //
+            // Создаем новую награду
+            $badge = $this->userBadgeService->createUserBadge($request->validated() + ['user_id' => $userId]);
+
+            // Очищаем кеш, так как награды могли измениться
+            $this->forgetCache(self::CACHE_KEY_USER_BADGES_ALL);
+
+            Log::info('User badge created successfully', [
+                'user_id' => $userId,
+                'badge_id' => $badge->id
+            ]);
+
+            return $this->successResponse($badge,[], 201);
+        } catch (Exception $e) {
+            Log::error('Error creating user badge: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse('Failed to create user badge', 500);
+        }
+    }
+
+    /**
+     * Получить badge по ID.
+     */
+    public function show($id)
+    {
+        try {
+            // Кешируем награду по ID
+            $cacheKey = self::CACHE_KEY_USER_BADGE . $id;
+
+            $badge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($id) {
+                return $this->userBadgeService->getUserBadgeById($id);
+            });
+
+            Log::info('User badge retrieved successfully', ['badge_id' => $id]);
+
+            return $this->successResponse($badge);
+        } catch (Exception $e) {
+            Log::error('Error retrieving user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
+            return $this->errorResponse('Failed to retrieve user badge', 500);
+        }
+    }
+
+    /**
+     * Обновить badge пользователя.
+     */
+    public function update(UpdateUserBadgeRequest $request, $id)
+    {
+        try {
+            $badge = $this->userBadgeService->updateUserBadge($id, $request->validated());
+
+            $this->forgetCache([
+                self::CACHE_KEY_USER_BADGE . $id,
+                self::CACHE_KEY_USER_BADGES_ALL
+            ]);
+
+            Log::info('User badge updated successfully', ['badge_id' => $id, 'user_id' => Auth::id()]);
+
+            return $this->successResponse($badge);
+        } catch (Exception $e) {
+            Log::error('Error updating user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
+            return $this->errorResponse('Failed to update user badge: ' . $e->getMessage(), 500);
+        }
+    }
+
+    public function setActiveBadge(SetActiveBadgeRequest $request)
+    {
+        try {
+            $badgeId = $request->input('badge_id');
+            $userId = Auth::id();
+
+            $this->userBadgeService->setActiveBadgeForUser($userId, $badgeId);
+
+            $this->forgetCache(self::CACHE_KEY_ACTIVE_BADGE . $userId);
+
+            Log::info('Badge set as active successfully', ['badge_id' => $badgeId, 'user_id' => $userId]);
+
+            return $this->successResponse(['message' => 'Badge set as active successfully']);
+        } catch (Exception $e) {
+            Log::error('Error setting active badge: ' . $e->getMessage(), [
+                'badge_id' => $request->input('badge_id'),
+                'user_id' => Auth::id()
+            ]);
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
+    public function getActiveBadge()
+    {
+        try {
+            $userId = Auth::id();
+            $cacheKey = self::CACHE_KEY_ACTIVE_BADGE . $userId;
+
+            $activeBadge = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
+                return $this->userBadgeService->getActiveBadgeForUser($userId);
+            });
+
+            Log::info('Active badge retrieved successfully', ['user_id' => $userId]);
+
+            return $this->successResponse($activeBadge);
+        } catch (Exception $e) {
+            Log::error('Error retrieving active badge: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Удалить badge пользователя.
+     */
+    public function destroy($id)
     {
         try {
             // Удаляем награду
