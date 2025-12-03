@@ -17,7 +17,6 @@ use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
 use App\Http\Controllers\Users\UserProfileController;
 use App\Http\Controllers\BadgeController;
-use App\Http\Controllers\OpenApiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -147,9 +146,3 @@ Route::prefix('badges')->group(function () {
     Route::get('/{id}', [BadgeController::class, 'show'])
         ->name('badges.show.public');
 });
-
-// OpenAPI документация
-Route::get('/openapi.json', [OpenApiController::class, 'json'])
-    ->name('openapi.json');
-Route::get('/openapi.yaml', [OpenApiController::class, 'yaml'])
-    ->name('openapi.yaml');

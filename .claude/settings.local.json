@@ -11,9 +11,17 @@
       "Bash(cmd.exe /c \"php -v 2>nul || echo PHP not found\")",
       "Bash(git checkout:*)",
       "Bash(find:*)",
-      "Bash(php artisan openapi:fix-corrupted-controllers:*)",
-      "Bash(cmd.exe /c \"php artisan openapi:generate-all\")",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(git rm:*)",
+      "Bash(rm:*)",
+      "Bash(git commit:*)",
+      "Bash(Get-ChildItem storage/logs -Filter \"laravel*.log\")",
+      "Bash(Sort-Object LastWriteTime -Descending)",
+      "Bash(Select-Object -First 1)",
+      "Bash(ForEach-Object { Get-Content $_FullName -Tail 100 })",
+      "Bash(composer update:*)",
+      "Bash(php composer.phar update:*)",
+      "Bash(composer.phar update:*)"
     ],
     "deny": [],
     "ask": []

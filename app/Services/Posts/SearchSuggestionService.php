@@ -14,6 +14,10 @@ class SearchSuggestionService
 {
     public function suggest($query, $limit = 10)
     {
+        if (empty($query)) {
+            return collect();
+        }
+
         // Готовим запросы для поиска
         $queries = (new PostSearchService())->prepareSearchQueries($query);
 

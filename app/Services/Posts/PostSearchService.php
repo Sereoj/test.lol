@@ -50,8 +50,12 @@ class PostSearchService
     /**
      * Подготовка вариантов поискового запроса.
      */
-    public function prepareSearchQueries(string $query): array
+    public function prepareSearchQueries(?string $query): array
     {
+        if (empty($query)) {
+            return [];
+        }
+
         $variants = TextUtil::generateVariants(str($query)->lower());
 
         // Убираем дубли и фильтруем пустые строки

@@ -33,6 +33,11 @@ class UserProfileController extends Controller
     {
         try {
             $user = $this->userService->getBySlug($slug);
+
+            if (!$user) {
+                throw new Exception("User not found");
+            }
+
             $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
                 if($this->userProfileService->checkUser($user))
