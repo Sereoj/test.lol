@@ -22,6 +22,9 @@ class AppsTableSeeder extends Seeder
             ['name' => json_encode(['en' => 'Affinity Designer', 'ru' => 'Аффинити Дизайнер']), 'created_at' => now(), 'updated_at' => now()],
             ['name' => json_encode(['en' => 'Krita', 'ru' => 'Крита']), 'created_at' => now(), 'updated_at' => now()],
             ['name' => json_encode(['en' => 'Blender', 'ru' => 'Блендер']), 'created_at' => now(), 'updated_at' => now()],
+            ['name' => json_encode(['en' => 'Clip Studio', 'ru' => 'Клип Студио']), 'created_at' => now(), 'updated_at' => now()],
+            ['name' => json_encode(['en' => 'Procreate', 'ru' => 'Прокриейт']), 'created_at' => now(), 'updated_at' => now()],
+            ['name' => json_encode(['en' => 'Figma', 'ru' => 'Фигма']), 'created_at' => now(), 'updated_at' => now()],
         ];
 
         DB::table('apps')->insert($apps);

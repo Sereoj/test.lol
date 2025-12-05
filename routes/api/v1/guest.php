@@ -12,6 +12,7 @@ use App\Http\Controllers\InitController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostSearchController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Stats\PlatformStatsController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
@@ -145,4 +146,10 @@ Route::prefix('badges')->group(function () {
         ->name('badges.index.public');
     Route::get('/{id}', [BadgeController::class, 'show'])
         ->name('badges.show.public');
+});
+
+// Статистика платформы
+Route::prefix('stats')->group(function () {
+    Route::get('/platform', [PlatformStatsController::class, 'index'])
+        ->name('stats.platform.public');
 });

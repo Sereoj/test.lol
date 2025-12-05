@@ -11,7 +11,7 @@ class StorageService
         return self::$server;
     }
 
-    public static function getPath(string $filePath)
+    public static function getPath(?string $filePath): ?string
     {
         $path = config('filesystems.disks.' . self::$server . '.url');
 
