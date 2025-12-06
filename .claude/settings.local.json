@@ -21,7 +21,10 @@
       "Bash(ForEach-Object { Get-Content $_FullName -Tail 100 })",
       "Bash(composer update:*)",
       "Bash(php composer.phar update:*)",
-      "Bash(composer.phar update:*)"
+      "Bash(composer.phar update:*)",
+      "Bash(ls:*)",
+      "Bash(git add:*)",
+      "Bash(php composer.phar show:*)"
     ],
     "deny": [],
     "ask": []

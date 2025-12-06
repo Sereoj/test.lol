@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotificationSent;
 use App\Services\Notifications\NotificationService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -171,6 +173,72 @@ class NotificationController extends Controller
                 'error' => $e->getMessage()
             ]);
             return $this->errorResponse('Error deleting notification');
+        }
+    }
+
+    /**
+     * Отправить уведомление пользователю через WebSocket
+     *
+     * Отправляет уведомление конкретному пользователю в реальном времени через WebSocket.
+     *
+     * @param Request $request
+     *
+     * @authenticated
+     *
+     * @bodyParam user_id integer required ID пользователя-получателя. Example: 1
+     * @bodyParam type string required Тип уведомления. Example: new_follower
+     * @bodyParam title string required Заголовок уведомления. Example: Новый подписчик
+     * @bodyParam message string required Текст уведомления. Example: У вас новый подписчик
+     * @bodyParam data array Дополнительные данные уведомления. Example: {"follower_id": 2}
+     *
+     * @response {
+     *  "success": true,
+     *  "message": "Notification sent successfully"
+     * }
+     *
+     * @response 422 {
+     *  "success": false,
+     *  "message": "Validation error",
+     *  "errors": {
+     *      "user_id": ["The user_id field is required."]
+     *  }
+     * }
+     */
+    public function send(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'user_id' => 'required|integer|exists:users,id',
+                'type' => 'required|string',
+                'title' => 'required|string|max:255',
+                'message' => 'required|string',
+                'data' => 'nullable|array',
+            ]);
+
+            $notification = [
+                'id' => uniqid(),
+                'type' => $validated['type'],
+                'title' => $validated['title'],
+                'message' => $validated['message'],
+                'data' => $validated['data'] ?? [],
+                'created_at' => now()->toIso8601String(),
+            ];
+
+            // Отправка уведомления через WebSocket
+            broadcast(new NotificationSent($validated['user_id'], $notification));
+
+            return $this->successResponse('Notification sent successfully', [
+                'notification' => $notification
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->errorResponse('Validation error', 422, $e->errors());
+        } catch (\Exception $e) {
+            Log::error('Error sending notification: ' . $e->getMessage(), [
+                'request' => $request->all(),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return $this->errorResponse('Error sending notification');
         }
     }
 }

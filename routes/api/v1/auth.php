@@ -163,6 +163,8 @@ Route::middleware('auth:api')->group(function () {
             ->name('notifications.index');
         Route::get('/unread', [NotificationController::class, 'unread'])
             ->name('notifications.unread');
+        Route::post('/send', [NotificationController::class, 'send'])
+            ->name('notifications.send');
         Route::patch('/{notification_id}/read', [NotificationController::class, 'markAsRead'])
             ->name('notifications.mark_read');
         Route::patch('/read-all', [NotificationController::class, 'markAllAsRead'])
