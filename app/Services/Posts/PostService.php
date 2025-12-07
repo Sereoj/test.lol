@@ -3,6 +3,7 @@
 namespace App\Services\Posts;
 
 use App\Events\FileDownloaded;
+use App\Events\NotificationSent;
 use App\Http\Resources\Media\ThumbMediaResource;
 use App\Models\Posts\Post;
 use App\Models\Users\User;
@@ -79,7 +80,57 @@ class PostService
     public function likePost($userId,$postId)
     {
         $post = $this->postRepository->getPost($postId);
-        return $this->statService->incrementLikes($userId, $post->id);
+        $result = $this->statService->incrementLikes($userId, $post->id);
+
+        // Отправляем уведомление автору поста (если лайкнул не сам автор)
+        if ($post->user_id && $post->user_id != $userId) {
+            try {
+                // Загружаем информацию о пользователе, который лайкнул
+                $liker = User::find($userId);
+
+                if ($liker) {
+                    $notification = [
+                        'id' => uniqid(),
+                        'type' => 'like',
+                        'title' => 'Новый лайк',
+                        'message' => "{$liker->username} лайкнул ваш пост",
+                        'data' => [
+                            'user' => [
+                                'id' => $liker->id,
+                                'username' => $liker->username,
+                                'slug' => $liker->slug ?? $liker->username,
+                                'verification' => $liker->is_verified ?? false,
+                                'avatar' => $liker->avatar ? [
+                                    'path' => $liker->avatar->path ?? '/images/default-avatar.png'
+                                ] : [
+                                    'path' => '/images/default-avatar.png'
+                                ]
+                            ],
+                            'post_id' => $post->id
+                        ],
+                        'read_at' => null,
+                        'created_at' => now()->toIso8601String(),
+                    ];
+
+                    // Отправляем уведомление через WebSocket
+                    broadcast(new NotificationSent($post->user_id, $notification));
+
+                    Log::info('Like notification sent', [
+                        'post_id' => $post->id,
+                        'author_id' => $post->user_id,
+                        'liker_id' => $userId
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send like notification: ' . $e->getMessage(), [
+                    'post_id' => $postId,
+                    'user_id' => $userId,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        return $result;
     }
 
     public function unlikePost($userId,$postId)
