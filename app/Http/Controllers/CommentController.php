@@ -68,7 +68,7 @@ class CommentController extends Controller
     {
         try {
             $comment = new CommentResource($this->commentService->createComment($slug, $request->validated()));
-            return $this->successResponse($comment,[], 201);
+            return $this->successResponse($comment, [], 201);
         } catch (\Exception $e) {
             \Log::error($e->getMessage());
             return $this->errorResponse('Failed to create comment', 500);
@@ -89,22 +89,21 @@ class CommentController extends Controller
     }
 
     // Добавление реакции на комментарий
-    public function react(CommentReactRequest $request,$post_id, $comment_id)
+    public function react(CommentReactRequest $request, $post_id, $comment_id)
     {
         try {
             $comment = $this->commentService->reactToComment($comment_id, $request->input('type'));
             return $this->successResponse(new UserCommentReactionResource($comment));
-        } catch (\Exception $exception)
-        {
+        } catch (\Exception $exception) {
             return $this->errorResponse($exception->getMessage(), $exception->getCode() != 0 ? $exception->getCode() : 400);
         }
-/*        return $this->successResponse(
-            new UserCommentReactionResource($comment)
-        );*/
+        /*        return $this->successResponse(
+                    new UserCommentReactionResource($comment)
+                );*/
     }
 
     // Отправка жалобы на комментарий
-    public function report(ReportCommentRequest $request,$post_id, $comment_id)
+    public function report(ReportCommentRequest $request, $post_id, $comment_id)
     {
         return $this->successResponse(
             $this->commentService->reportComment($comment_id, $request->input('reason'))

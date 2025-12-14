@@ -31,14 +31,14 @@ class MakeServiceCommand extends Command
 
         // Шаблон сервисного класса
         $template = <<<CLASS
-<?php
+        <?php
 
-namespace {$namespace};
+        namespace {$namespace};
 
-class {$name}
-{
-}
-CLASS;
+        class {$name}
+        {
+        }
+        CLASS;
 
         // Создаем файл сервиса
         if (File::exists($filePath)) {

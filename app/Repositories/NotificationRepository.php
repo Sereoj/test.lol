@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use App\Models\Notification;
+use App\Models\Notifications\Notification;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 

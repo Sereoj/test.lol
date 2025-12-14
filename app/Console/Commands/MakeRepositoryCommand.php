@@ -30,14 +30,14 @@ class MakeRepositoryCommand extends Command
         $namespace = str_replace('/', '\\', ucfirst($path));
 
         $template = <<<CLASS
-<?php
+        <?php
 
-namespace {$namespace};
+        namespace {$namespace};
 
-class {$name}
-{
-}
-CLASS;
+        class {$name}
+        {
+        }
+        CLASS;
 
         // Создаем файл сервиса
         if (File::exists($filePath)) {

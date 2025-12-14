@@ -18,7 +18,7 @@ class NotificationController extends Controller
     protected NotificationService $notificationService;
     public function __construct(NotificationService $notificationService)
     {
-
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -27,17 +27,17 @@ class NotificationController extends Controller
     public function index(): JsonResponse
     {
         try {
-            return $this->successResponse([]);
-/*            $notifications = $this->notificationService->getAllForUser(auth()->id());
-            $unreadCount = $this->notificationService->getUnreadCount(auth()->id());
+            $user = auth()->user();
+            $notifications = $this->notificationService->getAllForUser($user);
+            $unreadCount = $this->notificationService->getUnreadCount($user);
 
             return $this->successResponse(
                 'Notifications retrieved successfully',
                 [
-                    'notifications' => new NotificationCollection($notifications),
+                    'notifications' => $notifications,
                     'unread_count' => $unreadCount
                 ]
-            );*/
+            );
         } catch (\Exception $e) {
             Log::error('Error retrieving notifications: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -53,17 +53,17 @@ class NotificationController extends Controller
     public function unread(): JsonResponse
     {
         try {
-            return $this->successResponse([]);
-/*            $notifications = $this->notificationService->getUnreadForUser(auth()->id());
-            $unreadCount = $this->notificationService->getUnreadCount(auth()->id());
+            $user = auth()->user();
+            $notifications = $this->notificationService->getUnreadForUser($user);
+            $unreadCount = $this->notificationService->getUnreadCount($user);
 
             return $this->successResponse(
                 'Unread notifications retrieved successfully',
                 [
-                    'notifications' => new NotificationCollection($notifications),
+                    'notifications' => $notifications,
                     'unread_count' => $unreadCount
                 ]
-            );*/
+            );
         } catch (\Exception $e) {
             Log::error('Error retrieving unread notifications: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -81,19 +81,16 @@ class NotificationController extends Controller
     public function markAsRead(string $id): JsonResponse
     {
         try {
-            return $this->successResponse([]);
-/*            $notification = $this->notificationService->markAsRead($id, auth()->id());
+            $notification = $this->notificationService->markAsRead($id, auth()->id());
 
             if (!$notification) {
                 return $this->errorResponse('Notification not found', 404);
             }
 
-            event(new NotificationRead($notification));
-
             return $this->successResponse(
                 'Notification marked as read successfully',
-                new NotificationResource($notification)
-            );*/
+                ['notification' => $notification]
+            );
         } catch (\Exception $e) {
             Log::error('Error marking notification as read: ' . $e->getMessage(), [
                 'notification_id' => $id,
@@ -110,14 +107,10 @@ class NotificationController extends Controller
     public function markAllAsRead(): JsonResponse
     {
         try {
-            return $this->successResponse([]);
-/*            $notifications = $this->notificationService->markAllAsRead(auth()->id());
+            $userId = auth()->id();
+            $this->notificationService->markAllAsRead($userId);
 
-            foreach ($notifications as $notification) {
-                event(new NotificationRead($notification));
-            }
-
-            return $this->successResponse('All notifications marked as read successfully');*/
+            return $this->successResponse('All notifications marked as read successfully');
         } catch (\Exception $e) {
             Log::error('Error marking all notifications as read: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
@@ -151,21 +144,20 @@ class NotificationController extends Controller
     public function delete(string $id): JsonResponse
     {
         try {
-            return $this->successResponse([]);
-/*            $notification = $this->notificationService->getById($id);
+            $notification = $this->notificationService->getById($id);
 
-            if (!$notification || $notification->user_id !== auth()->id()) {
+            // Check if notification exists and belongs to the authenticated user
+            if (!$notification || $notification->notifiable_id != auth()->id()) {
                 return $this->errorResponse('Notification not found', 404);
             }
 
             $result = $this->notificationService->delete($id, auth()->id());
 
             if ($result) {
-                event(new NotificationDeleted($notification));
                 return $this->successResponse('Notification deleted successfully');
             }
 
-            return $this->errorResponse('Error deleting notification');*/
+            return $this->errorResponse('Error deleting notification');
         } catch (\Exception $e) {
             Log::error('Error deleting notification: ' . $e->getMessage(), [
                 'notification_id' => $id,

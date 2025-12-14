@@ -24,7 +24,8 @@
       "Bash(composer.phar update:*)",
       "Bash(ls:*)",
       "Bash(git add:*)",
-      "Bash(php composer.phar show:*)"
+      "Bash(php composer.phar show:*)",
+      "Bash(php artisan:*)"
     ],
     "deny": [],
     "ask": []
