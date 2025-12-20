@@ -4,7 +4,8 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile.production
+      dockerfile: Dockerfile
+      target: production
       args:
         - PHP_VERSION=8.2
     image: wallone-app:production

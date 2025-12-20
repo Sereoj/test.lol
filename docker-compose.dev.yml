@@ -1,0 +1,93 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+      args:
+        - PHP_VERSION=8.2
+    image: wallone-app:dev
+    container_name: wallone-app-dev
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/var/www
+      - /var/www/vendor
+      - /var/www/node_modules
+    networks:
+      - app-network
+    environment:
+      - APP_ENV=local
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_MAX_UPLOAD=50M
+      - PHP_MAX_FILE_UPLOAD=200
+    env_file:
+      - .env
+
+  reverb:
+    image: wallone-app:dev
+    container_name: wallone-reverb-dev
+    restart: unless-stopped
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./:/var/www
+      - /var/www/vendor
+    networks:
+      - app-network
+    environment:
+      - APP_ENV=local
+      - PHP_MEMORY_LIMIT=256M
+    env_file:
+      - .env
+    depends_on:
+      - app
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    container_name: wallone-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  queue:
+    image: wallone-app:dev
+    container_name: wallone-queue-dev
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3
+    volumes:
+      - ./:/var/www
+      - /var/www/vendor
+    networks:
+      - app-network
+    environment:
+      - APP_ENV=local
+      - PHP_MEMORY_LIMIT=512M
+    env_file:
+      - .env
+    depends_on:
+      - app
+      - redis
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local

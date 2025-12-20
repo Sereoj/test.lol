@@ -1,6 +1,9 @@
-FROM php:8.2-fpm
+# ===============================
+# Base Stage - Общие зависимости
+# ===============================
+FROM php:8.2-fpm AS base
 
-# Установка зависимостей
+# Установка системных зависимостей
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,69 +16,127 @@ RUN apt-get update && apt-get install -y \
     libgd-dev \
     ffmpeg \
     imagemagick \
-    libmagickwand-dev
-
-# Очистка кеша apt
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+    libmagickwand-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Установка расширений PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip ftp
+RUN docker-php-ext-install \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    ftp
 
-# Установка и настройка Imagick
-RUN pecl install imagick && \
-    docker-php-ext-enable imagick
+# Установка Imagick
+RUN pecl install imagick && docker-php-ext-enable imagick
+
+# Установка Redis extension
+RUN pecl install redis && docker-php-ext-enable redis
 
 # Установка Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Настройка рабочей директории
+# Рабочая директория
 WORKDIR /var/www
 
-# Копирование только composer файлов для кеширования
+# ===============================
+# Development Stage
+# ===============================
+FROM base AS development
+
+# Установка Xdebug для отладки
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+
+# PHP конфигурация для разработки
+RUN echo "display_errors = On" > /usr/local/etc/php/conf.d/dev.ini \
+    && echo "error_reporting = E_ALL" >> /usr/local/etc/php/conf.d/dev.ini \
+    && echo "memory_limit = 512M" >> /usr/local/etc/php/conf.d/dev.ini
+
+# Копирование composer файлов
 COPY composer.json composer.lock ./
 
-# Установка зависимостей Composer
-RUN composer install --optimize-autoloader --no-scripts
+# Установка зависимостей с dev пакетами
+RUN composer install \
+    --no-scripts \
+    --no-interaction \
+    --prefer-dist
 
-# Теперь копируем остальные файлы проекта
+# Копирование остальных файлов
 COPY . .
 
-# Запускаем скрипты композера
-RUN composer dump-autoload --optimize
+# Autoload
+RUN composer dump-autoload
 
-# Копируем скрипт инициализации Passport
-COPY passport-init.sh /usr/local/bin/passport-init.sh
-RUN chmod +x /usr/local/bin/passport-init.sh
+# Создание необходимых директорий
+RUN mkdir -p storage/logs \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/app/settings \
+    bootstrap/cache
 
-# Создаем скрипт для запуска PHP-FPM с правильными правами
-RUN echo '#!/bin/bash\n\
-# Создаем необходимые директории\n\
-mkdir -p /var/www/storage/logs\n\
-mkdir -p /var/www/storage/framework/cache\n\
-mkdir -p /var/www/storage/framework/sessions\n\
-mkdir -p /var/www/storage/framework/views\n\
-mkdir -p /var/www/bootstrap/cache\n\
-mkdir -p /var/www/storage/app/settings\n\
-\n\
-# Копируем settings.json, если он существует в исходном коде\n\
-if [ -f /var/www/storage/app/settings/settings.json.example ]; then\n\
-  cp /var/www/storage/app/settings/settings.json.example /var/www/storage/app/settings/settings.json\n\
-fi\n\
-\n\
-# Устанавливаем полные права на директории bootstrap/cache\n\
-chmod -R 777 /var/www/bootstrap/cache\n\
-\n\
-# Меняем владельца на www-data\n\
-chown -R www-data:www-data /var/www/storage\n\
-chown -R www-data:www-data /var/www/bootstrap/cache\n\
-\n\
-# Запускаем PHP-FPM\n\
-exec php-fpm\n'\
-> /usr/local/bin/start-php-fpm.sh && \
-chmod +x /usr/local/bin/start-php-fpm.sh
+# Права доступа
+RUN chown -R www-data:www-data /var/www
 
-# Экспорт порта
 EXPOSE 9000
 
-# Запуск PHP-FPM через скрипт-обертку
-CMD ["/usr/local/bin/start-php-fpm.sh"]
+CMD ["php-fpm"]
+
+# ===============================
+# Production Stage
+# ===============================
+FROM base AS production
+
+# Установка OPcache для production
+RUN docker-php-ext-install opcache
+
+# Копирование PHP конфигураций
+COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-custom.ini
+COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+
+# Копирование composer файлов для кеширования
+COPY composer.json composer.lock ./
+
+# Установка зависимостей без dev пакетов
+RUN composer install \
+    --no-dev \
+    --no-scripts \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
+# Копирование остальных файлов
+COPY . .
+
+# Финальная оптимизация autoloader
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
+
+# Создание необходимых директорий
+RUN mkdir -p storage/logs \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+    storage/app/settings \
+    bootstrap/cache
+
+# Установка прав
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Копирование и настройка entrypoint
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9000
+
+# Переключение на пользователя www-data
+USER www-data
+
+# Entrypoint для инициализации
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Запуск PHP-FPM
+CMD ["php-fpm"]

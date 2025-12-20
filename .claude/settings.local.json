@@ -26,7 +26,8 @@
       "Bash(git add:*)",
       "Bash(php composer.phar show:*)",
       "Bash(php artisan:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []
