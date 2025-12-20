@@ -141,9 +141,9 @@ fi
 echo "✨ Initialization complete! Starting application..."
 
 # Запуск команды из CMD
-# Если мы root и установлен gosu, запускаем от www-data
-# В development режиме контейнер может работать от root, поэтому используем gosu если он доступен
-if [ "$(id -u)" = "0" ] && command -v gosu >/dev/null 2>&1; then
+# PHP-FPM должен запускаться от root (он сам переключит воркеры на www-data)
+# Для других команд используем gosu
+if [ "$(id -u)" = "0" ] && [ "$1" != "php-fpm" ] && command -v gosu >/dev/null 2>&1; then
     exec gosu www-data "$@"
 else
     exec "$@"
