@@ -43,7 +43,7 @@ services:
     volumes:
       - ./certbot/letsencrypt:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --email admin@wallone.app -d wallone.ru -d www.wallone.ru --agree-tos --non-interactive
+    command: certonly --webroot -w /var/www/certbot --email admin@wallone.app -d web.wallone.app -d www.web.wallone.app --agree-tos --non-interactive
     depends_on:
       - nginx
 

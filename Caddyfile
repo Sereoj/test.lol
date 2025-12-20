@@ -2,7 +2,7 @@
 
 {
     # Глобальные настройки
-    email admin@wallone.app
+    email admin@wallone.appp
 
     # Логирование только ошибок
     log {
