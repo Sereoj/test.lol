@@ -122,6 +122,13 @@ RUN mkdir -p storage/logs \
     storage/app/settings \
     bootstrap/cache
 
+# Установка gosu для переключения пользователя в entrypoint
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y gosu; \
+    rm -rf /var/lib/apt/lists/*; \
+    gosu nobody true
+
 # Установка прав
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
@@ -132,11 +139,8 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
 
-# Переключение на пользователя www-data
-USER www-data
-
-# Entrypoint для инициализации
+# Entrypoint для инициализации (выполняется от root для установки прав)
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
-# Запуск PHP-FPM
+# Запуск PHP-FPM (будет запущен от www-data через entrypoint)
 CMD ["php-fpm"]

@@ -94,14 +94,23 @@ if [ "$APP_ENV" = "production" ]; then
     echo "✅ Production optimization complete"
 fi
 
-# Установка прав доступа (только если не работаем от www-data)
+# Установка прав доступа
+echo "🔧 Setting permissions..."
+# Устанавливаем права на запись для группы (775), чтобы www-data мог писать
+chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+
+# Пытаемся установить владельца (работает только если запущены от root)
 if [ "$(whoami)" != "www-data" ]; then
-    echo "🔧 Setting permissions..."
-    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
     chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 fi
 
 echo "✨ Initialization complete! Starting application..."
 
 # Запуск команды из CMD
-exec "$@"
+# Если мы root и установлен gosu, запускаем от www-data
+# В development режиме контейнер может работать от root, поэтому используем gosu если он доступен
+if [ "$(id -u)" = "0" ] && command -v gosu >/dev/null 2>&1; then
+    exec gosu www-data "$@"
+else
+    exec "$@"
+fi
