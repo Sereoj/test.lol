@@ -27,7 +27,8 @@
       "Bash(php composer.phar show:*)",
       "Bash(php artisan:*)",
       "Bash(chmod:*)",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(docker-compose:*)"
     ],
     "deny": [],
     "ask": []

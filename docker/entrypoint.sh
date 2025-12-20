@@ -33,7 +33,7 @@ mkdir -p storage/logs \
     storage/framework/sessions \
     storage/framework/views \
     storage/app/settings \
-    bootstrap/cache
+    bootstrap/cache 2>/dev/null || true
 
 # Копирование примера settings.json если нужно
 if [ ! -f storage/app/settings/settings.json ] && [ -f storage/app/settings/settings.json.example ]; then
@@ -94,10 +94,12 @@ if [ "$APP_ENV" = "production" ]; then
     echo "✅ Production optimization complete"
 fi
 
-# Установка прав доступа
-echo "🔧 Setting permissions..."
-chmod -R 775 storage bootstrap/cache
-chown -R www-data:www-data storage bootstrap/cache
+# Установка прав доступа (только если не работаем от www-data)
+if [ "$(whoami)" != "www-data" ]; then
+    echo "🔧 Setting permissions..."
+    chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+    chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+fi
 
 echo "✨ Initialization complete! Starting application..."
 
