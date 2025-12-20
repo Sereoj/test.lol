@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 services:
   app:
@@ -43,7 +43,7 @@ services:
     volumes:
       - ./certbot/letsencrypt:/etc/letsencrypt
       - ./certbot/www:/var/www/certbot
-    command: certonly --webroot -w /var/www/certbot --email admin@wallone.ru -d wallone.ru -d www.wallone.ru --agree-tos --non-interactive
+    command: certonly --webroot -w /var/www/certbot --email admin@wallone.app -d wallone.ru -d www.wallone.ru --agree-tos --non-interactive
     depends_on:
       - nginx
 
@@ -64,4 +64,4 @@ volumes:
   laravel-storage:
     driver: local
   laravel-cache:
-    driver: local 
+    driver: local
