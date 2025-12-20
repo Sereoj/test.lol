@@ -97,6 +97,9 @@ RUN docker-php-ext-install opcache
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-custom.ini
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
 
+# Копирование PHP-FPM pool конфигурации (отключение error_log для избежания Permission denied)
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+
 # Копирование composer файлов для кеширования
 COPY composer.json composer.lock ./
 

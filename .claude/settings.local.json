@@ -28,7 +28,10 @@
       "Bash(php artisan:*)",
       "Bash(chmod:*)",
       "Bash(git mv:*)",
-      "Bash(docker-compose:*)"
+      "Bash(docker-compose:*)",
+      "Bash(xargs:*)",
+      "Bash(/e/Programs/OpenServer/modules/php/PHP_8.2/php.exe:*)",
+      "Bash(docker exec:*)"
     ],
     "deny": [],
     "ask": []
