@@ -96,12 +96,41 @@ fi
 
 # Установка прав доступа
 echo "🔧 Setting permissions..."
-# Устанавливаем права на запись для группы (775), чтобы www-data мог писать
-chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+
+# Создаем массив директорий для установки прав
+WRITABLE_DIRS=(
+    "storage"
+    "storage/app"
+    "storage/app/public"
+    "storage/app/settings"
+    "storage/framework"
+    "storage/framework/cache"
+    "storage/framework/sessions"
+    "storage/framework/views"
+    "storage/logs"
+    "bootstrap/cache"
+)
+
+# Устанавливаем права на каждую директорию
+for dir in "${WRITABLE_DIRS[@]}"; do
+    if [ -d "$dir" ]; then
+        # Устанавливаем права 775 (rwxrwxr-x) для директорий
+        chmod 775 "$dir" 2>/dev/null || true
+        # Устанавливаем права 664 (rw-rw-r--) для файлов внутри
+        find "$dir" -type f -exec chmod 664 {} \; 2>/dev/null || true
+        # Устанавливаем права 775 для поддиректорий
+        find "$dir" -type d -exec chmod 775 {} \; 2>/dev/null || true
+    fi
+done
 
 # Пытаемся установить владельца (работает только если запущены от root)
-if [ "$(whoami)" != "www-data" ]; then
-    chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
+if [ "$(id -u)" = "0" ]; then
+    echo "🔐 Setting ownership to www-data..."
+    for dir in "${WRITABLE_DIRS[@]}"; do
+        if [ -d "$dir" ]; then
+            chown -R www-data:www-data "$dir" 2>/dev/null || true
+        fi
+    done
 fi
 
 echo "✨ Initialization complete! Starting application..."
