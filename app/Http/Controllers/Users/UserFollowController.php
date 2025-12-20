@@ -133,10 +133,9 @@ class UserFollowController extends Controller
     /**
      * Получить список подписчиков пользователя.
      */
-    public function followers()
+    public function followers($userId)
     {
         try {
-            $userId = Auth::id();
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWERS, $userId);
 
             $followers = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
@@ -147,7 +146,7 @@ class UserFollowController extends Controller
 
             return $this->successResponse($followers);
         } catch (Exception $e) {
-            Log::error('Error retrieving followers: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Error retrieving followers: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving followers: ' . $e->getMessage(), 500);
         }
     }
@@ -155,21 +154,20 @@ class UserFollowController extends Controller
     /**
      * Получить список пользователей, на которых подписан данный пользователь.
      */
-    public function following()
+    public function following($userId)
     {
         try {
-            $userId = Auth::id();
             $cacheKey = sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $userId);
 
-            $following = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
-                return $this->followService->getFollowing();
+            $following = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
+                return $this->followService->getFollowingByUserId($userId);
             });
 
             Log::info('Following list retrieved successfully', ['user_id' => $userId]);
 
             return $this->successResponse($following);
         } catch (Exception $e) {
-            Log::error('Error retrieving following list: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Error retrieving following list: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving following list: ' . $e->getMessage(), 500);
         }
     }

@@ -144,12 +144,16 @@ Route::middleware('auth:api')->group(function () {
 
         ///v1/user/3/posts
         Route::prefix('{user}')->group(function () {
+           Route::prefix('/followers')->group(function () {
+               Route::get('/', [UserFollowController::class, 'followers'])
+                   ->name('followers.user');
+           });
+
            Route::prefix('/following')->group(function () {
              Route::get('/', [UserFollowController::class, 'following'])
                  ->name('following.user');
-               Route::get('/', [UserFollowController::class, 'followers'])
-                   ->name('following.user');
            });
+
            Route::prefix('/posts')->group(function () {
                Route::get('/', [UserPostController::class, 'index'])
                    ->name('posts.index');
