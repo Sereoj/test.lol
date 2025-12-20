@@ -122,16 +122,155 @@ docker compose -f docker-compose.prod.yml down
 ```
 
 ### 4. Просмотр логов
+
+#### Логи Docker контейнеров
+
 ```bash
-# Все сервисы
+# Все сервисы (в реальном времени)
 docker compose -f docker-compose.prod.yml logs -f
 
-# Конкретный сервис
+# Конкретный сервис (в реальном времени)
 docker compose -f docker-compose.prod.yml logs -f app
 docker compose -f docker-compose.prod.yml logs -f caddy
 docker compose -f docker-compose.prod.yml logs -f reverb
 docker compose -f docker-compose.prod.yml logs -f queue
 docker compose -f docker-compose.prod.yml logs -f scheduler
+
+# Последние N строк логов
+docker compose -f docker-compose.prod.yml logs --tail=100 app
+docker compose -f docker-compose.prod.yml logs --tail=50 queue
+
+# Логи за определенный период
+docker compose -f docker-compose.prod.yml logs --since 30m app    # за последние 30 минут
+docker compose -f docker-compose.prod.yml logs --since 2h queue   # за последние 2 часа
+docker compose -f docker-compose.prod.yml logs --since "2024-01-15T10:00:00" app
+
+# Логи нескольких сервисов одновременно
+docker compose -f docker-compose.prod.yml logs -f app queue reverb
+```
+
+#### Логи Laravel приложения
+
+```bash
+# Просмотр логов Laravel (storage/logs)
+docker compose -f docker-compose.prod.yml exec app tail -f storage/logs/laravel.log
+
+# Последние 100 строк
+docker compose -f docker-compose.prod.yml exec app tail -n 100 storage/logs/laravel.log
+
+# Поиск ошибок в логах
+docker compose -f docker-compose.prod.yml exec app grep -i "error" storage/logs/laravel.log
+docker compose -f docker-compose.prod.yml exec app grep -i "exception" storage/logs/laravel.log
+docker compose -f docker-compose.prod.yml exec app grep -i "failed" storage/logs/laravel.log
+
+# Список всех файлов логов с датами
+docker compose -f docker-compose.prod.yml exec app ls -lh storage/logs/
+```
+
+#### Диагностика ошибок по сервисам
+
+**1. PHP-FPM ошибки (app):**
+```bash
+# Ошибки приложения
+docker compose -f docker-compose.prod.yml logs app | grep -i "error\|exception\|fatal"
+
+# PHP-FPM статус
+docker compose -f docker-compose.prod.yml exec app php-fpm -t
+
+# Проверка healthcheck
+docker inspect wallone-app | grep -A 10 Health
+```
+
+**2. Caddy ошибки (веб-сервер):**
+```bash
+# Ошибки Caddy
+docker compose -f docker-compose.prod.yml logs caddy | grep -i "error"
+
+# Проблемы с SSL сертификатами
+docker compose -f docker-compose.prod.yml logs caddy | grep -i "certificate\|acme\|tls"
+
+# Ошибки проксирования к PHP-FPM
+docker compose -f docker-compose.prod.yml logs caddy | grep -i "upstream\|proxy"
+```
+
+**3. Queue worker ошибки:**
+```bash
+# Ошибки обработки очередей
+docker compose -f docker-compose.prod.yml logs queue | grep -i "error\|exception\|failed"
+
+# Проверка подключения к Redis
+docker compose -f docker-compose.prod.yml exec app php artisan queue:failed
+
+# Список проваленных задач
+docker compose -f docker-compose.prod.yml exec app php artisan queue:failed-table
+```
+
+**4. Reverb ошибки (WebSocket):**
+```bash
+# Ошибки WebSocket сервера
+docker compose -f docker-compose.prod.yml logs reverb | grep -i "error\|exception"
+
+# Проверка работы Reverb
+curl http://localhost:8080
+
+# Healthcheck статус
+docker inspect wallone-reverb | grep -A 10 Health
+```
+
+**5. Scheduler ошибки (cron задачи):**
+```bash
+# Логи планировщика
+docker compose -f docker-compose.prod.yml logs scheduler
+
+# Проверка расписания задач
+docker compose -f docker-compose.prod.yml exec app php artisan schedule:list
+```
+
+**6. Redis ошибки:**
+```bash
+# Проверка работы Redis
+docker compose -f docker-compose.prod.yml exec redis redis-cli ping
+
+# Статистика Redis
+docker compose -f docker-compose.prod.yml exec redis redis-cli INFO
+
+# Проверка памяти
+docker compose -f docker-compose.prod.yml exec redis redis-cli INFO memory
+
+# Логи Redis
+docker compose -f docker-compose.prod.yml logs redis | grep -i "warning\|error"
+```
+
+#### Комплексная диагностика ошибок
+
+```bash
+# Проверка статуса всех контейнеров
+docker compose -f docker-compose.prod.yml ps
+
+# Проверка здоровья всех сервисов
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+
+# Использование ресурсов
+docker stats --no-stream
+
+# Поиск критических ошибок во всех сервисах
+docker compose -f docker-compose.prod.yml logs --since 1h | grep -i "fatal\|critical\|emergency"
+
+# Экспорт логов в файл для анализа
+docker compose -f docker-compose.prod.yml logs --since 24h > logs_$(date +%Y%m%d_%H%M%S).txt
+```
+
+#### Мониторинг в реальном времени
+
+```bash
+# Просмотр всех логов с временными метками
+docker compose -f docker-compose.prod.yml logs -f -t
+
+# Мониторинг ресурсов в реальном времени
+docker stats
+
+# Отслеживание ошибок в Laravel логах
+docker compose -f docker-compose.prod.yml exec app tail -f storage/logs/laravel.log | grep --line-buffered -i "error\|exception"
 ```
 
 ### 5. Выполнение команд в контейнере

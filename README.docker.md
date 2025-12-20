@@ -56,4 +56,4 @@ docker-compose down
 
 - В Dockerfile уже настроен путь к ffmpeg для Windows и Linux
 - Все данные базы хранятся на удаленном сервере
-- Для работы с файлами в контейнере используйте команду `docker-compose exec app bash` 
+- Для работы с файлами в контейнере используйте команду `docker-compose exec app bash`
