@@ -169,13 +169,11 @@ return [
         App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
+        App\Providers\TelescopeServiceProvider::class,
         \SocialiteProviders\Manager\ServiceProvider::class,
         App\Providers\RepositoryServiceProvider::class,
         //Intervention\Image\ImageServiceProvider::class,
-    ])->when(
-        class_exists(\Laravel\Telescope\TelescopeServiceProvider::class),
-        fn($providers) => $providers->merge([App\Providers\TelescopeServiceProvider::class])
-    )->toArray(),
+    ])->toArray(),
 
     /*
     |--------------------------------------------------------------------------

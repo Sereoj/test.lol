@@ -18,19 +18,9 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         $this->hideSensitiveRequestDetails();
 
-        // Регистрировать Telescope только в development окружении или если явно включено
         $isLocal = $this->app->environment('local', 'development');
-        $isEnabled = config('telescope.enabled', false);
 
-        // В production отключить Telescope полностью, если не включено явно
-        if ($this->app->environment('production') && !$isEnabled) {
-            Telescope::filter(function (IncomingEntry $entry) {
-                return false;
-            });
-            return;
-        }
-
-        // Фильтрация записей для других окружений
+        // Фильтрация записей - в production логируем только ошибки и проблемы
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
             return $isLocal ||
                    $entry->isReportableException() ||
@@ -67,6 +57,12 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
     protected function gate(): void
     {
         Gate::define('viewTelescope', function ($user) {
+            // В production никому не разрешаем доступ к Telescope UI
+            if (app()->environment('production')) {
+                return false;
+            }
+
+            // В других окружениях можно настроить список email
             return in_array($user->email, [
                 //
             ]);
