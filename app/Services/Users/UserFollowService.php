@@ -54,12 +54,25 @@ class UserFollowService
             }
 
             $follower->following()->attach($followingId);
-            $following->notify(new UserFollowedNotification($follower));
+
+            // Коммитим транзакцию ПЕРЕД отправкой уведомления
+            DB::commit();
 
             Log::info('User followed successfully', [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
             ]);
+
+            // Пытаемся отправить уведомление (не критично, если не получится)
+            try {
+                $following->notify(new UserFollowedNotification($follower));
+            } catch (Exception $notificationException) {
+                Log::warning('Failed to send follow notification', [
+                    'follower_id' => $followerId,
+                    'following_id' => $followingId,
+                    'error' => $notificationException->getMessage()
+                ]);
+            }
 
             return true;
         }catch (Exception $exception)
@@ -113,6 +126,9 @@ class UserFollowService
 
             $follower->following()->detach($followingId);
 
+            // Коммитим транзакцию
+            DB::commit();
+
             Log::info('User unfollowed successfully', [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
@@ -125,6 +141,7 @@ class UserFollowService
                 'follower_id' => $followerId,
                 'following_id' => $followingId,
             ]);
+            throw $exception;
         }
     }
 
