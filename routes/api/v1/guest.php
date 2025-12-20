@@ -77,6 +77,24 @@ Route::middleware('guest')->group(function () {
 });
 
 // Маршруты, доступные как гостям, так и авторизованным пользователям
+// Версия приложения
+Route::get('/version', function () {
+    $composerJson = json_decode(file_get_contents(base_path('composer.json')), true);
+    $packageJson = json_decode(file_get_contents(base_path('package.json')), true);
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'version' => $composerJson['version'] ?? 'unknown',
+            'name' => $composerJson['name'] ?? 'unknown',
+            'php_version' => PHP_VERSION,
+            'laravel_version' => app()->version(),
+            'environment' => app()->environment(),
+            'package_version' => $packageJson['version'] ?? 'unknown',
+        ]
+    ]);
+})->name('version.public');
+
 // Установка языка
 Route::get('/languages', [UserLanguageController::class, 'index'])
     ->name('lang.public');

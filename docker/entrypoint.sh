@@ -1,7 +1,12 @@
 #!/bin/bash
 set -e
 
+# Получение версии приложения из composer.json
+APP_VERSION=$(php -r "echo json_decode(file_get_contents('composer.json'), true)['version'] ?? 'unknown';")
+
 echo "🚀 Starting Laravel application initialization..."
+echo "📦 Application Version: $APP_VERSION"
+echo ""
 
 # Переменные окружения по умолчанию
 export PHP_MEMORY_LIMIT=${PHP_MEMORY_LIMIT:-512M}
