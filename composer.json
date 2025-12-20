@@ -10,7 +10,6 @@
         "ext-zip": "*",
         "guzzlehttp/guzzle": "^7.2",
         "intervention/image-laravel": "^1.3",
-        "knuckleswtf/scribe": "^5.6",
         "laravel/framework": "^10.10",
         "laravel/passport": "^11.8",
         "laravel/reverb": "^1.5",
@@ -26,6 +25,7 @@
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
         "friendsofphp/php-cs-fixer": "^3.68",
+        "knuckleswtf/scribe": "^5.6",
         "laravel/pint": "^1.18",
         "laravel/sail": "^1.18",
         "laravel/telescope": "^5.5",
@@ -69,7 +69,9 @@
     "extra": {
         "laravel": {
             "dont-discover": [
-                "laravel/telescope"
+                "laravel/telescope",
+                "knuckleswtf/scribe",
+                "L5Swagger\\L5SwaggerServiceProvider"
             ]
         }
     },

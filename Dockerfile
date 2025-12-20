@@ -111,8 +111,8 @@ RUN composer install \
 # Копирование остальных файлов
 COPY . .
 
-# Финальная оптимизация autoloader
-RUN composer dump-autoload --optimize --no-dev --classmap-authoritative
+# Финальная оптимизация autoloader (без скриптов, чтобы избежать ошибок с dev-зависимостями)
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --no-scripts
 
 # Создание необходимых директорий
 RUN mkdir -p storage/logs \
