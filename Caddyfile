@@ -1,0 +1,100 @@
+# Caddyfile for web.wallone.app production
+
+{
+    # Глобальные настройки
+    email admin@wallone.ru
+
+    # Логирование только ошибок
+    log {
+        output file /var/log/caddy/error.log {
+            roll_size 100mb
+            roll_keep 5
+            roll_keep_for 720h
+        }
+        level ERROR
+    }
+
+    # Автоматическое получение сертификатов
+    acme_ca https://acme-v02.api.letsencrypt.org/directory
+}
+
+# Основной сайт
+web.wallone.app {
+    # Корневая директория
+    root * /var/www/public
+
+    # PHP-FPM через app контейнер
+    php_fastcgi app:9000 {
+        env APP_ENV production
+        env APP_DEBUG false
+    }
+
+    # Статические файлы
+    file_server
+
+    # Laravel роутинг
+    try_files {path} {path}/ /index.php?{query}
+
+    # Безопасность - скрыть чувствительные файлы
+    @forbidden {
+        path /.env*
+        path /.git/*
+        path /storage/*
+        path /bootstrap/cache/*
+        path *.yml
+        path *.yaml
+        path *.conf
+    }
+    respond @forbidden 404
+
+    # Компрессия
+    encode gzip zstd
+
+    # Заголовки безопасности
+    header {
+        # HTTPS Strict Transport Security (HSTS)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+        # Защита от XSS
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+
+        # Referrer Policy
+        Referrer-Policy "strict-origin-when-cross-origin"
+
+        # Удалить заголовки сервера
+        -Server
+        -X-Powered-By
+    }
+
+    # Логирование только ошибок для этого сайта
+    log {
+        output file /var/log/caddy/web.wallone.app-error.log {
+            roll_size 50mb
+            roll_keep 3
+            roll_keep_for 168h
+        }
+        level ERROR
+    }
+}
+
+# WebSocket для Laravel Reverb
+ws.wallone.app {
+    reverse_proxy reverb:8080 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # Логирование только ошибок для WebSocket
+    log {
+        output file /var/log/caddy/ws.wallone.app-error.log {
+            roll_size 25mb
+            roll_keep 2
+            roll_keep_for 72h
+        }
+        level ERROR
+    }
+}

@@ -7,7 +7,6 @@
 /vendor
 .env
 .env.backup
-.env.production
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
@@ -20,5 +19,23 @@ yarn-error.log
 /.scribe/.filehashes
 /.scribe/endpoints/00.yaml
 /.scribe/endpoints.cache/00.yaml
-/.scribe/endpoints/custom.0.yaml
+/.scribe/
+
+# Production deployment - СЕКРЕТНЫЕ ФАЙЛЫ (НЕ КОМИТИТЬ!)
+.env.deploy
+.env.production.tmp
+*.tar.gz
+
+# Documentation files (не нужны в репозитории)
+DEPLOYMENT.md
+QUICK_START.md
+DEPLOYMENT_README.md
+EXTERNAL_DB_NOTES.md
+
+# Backup files
+backup_*.sql
+/backup/
+
+# Certbot (если используется)
+/certbot/endpoints/custom.0.yaml
 /.scribe/

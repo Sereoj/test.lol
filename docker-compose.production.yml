@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+      args:
+        - PHP_VERSION=8.2
+    image: wallone-app:production
+    container_name: wallone-app
+    restart: unless-stopped
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+      - caddy-data:/data
+    networks:
+      - app-network
+    environment:
+      - PHP_MEMORY_LIMIT=512M
+      - PHP_MAX_UPLOAD=50M
+      - PHP_MAX_FILE_UPLOAD=200
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  reverb:
+    image: wallone-app:production
+    container_name: wallone-reverb
+    restart: unless-stopped
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080
+    volumes:
+      - ./storage:/var/www/storage
+    networks:
+      - app-network
+    environment:
+      - PHP_MEMORY_LIMIT=256M
+    depends_on:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  redis:
+    image: redis:7-alpine
+    container_name: wallone-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: wallone-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3 support
+    volumes:
+      - ./public:/var/www/public:ro
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - app-network
+    depends_on:
+      - app
+      - reverb
+    environment:
+      - DOMAIN=web.wallone.app
+      - ACME_AGREE=true
+
+  queue:
+    image: wallone-app:production
+    container_name: wallone-queue
+    restart: unless-stopped
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - app-network
+    depends_on:
+      - app
+      - redis
+    environment:
+      - PHP_MEMORY_LIMIT=512M
+
+  scheduler:
+    image: wallone-app:production
+    container_name: wallone-scheduler
+    restart: unless-stopped
+    command: /bin/sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+    volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
+    networks:
+      - app-network
+    depends_on:
+      - app
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
+  caddy-data:
+    driver: local
+  caddy-config:
+    driver: local
