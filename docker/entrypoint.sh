@@ -27,6 +27,22 @@ check_env_file() {
     fi
 }
 
+# Функция для подстановки переменных окружения в php.ini
+configure_php_ini() {
+    local php_ini="/usr/local/etc/php/conf.d/99-custom.ini"
+
+    if [ -f "$php_ini" ]; then
+        echo "🔧 Configuring PHP settings..."
+
+        # Заменяем переменные на их значения
+        sed -i "s|\${PHP_MEMORY_LIMIT}|${PHP_MEMORY_LIMIT:-512M}|g" "$php_ini"
+        sed -i "s|\${PHP_MAX_UPLOAD}|${PHP_MAX_UPLOAD:-50M}|g" "$php_ini"
+        sed -i "s|\${PHP_MAX_FILE_UPLOAD}|${PHP_MAX_FILE_UPLOAD:-200}|g" "$php_ini"
+
+        echo "✅ PHP configuration updated"
+    fi
+}
+
 # Функция для генерации APP_KEY
 generate_app_key() {
     local current_key=$(grep "^APP_KEY=" .env | cut -d '=' -f2-)
@@ -60,32 +76,123 @@ generate_reverb_keys() {
     fi
 }
 
+# Функция проверки подключения к базе данных
+check_database_connection() {
+    # Проверяем наличие необходимых переменных
+    if [ -z "$DB_HOST" ]; then
+        echo "⚠️  DB_HOST not set, skipping database check"
+        return 0
+    fi
+
+    if [ -z "$DB_DATABASE" ] || [ -z "$DB_USERNAME" ]; then
+        echo "❌ ERROR: DB_DATABASE or DB_USERNAME not set!"
+        if [ "$APP_ENV" = "production" ]; then
+            exit 1
+        fi
+        return 1
+    fi
+
+    echo "⏳ Checking database connection..."
+    echo "   Host: ${DB_HOST}:${DB_PORT:-3306}"
+    echo "   Database: ${DB_DATABASE}"
+    echo "   Username: ${DB_USERNAME}"
+
+    local MAX_TRIES=30
+    local COUNT=0
+    local CONNECTION_ERROR=""
+
+    # Проверяем подключение к серверу БД
+    while [ $COUNT -lt $MAX_TRIES ]; do
+        CONNECTION_ERROR=$(php -r "
+            try {
+                \$pdo = new PDO(
+                    'mysql:host=${DB_HOST};port=${DB_PORT:-3306};dbname=${DB_DATABASE}',
+                    '${DB_USERNAME}',
+                    '${DB_PASSWORD}',
+                    [
+                        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                        PDO::ATTR_TIMEOUT => 2
+                    ]
+                );
+                \$pdo->query('SELECT 1');
+                echo 'SUCCESS';
+                exit(0);
+            } catch (PDOException \$e) {
+                echo \$e->getMessage();
+                exit(1);
+            }
+        " 2>&1)
+
+        if [ $? -eq 0 ] && [ "$CONNECTION_ERROR" = "SUCCESS" ]; then
+            echo "✅ Database connection successful!"
+            return 0
+        fi
+
+        COUNT=$((COUNT + 1))
+        echo "   Attempt $COUNT/$MAX_TRIES failed: $CONNECTION_ERROR"
+
+        if [ $COUNT -lt $MAX_TRIES ]; then
+            sleep 2
+        fi
+    done
+
+    # Подключение не удалось после всех попыток
+    echo "❌ ERROR: Could not connect to database after $MAX_TRIES attempts"
+    echo "   Last error: $CONNECTION_ERROR"
+
+    if [ "$APP_ENV" = "production" ]; then
+        echo "🛑 Stopping container due to database connection failure in production"
+        exit 1
+    else
+        echo "⚠️  Warning: Continuing in non-production environment..."
+        return 1
+    fi
+}
+
 # Функция проверки Redis
 check_redis() {
-    if [ -n "$REDIS_HOST" ]; then
-        echo "⏳ Waiting for Redis to be ready..."
-        MAX_TRIES=30
-        COUNT=0
-        until php -r "
+    if [ -z "$REDIS_HOST" ]; then
+        echo "⚠️  REDIS_HOST not set, skipping Redis check"
+        return 0
+    fi
+
+    echo "⏳ Checking Redis connection..."
+    echo "   Host: ${REDIS_HOST}:${REDIS_PORT:-6379}"
+
+    local MAX_TRIES=30
+    local COUNT=0
+
+    while [ $COUNT -lt $MAX_TRIES ]; do
+        if php -r "
             \$redis = new Redis();
             try {
                 \$redis->connect('${REDIS_HOST}', ${REDIS_PORT:-6379}, 2);
+                echo 'SUCCESS';
                 exit(0);
             } catch (Exception \$e) {
+                echo \$e->getMessage();
                 exit(1);
             }
-        " 2>/dev/null || [ $COUNT -eq $MAX_TRIES ]; do
-            echo "Redis at ${REDIS_HOST}:${REDIS_PORT:-6379} is unavailable - sleeping (attempt $COUNT/$MAX_TRIES)"
-            COUNT=$((COUNT + 1))
-            sleep 2
-        done
-
-        if [ $COUNT -eq $MAX_TRIES ]; then
-            echo "⚠️  Warning: Could not connect to Redis after $MAX_TRIES attempts."
-        else
-            echo "✅ Redis is ready!"
+        " 2>&1 | grep -q "SUCCESS"; then
+            echo "✅ Redis connection successful!"
+            return 0
         fi
+
+        COUNT=$((COUNT + 1))
+        echo "   Attempt $COUNT/$MAX_TRIES failed"
+
+        if [ $COUNT -lt $MAX_TRIES ]; then
+            sleep 2
+        fi
+    done
+
+    echo "⚠️  Warning: Could not connect to Redis after $MAX_TRIES attempts"
+
+    if [ "$APP_ENV" = "production" ]; then
+        echo "⚠️  Redis is not available, but continuing (non-critical service)"
     fi
+
+    return 1
 }
 
 # Функция создания символической ссылки storage
@@ -123,6 +230,9 @@ check_composer_dependencies() {
         fi
     fi
 }
+
+# Конфигурация PHP с подстановкой переменных
+configure_php_ini
 
 # Проверка .env файла
 check_env_file

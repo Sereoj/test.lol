@@ -10,7 +10,7 @@ services:
     container_name: wallone-app
     restart: unless-stopped
     volumes:
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
       - caddy-data:/data
@@ -32,7 +32,7 @@ services:
     restart: unless-stopped
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     volumes:
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
     networks:
       - app-network
@@ -93,7 +93,7 @@ services:
     restart: unless-stopped
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     volumes:
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
     networks:
@@ -110,7 +110,7 @@ services:
     restart: unless-stopped
     command: /bin/sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
     volumes:
-      - ./.env:/var/www/.env:ro
+      - ./.env:/var/www/.env
       - ./storage:/var/www/storage
       - ./bootstrap/cache:/var/www/bootstrap/cache
     networks:
