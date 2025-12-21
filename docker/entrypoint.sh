@@ -244,23 +244,8 @@ check_composer_dependencies
 generate_app_key
 generate_reverb_keys
 
-# Ожидание готовности базы данных (внешняя БД)
-if [ -n "$DB_HOST" ]; then
-    echo "⏳ Waiting for database to be ready..."
-    MAX_TRIES=30
-    COUNT=0
-    until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-3306}', '${DB_USERNAME}', '${DB_PASSWORD}');" 2>/dev/null || [ $COUNT -eq $MAX_TRIES ]; do
-        echo "Database at ${DB_HOST} is unavailable - sleeping (attempt $COUNT/$MAX_TRIES)"
-        COUNT=$((COUNT + 1))
-        sleep 2
-    done
-
-    if [ $COUNT -eq $MAX_TRIES ]; then
-        echo "⚠️  Warning: Could not connect to database after $MAX_TRIES attempts. Continuing anyway..."
-    else
-        echo "✅ Database is ready!"
-    fi
-fi
+# Проверка подключения к базе данных
+check_database_connection
 
 # Проверка Redis
 check_redis
