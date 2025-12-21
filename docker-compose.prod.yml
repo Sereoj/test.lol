@@ -16,6 +16,8 @@ services:
       - caddy-data:/data
     networks:
       - app-network
+    env_file:
+      - .env
     environment:
       - PHP_MEMORY_LIMIT=512M
       - PHP_MAX_UPLOAD=50M
@@ -36,6 +38,8 @@ services:
       - ./storage:/var/www/storage
     networks:
       - app-network
+    env_file:
+      - .env
     environment:
       - PHP_MEMORY_LIMIT=256M
     depends_on:
@@ -98,6 +102,8 @@ services:
       - ./bootstrap/cache:/var/www/bootstrap/cache
     networks:
       - app-network
+    env_file:
+      - .env
     depends_on:
       - app
       - redis
@@ -115,6 +121,8 @@ services:
       - ./bootstrap/cache:/var/www/bootstrap/cache
     networks:
       - app-network
+    env_file:
+      - .env
     depends_on:
       - app
 
