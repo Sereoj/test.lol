@@ -66,13 +66,8 @@ Route::middleware('guest')->group(function () {
 
     Route::prefix('user')->group(function () {
         Route::prefix('{user}/posts')->group(function () {
-            Route::get('/', [UserPostController::class, 'index'])->name('posts.index.public');
+            Route::get('/', [UserPostController::class, 'index'])->name('user.posts.index.public');
         });
-    });
-
-    Route::prefix('challenges')->group(function () {
-       Route::get('/', [ChallengeController::class, 'index'])
-           ->name('challenges.index.public');
     });
 });
 

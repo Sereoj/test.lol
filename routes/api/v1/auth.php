@@ -156,7 +156,7 @@ Route::middleware('auth:api')->group(function () {
 
            Route::prefix('/posts')->group(function () {
                Route::get('/', [UserPostController::class, 'index'])
-                   ->name('posts.index');
+                   ->name('user.posts.index');
            });
         });
     });
@@ -238,7 +238,7 @@ Route::middleware('auth:api')->group(function () {
         Route::delete('/{avatarId}', [AvatarController::class, 'deleteAvatar'])
             ->name('avatars.delete');
         Route::post('/{avatarId}/set-active', [AvatarController::class, 'setActive'])
-            ->name('avatars.delete');
+            ->name('avatars.set-active');
     });
 
     // Обложки пользователя
@@ -402,9 +402,9 @@ Route::middleware('auth:api')->group(function () {
 // Маршруты для восстановления удаленного аккаунта (без аутентификации)
 Route::prefix('account/recovery')->group(function () {
     Route::post('/request', [AccountRecoveryController::class, 'requestRecovery'])
-        ->name('account.recovery.request');
+        ->name('account.recovery.request.auth');
     Route::post('/recover', [AccountRecoveryController::class, 'recoverAccount'])
-        ->name('account.recovery.recover');
+        ->name('account.recovery.recover.auth');
     Route::post('/check-status', [AccountRecoveryController::class, 'checkStatus'])
         ->name('account.recovery.check-status');
 });
