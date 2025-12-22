@@ -47,7 +47,7 @@ Route::middleware(['auth:api', 'role:admin'])->group(function () {
         Route::post('/', [SourceController::class, 'store'])
             ->name('sources.store'); // для администраторов
         Route::get('/{source}', [SourceController::class, 'show'])
-            ->name('sources.index'); // для администраторов
+            ->name('sources.show'); // для администраторов
         Route::put('/{id}', [SourceController::class, 'update'])
             ->name('sources.update'); // для администраторов
         Route::delete('/{id}', [SourceController::class, 'destroy'])

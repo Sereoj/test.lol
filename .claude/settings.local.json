@@ -31,7 +31,8 @@
       "Bash(docker-compose:*)",
       "Bash(xargs:*)",
       "Bash(/e/Programs/OpenServer/modules/php/PHP_8.2/php.exe:*)",
-      "Bash(docker exec:*)"
+      "Bash(docker exec:*)",
+      "Bash(php check-db-connection.php:*)"
     ],
     "deny": [],
     "ask": []

@@ -39,3 +39,5 @@ backup_*.sql
 # Certbot (если используется)
 /certbot/endpoints/custom.0.yaml
 /.scribe/
+
+check-db-connection.php
