@@ -54,7 +54,9 @@ return [
     'channels' => [
         'stack' => [
             'driver' => 'stack',
-            'channels' => ['single'],
+            'channels' => env('LOG_STACK_CHANNELS', 'daily,stderr') === 'single'
+                ? ['single']
+                : explode(',', env('LOG_STACK_CHANNELS', 'daily,stderr')),
             'ignore_exceptions' => false,
         ],
 
@@ -69,8 +71,17 @@ return [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
-            'days' => 14,
+            'days' => env('LOG_DAILY_DAYS', 7),
             'replace_placeholders' => true,
+        ],
+
+        'production' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => 'error',
+            'days' => 7,
+            'replace_placeholders' => true,
+            'permission' => 0664,
         ],
 
         'slack' => [
@@ -96,7 +107,7 @@ return [
 
         'stderr' => [
             'driver' => 'monolog',
-            'level' => env('LOG_LEVEL', 'debug'),
+            'level' => env('LOG_STDERR_LEVEL', env('LOG_LEVEL', 'debug')),
             'handler' => StreamHandler::class,
             'formatter' => env('LOG_STDERR_FORMATTER'),
             'with' => [

@@ -22,6 +22,11 @@ services:
       - PHP_MEMORY_LIMIT=512M
       - PHP_MAX_UPLOAD=50M
       - PHP_MAX_FILE_UPLOAD=200
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD-SHELL", "php-fpm -t"]
       interval: 30s
@@ -42,6 +47,11 @@ services:
       - .env
     environment:
       - PHP_MEMORY_LIMIT=256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
     depends_on:
       - app
     healthcheck:
@@ -60,6 +70,11 @@ services:
       - redis-data:/data
     networks:
       - app-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -84,6 +99,11 @@ services:
       - caddy-config:/config
     networks:
       - app-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - app
       - reverb
@@ -104,6 +124,11 @@ services:
       - app-network
     env_file:
       - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     depends_on:
       - app
       - redis
@@ -123,6 +148,11 @@ services:
       - app-network
     env_file:
       - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
     depends_on:
       - app
 
