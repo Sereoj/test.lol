@@ -42,8 +42,10 @@ class StorageService
             case 'ftp':
                 return $baseUrl . 'storage/' . $filePath;
             case 'local':
+                // For local disk, files are served through API route
+                return $baseUrl . '/api/v1/storage/' . $filePath;
             case 'public':
-                return $baseUrl . '/' . $filePath;
+                return $baseUrl . '/storage/' . $filePath;
             default:
                 return $baseUrl . '/' . $filePath;
         }
