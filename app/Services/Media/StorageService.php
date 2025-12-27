@@ -2,33 +2,50 @@
 
 namespace App\Services\Media;
 
+use Illuminate\Support\Facades\Storage;
+
 class StorageService
 {
-    public static $server = 'local';
-
-    public static function get()
+    /**
+     * Get current filesystem disk name
+     */
+    public static function get(): string
     {
-        return self::$server;
+        return config('filesystems.default', 'local');
     }
 
+    /**
+     * Get full URL path to file
+     */
     public static function getPath(?string $filePath): ?string
     {
-        $path = config('filesystems.disks.' . self::$server . '.url');
+        if ($filePath === null) {
+            return null;
+        }
 
-        if ($filePath == null)
-            return $filePath;
-
+        // If already a full URL, return as is
         if (str($filePath)->startsWith('http')) {
             return $filePath;
         }
 
-        switch (self::$server) {
+        $disk = self::get();
+
+        // For S3 and S3-compatible storage (like Beget Cloud Storage)
+        if ($disk === 's3') {
+            return Storage::disk('s3')->url($filePath);
+        }
+
+        // For local and other disks
+        $baseUrl = config("filesystems.disks.{$disk}.url");
+
+        switch ($disk) {
             case 'ftp':
-                return $path . 'storage/' . $filePath;
+                return $baseUrl . 'storage/' . $filePath;
             case 'local':
-                return $path . '/' . $filePath;
+            case 'public':
+                return $baseUrl . '/' . $filePath;
             default:
-                return '';
+                return $baseUrl . '/' . $filePath;
         }
     }
 }
