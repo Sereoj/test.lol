@@ -121,9 +121,10 @@ check_database_connection() {
                 echo \$e->getMessage();
                 exit(1);
             }
-        " 2>&1)
+        " 2>/dev/null)
+        PHP_EXIT_CODE=$?
 
-        if [ $? -eq 0 ] && [ "$CONNECTION_ERROR" = "SUCCESS" ]; then
+        if [ $PHP_EXIT_CODE -eq 0 ] && echo "$CONNECTION_ERROR" | grep -q "SUCCESS"; then
             echo "✅ Database connection successful!"
             return 0
         fi

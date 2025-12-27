@@ -34,7 +34,10 @@
       "Bash(docker exec:*)",
       "Bash(php check-db-connection.php:*)",
       "Bash(cat:*)",
-      "Bash(stat:*)"
+      "Bash(stat:*)",
+      "WebSearch",
+      "WebFetch(domain:axiom.co)",
+      "Bash(docker logs:*)"
     ],
     "deny": [],
     "ask": []
