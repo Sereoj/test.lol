@@ -32,6 +32,9 @@ class PassportSetup extends Command
         // Проверяем Password Grant Client
         $this->setupPasswordGrantClient();
 
+        // Очистка кеша конфигурации после обновления .env
+        $this->call('config:clear');
+
         $this->newLine();
         $this->info('✅ Passport setup complete!');
 
@@ -40,25 +43,20 @@ class PassportSetup extends Command
 
     private function setupPersonalAccessClient(): void
     {
-        $clientId = env('PASSPORT_PERSONAL_ACCESS_CLIENT_ID');
-        $clientSecret = env('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET');
+        // Ищем клиент по типу, а не по ID из .env
+        $existingClient = Client::where('personal_access_client', 1)->first();
 
-        // Проверяем существует ли клиент в БД
-        $existingClient = null;
-        if ($clientId) {
-            $existingClient = Client::find($clientId);
+        // Если force флаг установлен - пересоздаем клиента
+        if ($existingClient && $this->option('force')) {
+            $this->warn('Force flag detected, recreating Personal Access Client...');
+            $existingClient->delete();
+            $existingClient = null;
         }
 
-        // Если клиент не найден или force флаг установлен
-        if (!$existingClient || $this->option('force')) {
+        // Если клиент не найден - создаем новый
+        if (!$existingClient) {
             $this->warn('Creating Personal Access Client...');
 
-            // Удаляем старый клиент если есть
-            if ($existingClient && $this->option('force')) {
-                $existingClient->delete();
-            }
-
-            // Создаем новый Personal Access Client
             $clientRepository = new ClientRepository();
             $client = $clientRepository->createPersonalAccessClient(
                 null,
@@ -66,38 +64,46 @@ class PassportSetup extends Command
                 config('app.url')
             );
 
-            // Обновляем .env файл
+            // Обновляем .env файл и применяем в текущем процессе
             $this->updateEnvFile('PASSPORT_PERSONAL_ACCESS_CLIENT_ID', $client->id);
             $this->updateEnvFile('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET', $client->secret);
+            $this->applyEnvToCurrentProcess('PASSPORT_PERSONAL_ACCESS_CLIENT_ID', $client->id);
+            $this->applyEnvToCurrentProcess('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET', $client->secret);
 
             $this->info("✅ Personal Access Client created: {$client->id}");
-            $this->warn('⚠️  Please restart your application to load new .env values');
         } else {
-            $this->info("✅ Personal Access Client exists: {$existingClient->id}");
+            // Клиент существует - синхронизируем .env с БД
+            $envClientId = env('PASSPORT_PERSONAL_ACCESS_CLIENT_ID');
+
+            if ($envClientId != $existingClient->id) {
+                $this->warn("Syncing .env with database (DB: {$existingClient->id}, .env: {$envClientId})");
+                $this->updateEnvFile('PASSPORT_PERSONAL_ACCESS_CLIENT_ID', $existingClient->id);
+                $this->updateEnvFile('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET', $existingClient->secret);
+                $this->applyEnvToCurrentProcess('PASSPORT_PERSONAL_ACCESS_CLIENT_ID', $existingClient->id);
+                $this->applyEnvToCurrentProcess('PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET', $existingClient->secret);
+                $this->info("✅ .env synchronized with database");
+            } else {
+                $this->info("✅ Personal Access Client exists: {$existingClient->id}");
+            }
         }
     }
 
     private function setupPasswordGrantClient(): void
     {
-        $clientId = env('PASSPORT_PASSWORD_CLIENT_ID');
-        $clientSecret = env('PASSPORT_PASSWORD_CLIENT_SECRET');
+        // Ищем клиент по типу, а не по ID из .env
+        $existingClient = Client::where('password_client', 1)->first();
 
-        // Проверяем существует ли клиент в БД
-        $existingClient = null;
-        if ($clientId) {
-            $existingClient = Client::find($clientId);
+        // Если force флаг установлен - пересоздаем клиента
+        if ($existingClient && $this->option('force')) {
+            $this->warn('Force flag detected, recreating Password Grant Client...');
+            $existingClient->delete();
+            $existingClient = null;
         }
 
-        // Если клиент не найден или force флаг установлен
-        if (!$existingClient || $this->option('force')) {
+        // Если клиент не найден - создаем новый
+        if (!$existingClient) {
             $this->warn('Creating Password Grant Client...');
 
-            // Удаляем старый клиент если есть
-            if ($existingClient && $this->option('force')) {
-                $existingClient->delete();
-            }
-
-            // Создаем новый Password Grant Client
             $clientRepository = new ClientRepository();
             $client = $clientRepository->createPasswordGrantClient(
                 null,
@@ -105,14 +111,27 @@ class PassportSetup extends Command
                 config('app.url')
             );
 
-            // Обновляем .env файл
+            // Обновляем .env файл и применяем в текущем процессе
             $this->updateEnvFile('PASSPORT_PASSWORD_CLIENT_ID', $client->id);
             $this->updateEnvFile('PASSPORT_PASSWORD_CLIENT_SECRET', $client->secret);
+            $this->applyEnvToCurrentProcess('PASSPORT_PASSWORD_CLIENT_ID', $client->id);
+            $this->applyEnvToCurrentProcess('PASSPORT_PASSWORD_CLIENT_SECRET', $client->secret);
 
             $this->info("✅ Password Grant Client created: {$client->id}");
-            $this->warn('⚠️  Please restart your application to load new .env values');
         } else {
-            $this->info("✅ Password Grant Client exists: {$existingClient->id}");
+            // Клиент существует - синхронизируем .env с БД
+            $envClientId = env('PASSPORT_PASSWORD_CLIENT_ID');
+
+            if ($envClientId != $existingClient->id) {
+                $this->warn("Syncing .env with database (DB: {$existingClient->id}, .env: {$envClientId})");
+                $this->updateEnvFile('PASSPORT_PASSWORD_CLIENT_ID', $existingClient->id);
+                $this->updateEnvFile('PASSPORT_PASSWORD_CLIENT_SECRET', $existingClient->secret);
+                $this->applyEnvToCurrentProcess('PASSPORT_PASSWORD_CLIENT_ID', $existingClient->id);
+                $this->applyEnvToCurrentProcess('PASSPORT_PASSWORD_CLIENT_SECRET', $existingClient->secret);
+                $this->info("✅ .env synchronized with database");
+            } else {
+                $this->info("✅ Password Grant Client exists: {$existingClient->id}");
+            }
         }
     }
 
@@ -142,5 +161,13 @@ class PassportSetup extends Command
 
         file_put_contents($envFile, $content);
         $this->line("Updated .env: {$key}");
+    }
+
+    private function applyEnvToCurrentProcess(string $key, string $value): void
+    {
+        // Применяем изменения в текущем процессе
+        putenv("{$key}={$value}");
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
     }
 }

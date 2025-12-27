@@ -327,6 +327,14 @@ if [ "$APP_ENV" = "production" ]; then
     fi
 fi
 
+# Синхронизация Laravel Passport клиентов (при каждом запуске)
+echo "🔐 Checking Laravel Passport clients..."
+php artisan passport:setup 2>&1 | while IFS= read -r line; do
+    echo "   $line"
+done || {
+    echo "⚠️  Warning: Passport setup check failed"
+}
+
 # Только при первом запуске или если передан флаг INIT_DB=true
 if [ "$INIT_DB" = "true" ] || [ ! -f /var/www/storage/.initialized ]; then
     echo "🗄️  Running database migrations..."
@@ -334,18 +342,13 @@ if [ "$INIT_DB" = "true" ] || [ ! -f /var/www/storage/.initialized ]; then
         echo "⚠️  Warning: Migration failed, continuing..."
     }
 
-    # Инициализация Laravel Passport (ключи + клиенты)
-    echo "🔐 Setting up Laravel Passport..."
-    php artisan passport:setup || {
-        echo "⚠️  Warning: Passport setup failed, retrying with force..."
-        php artisan passport:setup --force || {
-            echo "❌ ERROR: Passport setup failed"
-            if [ "$APP_ENV" = "production" ]; then
-                exit 1
-            fi
+    # Генерация OAuth ключей при первом запуске
+    if [ ! -f "storage/oauth-private.key" ]; then
+        echo "🔑 Generating OAuth keys..."
+        php artisan passport:keys --force || {
+            echo "⚠️  Warning: Failed to generate OAuth keys"
         }
-    }
-    echo "✅ Passport setup complete"
+    fi
 
     # Отметка об инициализации
     touch /var/www/storage/.initialized
