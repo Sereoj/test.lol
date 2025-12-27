@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\HealthController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -11,6 +12,9 @@ use Illuminate\Support\Facades\Route;
 | Все маршруты будут иметь префикс 'api' благодаря RouteServiceProvider.
 |
 */
+
+// Health Check endpoint (без версии, для мониторинга)
+Route::get('/health', [HealthController::class, 'check'])->name('health.check');
 
 // Версия 1 API (текущая)
 Route::prefix('v1')->group(function () {
