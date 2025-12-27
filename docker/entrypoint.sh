@@ -250,6 +250,38 @@ check_database_connection
 # Проверка Redis
 check_redis
 
+# Функция проверки S3
+check_s3() {
+    if [ "$FILESYSTEM_DISK" != "s3" ]; then
+        echo "ℹ️  S3 is not configured as default filesystem, skipping check"
+        return 0
+    fi
+
+    if [ -z "$AWS_ENDPOINT" ] || [ -z "$AWS_BUCKET" ]; then
+        echo "⚠️  S3 environment variables not set, skipping check"
+        return 0
+    fi
+
+    echo "⏳ Checking S3 connection..."
+    echo "   Endpoint: ${AWS_ENDPOINT}"
+    echo "   Bucket: ${AWS_BUCKET}"
+
+    # Используем artisan команду для проверки
+    if php artisan storage:check-s3 2>&1 | grep -q "working correctly"; then
+        echo "✅ S3 connection successful!"
+        return 0
+    else
+        echo "⚠️  Warning: S3 connection check failed"
+        if [ "$APP_ENV" = "production" ]; then
+            echo "⚠️  S3 is not available, but continuing (will use fallback if configured)"
+        fi
+        return 1
+    fi
+}
+
+# Проверка S3
+check_s3
+
 # Создание необходимых директорий если их нет
 echo "📁 Ensuring required directories exist..."
 mkdir -p storage/logs \
@@ -301,63 +333,18 @@ if [ "$INIT_DB" = "true" ] || [ ! -f /var/www/storage/.initialized ]; then
         echo "⚠️  Warning: Migration failed, continuing..."
     }
 
-    # Инициализация Laravel Passport
-    if [ ! -f /var/www/storage/oauth-private.key ]; then
-        echo "🔐 Initializing Laravel Passport..."
-        php artisan passport:keys --force || {
-            echo "⚠️  Warning: Passport keys generation failed"
+    # Инициализация Laravel Passport (ключи + клиенты)
+    echo "🔐 Setting up Laravel Passport..."
+    php artisan passport:setup || {
+        echo "⚠️  Warning: Passport setup failed, retrying with force..."
+        php artisan passport:setup --force || {
+            echo "❌ ERROR: Passport setup failed"
+            if [ "$APP_ENV" = "production" ]; then
+                exit 1
+            fi
         }
-    else
-        echo "✅ Passport keys already exist"
-    fi
-
-    # Создание Personal Access Client если не существует
-    local personal_client_id=$(grep "^PASSPORT_PERSONAL_ACCESS_CLIENT_ID=" .env | cut -d '=' -f2-)
-    if [ -z "$personal_client_id" ] || [ "$personal_client_id" = "" ]; then
-        echo "🔐 Creating Passport Personal Access Client..."
-
-        # Создаем клиент и парсим вывод
-        OUTPUT=$(php artisan passport:client --personal --no-interaction 2>&1)
-
-        # Извлекаем Client ID и Client Secret
-        CLIENT_ID=$(echo "$OUTPUT" | grep "Client ID:" | awk '{print $3}')
-        CLIENT_SECRET=$(echo "$OUTPUT" | grep "Client secret:" | awk '{print $3}')
-
-        if [ -n "$CLIENT_ID" ] && [ -n "$CLIENT_SECRET" ]; then
-            # Обновляем .env файл
-            sed -i "s|^PASSPORT_PERSONAL_ACCESS_CLIENT_ID=.*|PASSPORT_PERSONAL_ACCESS_CLIENT_ID=$CLIENT_ID|" .env
-            sed -i "s|^PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=.*|PASSPORT_PERSONAL_ACCESS_CLIENT_SECRET=$CLIENT_SECRET|" .env
-            echo "✅ Personal Access Client created: $CLIENT_ID"
-        else
-            echo "⚠️  Warning: Could not extract Passport client credentials"
-        fi
-    else
-        echo "✅ Passport Personal Access Client already configured"
-    fi
-
-    # Создание Password Grant Client если не существует
-    local password_client_id=$(grep "^PASSPORT_PASSWORD_CLIENT_ID=" .env | cut -d '=' -f2-)
-    if [ -z "$password_client_id" ] || [ "$password_client_id" = "" ]; then
-        echo "🔐 Creating Passport Password Grant Client..."
-
-        # Создаем password клиент
-        OUTPUT=$(php artisan passport:client --password --no-interaction --name="Wallone Password Grant" 2>&1)
-
-        # Извлекаем Client ID и Client Secret
-        CLIENT_ID=$(echo "$OUTPUT" | grep "Client ID:" | awk '{print $3}')
-        CLIENT_SECRET=$(echo "$OUTPUT" | grep "Client secret:" | awk '{print $3}')
-
-        if [ -n "$CLIENT_ID" ] && [ -n "$CLIENT_SECRET" ]; then
-            # Обновляем .env файл
-            sed -i "s|^PASSPORT_PASSWORD_CLIENT_ID=.*|PASSPORT_PASSWORD_CLIENT_ID=$CLIENT_ID|" .env
-            sed -i "s|^PASSPORT_PASSWORD_CLIENT_SECRET=.*|PASSPORT_PASSWORD_CLIENT_SECRET=$CLIENT_SECRET|" .env
-            echo "✅ Password Grant Client created: $CLIENT_ID"
-        else
-            echo "⚠️  Warning: Could not extract Password Grant client credentials"
-        fi
-    else
-        echo "✅ Passport Password Grant Client already configured"
-    fi
+    }
+    echo "✅ Passport setup complete"
 
     # Отметка об инициализации
     touch /var/www/storage/.initialized
