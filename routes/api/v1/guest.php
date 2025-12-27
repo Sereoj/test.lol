@@ -18,6 +18,7 @@ use App\Http\Controllers\Users\UserLanguageController;
 use App\Http\Controllers\Users\UserPostController;
 use App\Http\Controllers\Users\UserProfileController;
 use App\Http\Controllers\BadgeController;
+use App\Http\Controllers\Help\HelpSearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -165,4 +166,10 @@ Route::prefix('badges')->group(function () {
 Route::prefix('stats')->group(function () {
     Route::get('/platform', [PlatformStatsController::class, 'index'])
         ->name('stats.platform.public');
+});
+
+// Поиск по базе знаний
+Route::prefix('help')->group(function () {
+    Route::get('/search', [HelpSearchController::class, 'search'])
+        ->name('help.search.public');
 });
