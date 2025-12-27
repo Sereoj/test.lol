@@ -45,29 +45,55 @@ class MediaService
         foreach ($files as $file) {
             try {
                 $mimeType = $file->getMimeType();
+                $originalName = $file->getClientOriginalName();
 
-                $cacheKey = sprintf('file_%s_%s', Auth::id(), md5($file->getClientOriginalName()));
-                Log::info($cacheKey);
+                Log::info('MediaService: Processing file', [
+                    'file_name' => $originalName,
+                    'mime_type' => $mimeType,
+                    'size' => $file->getSize(),
+                    'user_id' => Auth::id(),
+                ]);
+
+                $cacheKey = sprintf('file_%s_%s', Auth::id(), md5($originalName));
 
                 if (Cache::has($cacheKey)) {
                     $cachedData = Cache::get($cacheKey);
                     $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
-                    Log::info('Отображаю кеш '.$cacheKey);
+                    Log::info('MediaService: Using cached file', [
+                        'cache_key' => $cacheKey,
+                        'file_name' => $originalName,
+                    ]);
                     continue;
                 }
 
                 $type = FileHelper::determineFileType($mimeType);
                 if (! $type) {
-                    Log::error("Unsupported file type: {$mimeType}.");
+                    Log::error("MediaService: Unsupported file type", [
+                        'file_name' => $originalName,
+                        'mime_type' => $mimeType,
+                    ]);
                     continue;
                 }
+
+                Log::info('MediaService: Uploading file to storage', [
+                    'file_name' => $originalName,
+                    'type' => $type,
+                    'disk' => StorageService::get(),
+                ]);
 
                 $results = $this->mediaHandler->handleFile($type, $file, $originalPath, $processedPath);
 
                 if (empty($results)) {
-                    Log::error("Failed to process file {$file->getClientOriginalName()}.");
+                    Log::error("MediaService: Failed to process file", [
+                        'file_name' => $originalName,
+                    ]);
                     continue;
                 }
+
+                Log::info('MediaService: File uploaded, creating media records', [
+                    'file_name' => $originalName,
+                    'results' => $results,
+                ]);
 
                 $width = null;
                 $height = null;
@@ -86,15 +112,18 @@ class MediaService
                 $mediaData = [];
 
                 foreach ($results as $resultType => $path) {
+                    $disk = StorageService::get();
+                    $url = StorageService::getPath($path);
+
                     $media = $this->mediaRepository->create([
                         'uuid' => Str::uuid(),
-                        'name' => $file->getClientOriginalName(),
+                        'name' => $originalName,
                         'file_path' => $path,
                         'type' => $resultType,
                         'mime_type' => $mimeType,
                         'size' => $file->getSize(),
                         'user_id' => Auth::id(),
-                        'disk' => StorageService::get(),
+                        'disk' => $disk,
                         'is_public' => true,
                         'width' => $width,
                         'height' => $height,
@@ -106,13 +135,31 @@ class MediaService
                     }
 
                     $mediaData[] = $media;
+
+                    Log::info('MediaService: Media record created', [
+                        'media_id' => $media->id,
+                        'file_name' => $originalName,
+                        'type' => $resultType,
+                        'path' => $path,
+                        'url' => $url,
+                        'disk' => $disk,
+                    ]);
                 }
 
                 Cache::put($cacheKey, $mediaData, now()->addMinutes(60));
                 $allCreatedFiles = array_merge($allCreatedFiles, $mediaData);
 
+                Log::info('MediaService: File processing completed', [
+                    'file_name' => $originalName,
+                    'media_count' => count($mediaData),
+                ]);
+
             } catch (Exception $e) {
-                Log::error("Error processing file {$file->getClientOriginalName()}: {$e->getMessage()}");
+                Log::error("MediaService: Error processing file", [
+                    'file_name' => $file->getClientOriginalName(),
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             }
         }
 

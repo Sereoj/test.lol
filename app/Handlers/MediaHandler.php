@@ -48,14 +48,53 @@ class MediaHandler
     ): array {
         $results = [];
         $fileName = Str::random($this->length).'.'.$file->getClientOriginalExtension();
-        //Storage::disk('ftp')->putFileAs($this->directoryName, $file, $fileName);
-        $path = Storage::disk($this->disk)->putFileAs($this->directoryName, $file, $fileName);
-        $results['original'] = $path;
 
-        Log::info('File:', [
-            'file' => $results['original'],
+        Log::info('MediaHandler: Starting file upload', [
+            'original_name' => $file->getClientOriginalName(),
+            'generated_name' => $fileName,
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize(),
             'disk' => $this->disk,
+            'directory' => $this->directoryName,
         ]);
+
+        try {
+            // Upload file with public visibility and ACL for S3
+            $uploadOptions = ['visibility' => 'public'];
+
+            // For S3, add explicit ACL header
+            if ($this->disk === 's3') {
+                $uploadOptions['ACL'] = 'public-read';
+            }
+
+            $path = Storage::disk($this->disk)->putFileAs(
+                $this->directoryName,
+                $file,
+                $fileName,
+                $uploadOptions
+            );
+
+            $results['original'] = $path;
+
+            // Get full URL for verification
+            $url = Storage::disk($this->disk)->url($path);
+
+            Log::info('MediaHandler: File uploaded successfully', [
+                'path' => $path,
+                'url' => $url,
+                'disk' => $this->disk,
+                'upload_options' => $uploadOptions,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('MediaHandler: File upload failed', [
+                'file' => $fileName,
+                'disk' => $this->disk,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
 
 
 /*        if ($type === 'image') {

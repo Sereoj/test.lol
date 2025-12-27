@@ -76,7 +76,8 @@ class Media extends Model
 
     public function getUrlAttribute()
     {
-        return StorageService::getPath($this->file_path);
+        // Use the disk from the media record, not the current config
+        return StorageService::getPath($this->file_path, $this->disk);
     }
 
     public function scopeOriginal($query)

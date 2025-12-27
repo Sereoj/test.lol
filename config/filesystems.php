@@ -56,6 +56,9 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', true),
             'visibility' => 'public',
             'throw' => false,
+            'options' => [
+                'CacheControl' => 'max-age=31536000',
+            ],
         ],
         'ftp' => [
             'driver' => 'ftp',

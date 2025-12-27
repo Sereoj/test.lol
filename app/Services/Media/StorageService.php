@@ -16,8 +16,12 @@ class StorageService
 
     /**
      * Get full URL path to file
+     *
+     * @param string|null $filePath File path
+     * @param string|null $disk Specific disk to use (optional, uses default if not specified)
+     * @return string|null
      */
-    public static function getPath(?string $filePath): ?string
+    public static function getPath(?string $filePath, ?string $disk = null): ?string
     {
         if ($filePath === null) {
             return null;
@@ -28,7 +32,8 @@ class StorageService
             return $filePath;
         }
 
-        $disk = self::get();
+        // Use specified disk or default
+        $disk = $disk ?? self::get();
 
         // For S3 and S3-compatible storage (like Beget Cloud Storage)
         if ($disk === 's3') {
