@@ -38,23 +38,64 @@ class UserCoverService
             throw new Exception('Пользователь не найден');
         }
 
+        Log::info('UserCoverService: Starting cover upload', [
+            'user_id' => $userId,
+            'file_name' => $coverFile->getClientOriginalName(),
+            'file_size' => $coverFile->getSize(),
+            'mime_type' => $coverFile->getMimeType(),
+            'disk' => $this->disk,
+        ]);
+
         $this->removeOldCover($user);
 
         $filename = $this->generateCoverFilename($coverFile);
 
-        $isUploaded = Storage::disk($this->disk)->put($this->path . $filename, $coverFile);
+        try {
+            // Upload file with public visibility and ACL for S3
+            $uploadOptions = ['visibility' => 'public'];
 
-        if (!$isUploaded) {
-            throw new Exception('Обложка не загружена');
+            // For S3, add explicit ACL header
+            if ($this->disk === 's3') {
+                $uploadOptions['ACL'] = 'public-read';
+            }
+
+            $filePath = Storage::disk($this->disk)->putFileAs(
+                $this->path,
+                $coverFile,
+                $filename,
+                $uploadOptions
+            );
+
+            if (!$filePath) {
+                throw new Exception('Не удалось загрузить обложку');
+            }
+
+            // Get full URL for verification
+            $url = StorageService::getPath($filePath, $this->disk);
+
+            Log::info('UserCoverService: Cover uploaded successfully', [
+                'user_id' => $userId,
+                'path' => $filePath,
+                'url' => $url,
+                'disk' => $this->disk,
+            ]);
+
+            $user->cover = $filePath;
+            $user->disk = $this->disk;
+            $user->save();
+
+            return $user;
+
+        } catch (\Exception $e) {
+            Log::error('UserCoverService: Cover upload failed', [
+                'user_id' => $userId,
+                'filename' => $filename,
+                'disk' => $this->disk,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw new Exception('Ошибка при загрузке обложки: ' . $e->getMessage());
         }
-
-        $filePath = $this->path . $filename;
-
-        $user->cover = $filePath;
-        $user->disk = $this->disk;
-        $user->save();
-
-        return $user;
     }
 
     /**
