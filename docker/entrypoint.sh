@@ -420,6 +420,15 @@ if [ "$(id -u)" = "0" ]; then
             chown -R www-data:www-data "$dir" 2>/dev/null || true
         fi
     done
+
+    # Явно устанавливаем права на OAuth ключи
+    if [ -f "storage/oauth-private.key" ]; then
+        echo "🔑 Setting permissions for OAuth keys..."
+        chown www-data:www-data storage/oauth-private.key storage/oauth-public.key 2>/dev/null || true
+        chmod 600 storage/oauth-private.key 2>/dev/null || true
+        chmod 644 storage/oauth-public.key 2>/dev/null || true
+        echo "✅ OAuth keys permissions updated"
+    fi
 fi
 
 # Проверка конфигурации Laravel
