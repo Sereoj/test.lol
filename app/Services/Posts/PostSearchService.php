@@ -81,7 +81,17 @@ class PostSearchService
 
             return [];
         }
-        $baseQuery = Post::query()->with('media', 'user');
+        $baseQuery = Post::query()->with('media', 'user', 'statistics');
+
+        // Параметры для CASE (relevance scoring)
+        $relevanceParams = [
+            $queries[0],          // Точное совпадение для title
+            $queries[0].'%',    // Начинается с для title
+            $queries[0].'%',    // Начинается с (в контенте)
+            $queries[0].'%',    // Начинается с для slug
+            '%'.$queries[0].'%', // Содержит для title
+            '%'.$queries[0].'%', // Содержит для content
+        ];
 
         $relevanceCase = '
             CASE
@@ -95,28 +105,22 @@ class PostSearchService
             END as relevance_score
         ';
 
-        $bindParams = [
-            $queries[0],          // Точное совпадение для title
-            $queries[0].'%',    // Начинается с для title
-            $queries[0].'%',    // Начинается с (в контенте)
-            $queries[0].'%',    // Начинается с для slug
-            '%'.$queries[0].'%', // Содержит для title
-            '%'.$queries[0].'%', // Содержит для content
-        ];
-
+        // Параметры для WHERE условий
         $whereConditions = [];
+        $whereParams = [];
         foreach ($queries as $query) {
             $whereConditions[] = '(title LIKE ? OR content LIKE ? OR slug LIKE ?)';
-            $bindParams[] = '%'.$query.'%'; // Для title
-            $bindParams[] = '%'.$query.'%'; // Для content
-            $bindParams[] = '%'.$query.'%'; // Для slug
+            $whereParams[] = '%'.$query.'%'; // Для title
+            $whereParams[] = '%'.$query.'%'; // Для content
+            $whereParams[] = '%'.$query.'%'; // Для slug
         }
 
+        // ВАЖНО: selectRaw и whereRaw используют РАЗНЫЕ массивы параметров
         return $baseQuery
-            ->selectRaw("*, $relevanceCase")
-            ->whereRaw(implode(' OR ', $whereConditions), $bindParams)
-            ->whereNull('deleted_at')
+            ->selectRaw("*, $relevanceCase", $relevanceParams)
+            ->whereRaw(implode(' OR ', $whereConditions), $whereParams)
             ->orderByRaw('relevance_score DESC')
+            ->limit(50)
             ->get();
     }
 
@@ -125,7 +129,7 @@ class PostSearchService
      */
     protected function searchTags(array $queries): mixed
     {
-        return $this->performSearch(Tag::query(), $queries, ['slug']);
+        return $this->performSearch(Tag::query(), $queries, ['slug'], 30);
     }
 
     /**
@@ -133,13 +137,19 @@ class PostSearchService
      */
     protected function searchUsers(array $queries)
     {
-        return $this->performSearch(User::with(['avatars', 'badges', 'onlineStatus', 'role', 'followers']), $queries, ['username', 'description', 'slug']);
+        return $this->performSearch(
+            User::with(['avatars', 'badges', 'onlineStatus', 'role'])
+                ->withCount('followers'),
+            $queries,
+            ['username', 'description', 'slug'],
+            30
+        );
     }
 
     /**
      * Общий метод для выполнения поиска.
      */
-    protected function performSearch($queryBuilder, array $queries, array $fields)
+    protected function performSearch($queryBuilder, array $queries, array $fields, int $limit = 50)
     {
         if (empty($queries)) {
             return [];
@@ -149,7 +159,7 @@ class PostSearchService
             $this->buildSearchConditions($q, $queries, $fields);
         });
 
-        return $queryBuilder->get();
+        return $queryBuilder->limit($limit)->get();
     }
 
     /**

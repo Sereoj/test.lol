@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SearchRequest;
-use App\Http\Resources\Search\SearchThumbMediaResource;
 use App\Http\Resources\Search\ShortSearchTagResource;
 use App\Http\Resources\ThumbUserMediaResource;
 use App\Http\Resources\UserSearchResource;
@@ -37,12 +36,21 @@ class PostSearchController extends Controller
     {
         try {
             $query = $request->input('query');
-            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query);
+            $userId = $request->user()?->id;
+            $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query . '_' . ($userId ?? 'guest'));
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->search($query);
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
-                return $searchResults;
+
+                // Преобразуем RAW данные в Resources
+                $formattedResults = [
+                    'posts' => ThumbUserMediaResource::collection($searchResults['posts']),
+                    'tags' => ShortSearchTagResource::collection($searchResults['tags']),
+                    'users' => UserSearchResource::collection($searchResults['users']),
+                ];
+
+                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey]);
+                return $formattedResults;
             });
 
             Log::info("Results returned for query: {$query}");

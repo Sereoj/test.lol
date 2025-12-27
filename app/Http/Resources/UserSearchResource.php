@@ -62,6 +62,8 @@ class UserSearchResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $authUserId = $request->user()?->id;
+
         return [
           'id' => $this->id,
           'username' => $this->username,
@@ -70,7 +72,10 @@ class UserSearchResource extends JsonResource
           'verification' => $this->verification,
           'online' => new OnlineStatusResource($this->whenLoaded('onlineStatus')),
           'role' => new RoleResource($this->whenLoaded('role')),
-          'followers_count' => $this->followers->count() ?? 0,
+          'followers_count' => $this->followers_count ?? 0,
+          'is_following' => $authUserId
+              ? $this->followers()->where('follower_id', $authUserId)->exists()
+              : false,
         ];
     }
 }

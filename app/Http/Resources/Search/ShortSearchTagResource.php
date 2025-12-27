@@ -51,7 +51,7 @@ class ShortSearchTagResource extends JsonResource
           'id' => $this->id,
           'name' => $this->name,
           'slug' => $this->slug,
-          'count' => $this->count ?? 1,
+          'posts_count' => $this->posts_count ?? $this->count ?? 0,
           'created_at' => $this->created_at,
         ];
     }
