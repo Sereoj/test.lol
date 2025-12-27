@@ -129,7 +129,7 @@ class PostSearchService
      */
     protected function searchTags(array $queries): mixed
     {
-        return $this->performSearch(Tag::query(), $queries, ['slug'], 30);
+        return $this->performSearch(Tag::withCount('posts'), $queries, ['slug'], 30);
     }
 
     /**
