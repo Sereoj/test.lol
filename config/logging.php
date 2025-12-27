@@ -129,6 +129,16 @@ return [
             'replace_placeholders' => true,
         ],
 
+        'axiom' => [
+            'driver' => 'monolog',
+            'handler' => \App\Logging\AxiomHandler::class,
+            'level' => env('LOG_LEVEL', 'debug'),
+            'with' => [
+                'apiToken' => env('AXIOM_API_TOKEN'),
+                'dataset' => env('AXIOM_DATASET'),
+            ],
+        ],
+
         'null' => [
             'driver' => 'monolog',
             'handler' => NullHandler::class,
