@@ -81,6 +81,8 @@ class PostSearchService
 
             return [];
         }
+
+        // 1. Поиск постов по title, content, slug
         $baseQuery = Post::query()->with('media', 'user', 'statistics');
 
         // Параметры для CASE (relevance scoring)
@@ -116,12 +118,33 @@ class PostSearchService
         }
 
         // ВАЖНО: selectRaw и whereRaw используют РАЗНЫЕ массивы параметров
-        return $baseQuery
+        $postsByContent = $baseQuery
             ->selectRaw("*, $relevanceCase", $relevanceParams)
             ->whereRaw(implode(' OR ', $whereConditions), $whereParams)
             ->orderByRaw('relevance_score DESC')
             ->limit(50)
             ->get();
+
+        // 2. Поиск постов по тегам
+        $tags = $this->searchTags($queries);
+        $postsByTags = collect();
+
+        if ($tags->count() > 0) {
+            $tagIds = $tags->pluck('id')->toArray();
+
+            $postsByTags = Post::query()
+                ->with('media', 'user', 'statistics')
+                ->whereHas('tags', function ($query) use ($tagIds) {
+                    $query->whereIn('tags.id', $tagIds);
+                })
+                ->limit(50)
+                ->get();
+        }
+
+        // 3. Объединяем результаты и убираем дубликаты
+        $allPosts = $postsByContent->merge($postsByTags)->unique('id');
+
+        return $allPosts->take(50);
     }
 
     /**
