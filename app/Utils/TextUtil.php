@@ -63,6 +63,12 @@ class TextUtil
     // Обработка вариантов
     public static function generateVariants(string $text): array
     {
+        // Проверка на пустую строку или только пробелы
+        $trimmed = trim($text);
+        if (empty($trimmed)) {
+            return [];
+        }
+
         $variants = [];
 
         // Оригинал
@@ -93,7 +99,11 @@ class TextUtil
         }
 
         // Удаляем дубликаты и пустые значения
-        return array_unique(array_filter($variants));
+        $filtered = array_filter($variants, function($variant) {
+            return !empty(trim($variant));
+        });
+
+        return array_values(array_unique($filtered));
     }
 
     // Метод для проверки, содержит ли строка кириллические символы

@@ -39,8 +39,8 @@ class SearchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'query' => 'required_without:q|string|min:3',
-            'q' => 'required_without:query|string|min:3',
+            'query' => 'required_without:q|string|min:3|regex:/\S/',
+            'q' => 'required_without:query|string|min:3|regex:/\S/',
         ];
     }
 
@@ -48,7 +48,11 @@ class SearchRequest extends FormRequest
     {
         return [
             'query.required_without' => 'The query field is required when q is not present.',
+            'query.min' => 'The query must be at least 3 characters.',
+            'query.regex' => 'The query must contain at least one non-whitespace character.',
             'q.required_without' => 'The q field is required when query is not present.',
+            'q.min' => 'The q field must be at least 3 characters.',
+            'q.regex' => 'The q field must contain at least one non-whitespace character.',
         ];
     }
 

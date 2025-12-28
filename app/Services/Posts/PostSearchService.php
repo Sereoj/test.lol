@@ -85,27 +85,35 @@ class PostSearchService
         // 1. Поиск постов по title, content, slug
         $baseQuery = Post::query()->with('media', 'user', 'statistics');
 
-        // Параметры для CASE (relevance scoring)
-        $relevanceParams = [
-            $queries[0],          // Точное совпадение для title
-            $queries[0].'%',    // Начинается с для title
-            $queries[0].'%',    // Начинается с (в контенте)
-            $queries[0].'%',    // Начинается с для slug
-            '%'.$queries[0].'%', // Содержит для title
-            '%'.$queries[0].'%', // Содержит для content
-        ];
+        // Строим CASE для relevance scoring с учетом ВСЕХ вариантов запроса
+        $relevanceCases = [];
+        $relevanceParams = [];
 
-        $relevanceCase = '
-            CASE
-                WHEN title = ? THEN 100
-                WHEN title LIKE ? THEN 75
-                WHEN content LIKE ? THEN 75
-                WHEN slug LIKE ? THEN 50
-                WHEN title LIKE ? THEN 50
-                WHEN content LIKE ? THEN 50
-                ELSE 25
-            END as relevance_score
-        ';
+        foreach ($queries as $query) {
+            // Точное совпадение (наивысший приоритет)
+            $relevanceCases[] = 'WHEN title = ? THEN 100';
+            $relevanceParams[] = $query;
+
+            // Начинается с (высокий приоритет)
+            $relevanceCases[] = 'WHEN title LIKE ? THEN 75';
+            $relevanceParams[] = $query.'%';
+
+            $relevanceCases[] = 'WHEN content LIKE ? THEN 75';
+            $relevanceParams[] = $query.'%';
+
+            // Slug (средний приоритет)
+            $relevanceCases[] = 'WHEN slug LIKE ? THEN 50';
+            $relevanceParams[] = $query.'%';
+
+            // Содержит (низкий приоритет)
+            $relevanceCases[] = 'WHEN title LIKE ? THEN 50';
+            $relevanceParams[] = '%'.$query.'%';
+
+            $relevanceCases[] = 'WHEN content LIKE ? THEN 50';
+            $relevanceParams[] = '%'.$query.'%';
+        }
+
+        $relevanceCase = 'CASE ' . implode(' ', $relevanceCases) . ' ELSE 25 END as relevance_score';
 
         // Параметры для WHERE условий
         $whereConditions = [];
@@ -152,7 +160,21 @@ class PostSearchService
      */
     protected function searchTags(array $queries): mixed
     {
-        return $this->performSearch(Tag::withCount('posts'), $queries, ['slug'], 30);
+        if (empty($queries)) {
+            return collect();
+        }
+
+        $queryBuilder = Tag::withCount('posts');
+
+        $queryBuilder->where(function ($q) use ($queries) {
+            foreach ($queries as $query) {
+                $q->orWhere('slug', 'LIKE', '%' . $query . '%')
+                  ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.ru"))) LIKE ?', ['%' . strtolower($query) . '%'])
+                  ->orWhereRaw('LOWER(JSON_UNQUOTE(JSON_EXTRACT(name, "$.en"))) LIKE ?', ['%' . strtolower($query) . '%']);
+            }
+        });
+
+        return $queryBuilder->limit(30)->get();
     }
 
     /**
