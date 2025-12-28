@@ -30,12 +30,20 @@ class PostSearchController extends Controller
     }
 
     /**
+     * Получить поисковый запрос из параметров (поддерживает 'q' и 'query').
+     */
+    private function getSearchQuery(Request $request): string
+    {
+        return $request->input('q') ?? $request->input('query', '');
+    }
+
+    /**
      * Поиск постов по запросу.
      */
     public function search(SearchRequest $request)
     {
         try {
-            $query = $request->input('query');
+            $query = $this->getSearchQuery($request);
             $userId = $request->user()?->id;
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_all_'. md5($query . '_' . ($userId ?? 'guest'));
 
@@ -57,7 +65,7 @@ class PostSearchController extends Controller
 
             return $this->successResponse($results);
         } catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -66,7 +74,7 @@ class PostSearchController extends Controller
     public function searchTags(SearchRequest $request)
     {
         try {
-            $query = $request->input('query');
+            $query = $this->getSearchQuery($request);
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_tags_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
@@ -79,7 +87,7 @@ class PostSearchController extends Controller
 
             return $this->successResponse($results);
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -88,7 +96,7 @@ class PostSearchController extends Controller
     public function searchPosts(SearchRequest $request)
     {
         try {
-            $query = $request->input('query');
+            $query = $this->getSearchQuery($request);
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_posts_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
@@ -101,7 +109,7 @@ class PostSearchController extends Controller
 
             return $this->successResponse($results);
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -110,7 +118,7 @@ class PostSearchController extends Controller
     public function searchUsers(SearchRequest $request)
     {
         try {
-            $query = $request->input('query');
+            $query = $this->getSearchQuery($request);
             $cacheKey = self::CACHE_KEY_SEARCH_RESULTS .'_users_'. md5($query);
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
@@ -123,7 +131,7 @@ class PostSearchController extends Controller
                 //return $this->successResponse($results);
             return $this->successResponse(UserSearchResource::collection($results));
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -132,7 +140,7 @@ class PostSearchController extends Controller
     public function suggest(Request $request)
     {
         try {
-            $query = $request->input('query');
+            $query = $this->getSearchQuery($request);
             $cacheKey = self::CACHE_KEY_SEARCH_SUGGESTIONS . md5($query);
 
             $suggestions = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query) {
@@ -143,7 +151,7 @@ class PostSearchController extends Controller
 
             return $this->successResponse($suggestions);
         } catch (Exception $e) {
-            Log::error('Error generating search suggestions: ' . $e->getMessage(), ['query' => $request->input('query')]);
+            Log::error('Error generating search suggestions: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

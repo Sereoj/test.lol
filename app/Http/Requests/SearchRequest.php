@@ -39,14 +39,16 @@ class SearchRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'query' => 'required|string|min:3',
-        ];  
+            'query' => 'required_without:q|string|min:3',
+            'q' => 'required_without:query|string|min:3',
+        ];
     }
 
     public function messages(): array
     {
         return [
-            'query.required' => 'The query field is required.',
+            'query.required_without' => 'The query field is required when q is not present.',
+            'q.required_without' => 'The q field is required when query is not present.',
         ];
     }
 
@@ -54,7 +56,8 @@ class SearchRequest extends FormRequest
     {
         return [
             'query' => 'The query field',
-        ];  
+            'q' => 'The q field',
+        ];
     }
 
     public function failedValidation(Validator $validator)
