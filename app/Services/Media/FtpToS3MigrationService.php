@@ -208,14 +208,43 @@ class FtpToS3MigrationService
                     'identifier' => $identifier
                 ]);
             } else {
-                // Read file from source
+                // Special handling: Check if path is a directory (Laravel Storage bug with nested FTP paths)
+                // This happens when files were uploaded using putFile() which creates hashed names
+                $actualFilePath = $filePath;
+                $fileContent = null;
+
+                // Try to read as file first
                 $fileContent = Storage::disk($sourceDisk)->get($filePath);
 
-                // Write to target
+                // If failed (returns null), try native FTP fallback
+                if ($fileContent === null || $fileContent === false) {
+                    $this->logInfo("Storage API returned null, trying native FTP fallback", [
+                        'file_path' => $filePath,
+                        'identifier' => $identifier
+                    ]);
+
+                    $fileContent = $this->readFileViaFtp($filePath);
+
+                    if ($fileContent !== null) {
+                        $this->logInfo("Successfully read file via native FTP", [
+                            'file_path' => $filePath,
+                            'identifier' => $identifier,
+                            'size' => strlen($fileContent)
+                        ]);
+                    }
+                }
+
+                // Check if file content was successfully read
+                if ($fileContent === null || $fileContent === false) {
+                    throw new \Exception("Failed to read file content from {$sourceDisk}");
+                }
+
+                // Write to target using the ORIGINAL path from database (not the hashed one)
                 Storage::disk($targetDisk)->put($filePath, $fileContent);
 
                 $this->logInfo("File copied successfully", [
                     'file_path' => $filePath,
+                    'actual_source' => $actualFilePath,
                     'identifier' => $identifier,
                     'from' => $sourceDisk,
                     'to' => $targetDisk
@@ -248,6 +277,63 @@ class FtpToS3MigrationService
     private function isExternalUrl(string $path): bool
     {
         return str_starts_with($path, 'http://') || str_starts_with($path, 'https://');
+    }
+
+    /**
+     * Read file using native FTP connection (fallback for problematic paths)
+     */
+    private function readFileViaFtp(string $filePath): ?string
+    {
+        $host = config('filesystems.disks.ftp.host');
+        $username = config('filesystems.disks.ftp.username');
+        $password = config('filesystems.disks.ftp.password');
+        $port = config('filesystems.disks.ftp.port', 21);
+        $root = config('filesystems.disks.ftp.root', '/');
+
+        $conn = @ftp_connect($host, $port, 10);
+        if (!$conn) {
+            return null;
+        }
+
+        if (!@ftp_login($conn, $username, $password)) {
+            ftp_close($conn);
+            return null;
+        }
+
+        ftp_pasv($conn, true);
+
+        // Build full path
+        $fullPath = rtrim($root, '/') . '/' . ltrim($filePath, '/');
+
+        // Check if this is a directory
+        $list = @ftp_nlist($conn, $fullPath);
+        if ($list !== false && count($list) > 0) {
+            // It's a directory, find the actual file inside
+            foreach ($list as $item) {
+                if (basename($item) !== '.' && basename($item) !== '..') {
+                    $fullPath = $item;
+                    break;
+                }
+            }
+        }
+
+        // Download to temp file
+        $tempFile = tmpfile();
+        $meta = stream_get_meta_data($tempFile);
+        $tempPath = $meta['uri'];
+
+        $success = @ftp_get($conn, $tempPath, $fullPath, FTP_BINARY);
+        ftp_close($conn);
+
+        if (!$success) {
+            fclose($tempFile);
+            return null;
+        }
+
+        $content = file_get_contents($tempPath);
+        fclose($tempFile);
+
+        return $content ?: null;
     }
 
     /**

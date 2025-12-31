@@ -65,8 +65,16 @@ return [
             'host' => env('FTP_HOST'),
             'username' => env('FTP_USERNAME'),
             'password' => env('FTP_PASSWORD'),
+            'port' => (int) env('FTP_PORT', 21),
+            'root' => env('FTP_ROOT', '/storage'),
+            'passive' => (bool) env('FTP_PASSIVE', true),
+            'ssl' => (bool) env('FTP_SSL', false),
+            'timeout' => (int) env('FTP_TIMEOUT', 30),
+            'ignorePassiveAddress' => true,
+            'timestampsOnUnixListingsEnabled' => true,
+            'recurseManually' => true,
             'url' => env('FTP_URL'),
-            'root' => '/storage' // for example: /var/www/html/dev/images
+            'throw' => false,
         ]
 
     ],
