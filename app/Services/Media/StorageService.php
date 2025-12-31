@@ -37,6 +37,21 @@ class StorageService
 
         // For S3 and S3-compatible storage (like Beget Cloud Storage)
         if ($disk === 's3') {
+            $endpoint = config('filesystems.disks.s3.endpoint');
+            $bucket = config('filesystems.disks.s3.bucket');
+            $url = config('filesystems.disks.s3.url');
+
+            // If AWS_URL is set, use it as base URL
+            if ($url) {
+                return rtrim($url, '/') . '/' . ltrim($filePath, '/');
+            }
+
+            // Otherwise construct URL from endpoint and bucket
+            if ($endpoint && $bucket) {
+                return rtrim($endpoint, '/') . '/' . $bucket . '/' . ltrim($filePath, '/');
+            }
+
+            // Fallback to Laravel's default URL generation
             return Storage::disk('s3')->url($filePath);
         }
 
