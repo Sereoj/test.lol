@@ -29,7 +29,7 @@ class Controller extends BaseController
             'success' => true,
             'data' => $data,
             'pagination' => $pagination
-        ], $statusCode);
+        ], $statusCode, [], JSON_UNESCAPED_SLASHES);
     }
 
     /**
