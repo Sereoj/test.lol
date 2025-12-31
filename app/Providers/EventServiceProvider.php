@@ -9,12 +9,16 @@ use App\Events\ImagePublished;
 use App\Events\NotificationSettingsUpdated;
 use App\Events\PostPublished;
 use App\Events\ProfileComplected;
+use App\Events\SubscriptionActivated;
+use App\Events\SubscriptionCancelled;
 use App\Events\TaskCompleted;
 use App\Events\TaskCreated;
 use App\Events\UserActivity;
 use App\Events\UserExperienceChanged;
 use App\Events\VideoPublished;
+use App\Listeners\ActivatePremiumFeatures;
 use App\Listeners\AddTaskToUsers;
+use App\Listeners\DeactivatePremiumFeatures;
 use App\Listeners\UpdateUserTasksOnCommentCreated;
 use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleNotificationSettingsUpdated;
@@ -75,6 +79,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         NotificationSettingsUpdated::class => [
             HandleNotificationSettingsUpdated::class,
+        ],
+        SubscriptionActivated::class => [
+            ActivatePremiumFeatures::class,
+        ],
+        SubscriptionCancelled::class => [
+            DeactivatePremiumFeatures::class,
         ]
     ];
 

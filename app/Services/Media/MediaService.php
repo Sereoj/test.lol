@@ -4,6 +4,8 @@ namespace App\Services\Media;
 
 use App\Handlers\MediaHandler;
 use App\Helpers\FileHelper;
+use App\Models\Users\UserMonthlyStat;
+use App\Models\Users\UserPremiumFeature;
 use App\Repositories\MediaRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -38,6 +40,9 @@ class MediaService
             throw new Exception('No files provided or invalid input format.');
         }
 
+        // Проверяем лимиты загрузки
+        $this->checkUploadLimits();
+
         $files = array_filter($files, function ($file) {
             return $file->isValid() && $file->getMimeType();
         });
@@ -46,11 +51,15 @@ class MediaService
             try {
                 $mimeType = $file->getMimeType();
                 $originalName = $file->getClientOriginalName();
+                $fileSize = $file->getSize();
+
+                // Проверяем размер файла
+                $this->checkFileSize($fileSize);
 
                 Log::info('MediaService: Processing file', [
                     'file_name' => $originalName,
                     'mime_type' => $mimeType,
-                    'size' => $file->getSize(),
+                    'size' => $fileSize,
                     'user_id' => Auth::id(),
                 ]);
 
@@ -149,6 +158,9 @@ class MediaService
                 Cache::put($cacheKey, $mediaData, now()->addMinutes(60));
                 $allCreatedFiles = array_merge($allCreatedFiles, $mediaData);
 
+                // Инкрементируем счетчик загрузок
+                $this->incrementUploadCounter();
+
                 Log::info('MediaService: File processing completed', [
                     'file_name' => $originalName,
                     'media_count' => count($mediaData),
@@ -179,5 +191,72 @@ class MediaService
     public function deleteMedia($id)
     {
         return $this->mediaRepository->delete($id);
+    }
+
+    /**
+     * Проверить лимиты загрузки для текущего пользователя
+     */
+    private function checkUploadLimits(): void
+    {
+        $userId = Auth::id();
+
+        $premiumFeatures = UserPremiumFeature::where('user_id', $userId)->first();
+
+        if (!$premiumFeatures) {
+            throw new Exception('Premium features not found for user.');
+        }
+
+        $uploadLimit = $premiumFeatures->upload_limit;
+        $monthlyStat = UserMonthlyStat::getOrCreateForCurrentMonth($userId);
+
+        if ($monthlyStat->isLimitExceeded($uploadLimit)) {
+            Log::warning('MediaService: Upload limit exceeded', [
+                'user_id' => $userId,
+                'current_uploads' => $monthlyStat->uploads_count,
+                'limit' => $uploadLimit,
+            ]);
+            throw new Exception("Вы достигли лимита загрузок ({$uploadLimit} в месяц). Пожалуйста, оформите Premium подписку для увеличения лимита.");
+        }
+    }
+
+    /**
+     * Проверить размер файла
+     */
+    private function checkFileSize(int $fileSize): void
+    {
+        $userId = Auth::id();
+
+        $premiumFeatures = UserPremiumFeature::where('user_id', $userId)->first();
+
+        if (!$premiumFeatures) {
+            throw new Exception('Premium features not found for user.');
+        }
+
+        $maxFileSizeMB = $premiumFeatures->max_file_size;
+        $maxFileSizeBytes = $maxFileSizeMB * 1024 * 1024;
+
+        if ($fileSize > $maxFileSizeBytes) {
+            Log::warning('MediaService: File size exceeded', [
+                'user_id' => $userId,
+                'file_size' => $fileSize,
+                'max_size' => $maxFileSizeBytes,
+            ]);
+            throw new Exception("Размер файла превышает максимально допустимый ({$maxFileSizeMB} МБ). Пожалуйста, оформите Premium подписку для увеличения лимита.");
+        }
+    }
+
+    /**
+     * Инкрементировать счетчик загрузок
+     */
+    private function incrementUploadCounter(): void
+    {
+        $userId = Auth::id();
+        $monthlyStat = UserMonthlyStat::getOrCreateForCurrentMonth($userId);
+        $monthlyStat->incrementUploads();
+
+        Log::info('MediaService: Upload counter incremented', [
+            'user_id' => $userId,
+            'uploads_count' => $monthlyStat->uploads_count,
+        ]);
     }
 }

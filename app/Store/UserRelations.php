@@ -26,6 +26,9 @@ class UserRelations
             'skills',
             'avatars',
             'onlineStatus',
+            'premiumFeatures',
+            'activeSubscription',
+            'currentMonthStats',
         ];
     }
 }

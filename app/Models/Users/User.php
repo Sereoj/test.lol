@@ -3,6 +3,7 @@
 namespace App\Models\Users;
 
 use App\Models\Apps\App;
+use App\Models\Billing\Subscription;
 use App\Models\Billing\Transaction;
 use App\Models\Content\Achievement;
 use App\Models\Content\Badge;
@@ -260,6 +261,58 @@ class User extends Authenticatable
     }
 
     /**
+     * Отношение к подпискам
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(Subscription::class);
+    }
+
+    /**
+     * Отношение к активной подписке
+     */
+    public function activeSubscription()
+    {
+        return $this->hasOne(Subscription::class)
+            ->where('status', 'active')
+            ->where('expires_at', '>', now());
+    }
+
+    /**
+     * Отношение к Premium функциям
+     */
+    public function premiumFeatures()
+    {
+        return $this->hasOne(UserPremiumFeature::class);
+    }
+
+    /**
+     * Отношение к месячной статистике
+     */
+    public function monthlyStats()
+    {
+        return $this->hasMany(UserMonthlyStat::class);
+    }
+
+    /**
+     * Получить статистику за текущий месяц
+     */
+    public function currentMonthStats()
+    {
+        return $this->hasOne(UserMonthlyStat::class)
+            ->where('month', now()->month)
+            ->where('year', now()->year);
+    }
+
+    /**
+     * Проверить, есть ли у пользователя активная подписка
+     */
+    public function hasPremiumSubscription(): bool
+    {
+        return $this->activeSubscription()->exists();
+    }
+
+    /**
      * Проверяет, имеет ли пользователь указанную роль
      *
      * @param string $roleName Название роли для проверки
@@ -278,6 +331,15 @@ class User extends Authenticatable
             $level = UserLevel::query()->where('experience_required', 0)->first();
             $user->level()->associate($level);
             $user->save();
+
+            // Создаем Premium функции с дефолтными значениями
+            UserPremiumFeature::create([
+                'user_id' => $user->id,
+                'has_no_ads' => false,
+                'has_premium_badge' => false,
+                'upload_limit' => 20,
+                'max_file_size' => 50,
+            ]);
         });
     }
 }
