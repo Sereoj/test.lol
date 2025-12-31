@@ -73,7 +73,7 @@ class TextUtil
 
         // Оригинал
         $variants[] = $text;
-        $variants[] = str($text)->slug();
+        $variants[] = (string) str($text)->slug();
 
         // Проверяем, содержит ли строка кириллические символы
         if (self::containsCyrillic($text)) {

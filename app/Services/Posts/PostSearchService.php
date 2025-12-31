@@ -83,7 +83,7 @@ class PostSearchService
         }
 
         // 1. Поиск постов по title, content, slug
-        $baseQuery = Post::query()->with('media', 'user', 'statistics');
+        $baseQuery = Post::published()->with('media', 'user', 'statistics');
 
         // Строим CASE для relevance scoring с учетом ВСЕХ вариантов запроса
         $relevanceCases = [];
@@ -140,7 +140,7 @@ class PostSearchService
         if ($tags->count() > 0) {
             $tagIds = $tags->pluck('id')->toArray();
 
-            $postsByTags = Post::query()
+            $postsByTags = Post::published()
                 ->with('media', 'user', 'statistics')
                 ->whereHas('tags', function ($query) use ($tagIds) {
                     $query->whereIn('tags.id', $tagIds);
