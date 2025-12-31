@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Services\Media\StorageService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use OpenApi\Attributes as OA;
@@ -58,7 +59,7 @@ class BadgeResource extends JsonResource
           'color' => $this->color,
           'description' => $this->description,
           //'options' => $this->options,
-          'image' => $this->image,
+          'image' => StorageService::getPath($this->image),
         ];
     }
 }
