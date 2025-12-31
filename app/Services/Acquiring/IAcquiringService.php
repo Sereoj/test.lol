@@ -6,4 +6,5 @@ interface IAcquiringService
 {
     public function getGateway();
     public function processTopup(int $userId, float $amount, string $currency, float $fee);
+    public function createPaymentLink(int $userId, float $amount, string $currency): array;
 }

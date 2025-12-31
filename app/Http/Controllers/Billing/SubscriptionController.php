@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Services\Acquiring\AnypayService;
 use App\Services\Billing\SubscriptionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -91,19 +92,19 @@ class SubscriptionController extends Controller
             $validated = $request->validate([
                 'duration' => 'required|integer',
             ]);
-            
+
             $userId = Auth::id();
-            
+
             $this->subscriptionService->extendSubscription($subscriptionId, $validated['duration']);
-            
+
             $this->forgetCache(self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId);
-            
+
             Log::info('Subscription extended successfully', [
-                'user_id' => $userId, 
+                'user_id' => $userId,
                 'subscription_id' => $subscriptionId,
                 'added_duration' => $validated['duration']
             ]);
-            
+
             return $this->successResponse(['message' => 'Subscription extended successfully']);
         } catch (ValidationException $e) {
             Log::warning('Validation error during subscription extension', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
@@ -114,6 +115,59 @@ class SubscriptionController extends Controller
                 'subscription_id' => $subscriptionId
             ]);
             return $this->errorResponse('Error extending subscription: ' . $e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Создание платежной ссылки для оплаты подписки через AnyPay
+     */
+    public function createPaymentLink(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'plan_id' => 'required|string|in:year,3months,trial',
+                'amount' => 'required|numeric|min:1',
+                'currency' => 'string|max:3',
+            ]);
+
+            $userId = Auth::id();
+            $currency = $validated['currency'] ?? 'USD';
+
+            $anypayService = app(AnypayService::class);
+            $paymentData = $anypayService->createPaymentLink(
+                $userId,
+                $validated['amount'],
+                $currency
+            );
+
+            // Сохраняем информацию о плане в метаданных транзакции
+            $transactionRepository = app(\App\Repositories\TransactionRepository::class);
+            $transaction = $transactionRepository->findById($paymentData['transaction_id']);
+
+            if ($transaction) {
+                $metadata = $transaction->metadata ?? [];
+                $metadata['plan_id'] = $validated['plan_id'];
+                $metadata['type'] = 'subscription';
+                $transaction->metadata = $metadata;
+                $transaction->save();
+            }
+
+            $this->logInfo('Payment link created for subscription', [
+                'user_id' => $userId,
+                'plan_id' => $validated['plan_id'],
+                'amount' => $validated['amount'],
+                'transaction_id' => $paymentData['transaction_id'],
+            ]);
+
+            return $this->successResponse($paymentData);
+        } catch (ValidationException $e) {
+            $this->logWarning('Validation error creating payment link', ['errors' => $e->errors()]);
+            return $this->errorResponse($e->errors(), 422);
+        } catch (Exception $e) {
+            $this->logError('Error creating payment link for subscription', [
+                'error' => $e->getMessage(),
+            ], $e);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }

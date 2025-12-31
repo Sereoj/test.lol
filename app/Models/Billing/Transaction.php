@@ -10,7 +10,7 @@ class Transaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'type', 'amount', 'currency', 'status', 'metadata'];
+    protected $fillable = ['user_id', 'type', 'amount', 'currency', 'status', 'metadata', 'external_transaction_id'];
 
     protected $casts = [
         'metadata' => 'json',

@@ -80,6 +80,7 @@ Route::middleware('auth:api')->group(function () {
         Route::prefix('balance')->group(function () {
             Route::get('/', [BalanceController::class, 'getBalance']);
             Route::post('/topup', [BalanceController::class, 'topUpBalance']);
+            Route::post('/topup/payment-link', [BalanceController::class, 'createTopupPaymentLink']);
             Route::post('/withdraw', [BalanceController::class, 'withdrawBalance']);
             Route::post('/transfer', [BalanceController::class, 'transferBalance']);
         });
@@ -93,6 +94,7 @@ Route::middleware('auth:api')->group(function () {
         // Подписки
         Route::prefix('subscriptions')->group(function () {
             Route::post('/', [SubscriptionController::class, 'createSubscription']);
+            Route::post('/payment-link', [SubscriptionController::class, 'createPaymentLink']);
             Route::get('/active', [SubscriptionController::class, 'getActiveSubscription']);
             Route::post('/{subscriptionId}/extend', [SubscriptionController::class, 'extendSubscription']);
         });

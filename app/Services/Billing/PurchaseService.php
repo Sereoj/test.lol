@@ -3,10 +3,10 @@
 namespace App\Services\Billing;
 
 use App\Models\Billing\Fee;
-use App\Models\Billing\Purchase;
-use App\Models\Billing\Transaction;
 use App\Models\Users\UserBalance;
 use App\Notifications\TransactionNotification;
+use App\Repositories\PurchaseRepository;
+use App\Repositories\TransactionRepository;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -14,17 +14,25 @@ use Illuminate\Support\Facades\Log;
 
 class PurchaseService
 {
+    protected PurchaseRepository $purchaseRepository;
+    protected TransactionRepository $transactionRepository;
+
+    public function __construct(
+        PurchaseRepository $purchaseRepository,
+        TransactionRepository $transactionRepository
+    ) {
+        $this->purchaseRepository = $purchaseRepository;
+        $this->transactionRepository = $transactionRepository;
+    }
+
     public function purchasePost(int $postId, float $amount, string $currency)
     {
         return DB::transaction(function () use ($postId, $amount, $currency) {
             $user = Auth::user();
 
             // Проверяем, не был ли пост уже куплен этим пользователем
-            $existingPurchase = Purchase::where('user_id', $user->id)
-                ->where('post_id', $postId)
-                ->where('status', 'completed')
-                ->first();
-            if ($existingPurchase) {
+            $existingPurchase = $this->purchaseRepository->findByPostIdAndUserId($postId, $user->id);
+            if ($existingPurchase && $existingPurchase->status === 'completed') {
                 throw new Exception('Этот пост уже был куплен.');
             }
 
@@ -59,7 +67,7 @@ class PurchaseService
             $userBalance->save();
 
             // Создаём запись о покупке
-            $purchase = Purchase::create([
+            $purchase = $this->purchaseRepository->create([
                 'user_id' => $user->id,
                 'post_id' => $postId,
                 'amount' => $amount,
@@ -67,7 +75,7 @@ class PurchaseService
             ]);
 
             // Создаём запись транзакции
-            $transaction = Transaction::create([
+            $transaction = $this->transactionRepository->create([
                 'user_id' => $user->id,
                 'type' => 'purchase',
                 'amount' => -$totalAmount,
@@ -83,5 +91,23 @@ class PurchaseService
 
             return $purchase;
         });
+    }
+
+    /**
+     * Получить покупки пользователя с пагинацией
+     */
+    public function getUserPurchases(int $userId, int $page = 1, int $limit = 10)
+    {
+        $offset = ($page - 1) * $limit;
+        return $this->purchaseRepository->findByUserIdWithPagination($userId, $limit, $offset);
+    }
+
+    /**
+     * Проверить, куплен ли пост пользователем
+     */
+    public function isPostPurchasedByUser(int $postId, int $userId): bool
+    {
+        $purchase = $this->purchaseRepository->findByPostIdAndUserId($postId, $userId);
+        return $purchase && $purchase->status === 'completed';
     }
 }

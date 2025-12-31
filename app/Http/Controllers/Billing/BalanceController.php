@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Billing;
 
 use App\Http\Controllers\Controller;
+use App\Services\Acquiring\AnypayService;
 use App\Services\Billing\BalanceService;
 use App\Services\Billing\PaymentGatewayService;
 use Illuminate\Http\JsonResponse;
@@ -157,16 +158,16 @@ class BalanceController extends Controller
 
             $userId = Auth::id();
             $currency = strtoupper($validated['currency']);
-            
+
             $withdrawal = $this->balanceService->withdrawBalance(
                 $validated['amount'],
                 $currency
             );
-            
+
             // Очищаем кеш баланса пользователя
             $cacheKey = sprintf(self::CACHE_KEY_USER_BALANCE, $userId, $currency);
             $this->forgetCache($cacheKey);
-            
+
             Log::info('Balance withdrawn successfully', [
                 'user_id' => $userId,
                 'amount' => $validated['amount'],
@@ -180,6 +181,56 @@ class BalanceController extends Controller
         } catch (Exception $e) {
             Log::error('Error withdrawing balance: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 400);
+        }
+    }
+
+    /**
+     * Создание платежной ссылки для пополнения баланса через AnyPay
+     */
+    public function createTopupPaymentLink(Request $request): JsonResponse
+    {
+        try {
+            $validated = $request->validate([
+                'amount' => 'required|numeric|min:1',
+                'currency' => 'string|max:3',
+            ]);
+
+            $userId = Auth::id();
+            $currency = $validated['currency'] ?? 'USD';
+
+            $anypayService = app(AnypayService::class);
+            $paymentData = $anypayService->createPaymentLink(
+                $userId,
+                $validated['amount'],
+                $currency
+            );
+
+            // Сохраняем информацию о типе транзакции в метаданных
+            $transactionRepository = app(\App\Repositories\TransactionRepository::class);
+            $transaction = $transactionRepository->findById($paymentData['transaction_id']);
+
+            if ($transaction) {
+                $metadata = $transaction->metadata ?? [];
+                $metadata['type'] = 'topup';
+                $transaction->metadata = $metadata;
+                $transaction->save();
+            }
+
+            $this->logInfo('Payment link created for balance topup', [
+                'user_id' => $userId,
+                'amount' => $validated['amount'],
+                'transaction_id' => $paymentData['transaction_id'],
+            ]);
+
+            return $this->successResponse($paymentData);
+        } catch (ValidationException $e) {
+            $this->logWarning('Validation error creating topup payment link', ['errors' => $e->errors()]);
+            return $this->errorResponse($e->errors(), 422);
+        } catch (Exception $e) {
+            $this->logError('Error creating topup payment link', [
+                'error' => $e->getMessage(),
+            ], $e);
+            return $this->errorResponse($e->getMessage(), 500);
         }
     }
 }

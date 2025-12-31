@@ -42,4 +42,12 @@ return [
         'client_secret' => env('YANDEX_CLIENT_SECRET'),
         'redirect' => env('YANDEX_REDIRECT_URI'),
     ],
+
+    'anypay' => [
+        'project_id' => env('ANYPAY_PROJECT_ID'),
+        'api_id' => env('ANYPAY_API_ID'),
+        'api_key' => env('ANYPAY_API_KEY'),
+        'secret_key' => env('ANYPAY_SECRET_KEY'),
+        'api_url' => env('ANYPAY_API_URL', 'https://anypay.io'),
+    ],
 ];
