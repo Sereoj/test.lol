@@ -327,6 +327,14 @@ if [ "$APP_ENV" = "production" ]; then
     fi
 fi
 
+# Генерация OAuth ключей при первом запуске
+if [ ! -f "storage/oauth-private.key" ]; then
+    echo "🔑 Generating OAuth keys..."
+    php artisan passport:keys --force || {
+        echo "⚠️  Warning: Failed to generate OAuth keys"
+    }
+fi
+
 # Синхронизация Laravel Passport клиентов (при каждом запуске)
 echo "🔐 Checking Laravel Passport clients..."
 php artisan passport:setup 2>&1 | while IFS= read -r line; do
@@ -335,24 +343,16 @@ done || {
     echo "⚠️  Warning: Passport setup check failed"
 }
 
-# Только при первом запуске или если передан флаг INIT_DB=true
-if [ "$INIT_DB" = "true" ] || [ ! -f /var/www/storage/.initialized ]; then
-    echo "🗄️  Running database migrations..."
-    php artisan migrate --force || {
-        echo "⚠️  Warning: Migration failed, continuing..."
-    }
+# Автоматический запуск миграций при каждом старте контейнера
+echo "🗄️  Running database migrations..."
+php artisan migrate --force || {
+    echo "⚠️  Warning: Migration failed, continuing..."
+}
 
-    # Генерация OAuth ключей при первом запуске
-    if [ ! -f "storage/oauth-private.key" ]; then
-        echo "🔑 Generating OAuth keys..."
-        php artisan passport:keys --force || {
-            echo "⚠️  Warning: Failed to generate OAuth keys"
-        }
-    fi
-
-    # Отметка об инициализации
+# Отметка об инициализации для первого запуска
+if [ ! -f /var/www/storage/.initialized ]; then
     touch /var/www/storage/.initialized
-    echo "✅ Initialization complete"
+    echo "✅ First initialization complete"
 fi
 
 # Очистка старых кешей перед оптимизацией
