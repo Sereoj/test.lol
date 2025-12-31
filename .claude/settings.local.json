@@ -37,7 +37,9 @@
       "Bash(stat:*)",
       "WebSearch",
       "WebFetch(domain:axiom.co)",
-      "Bash(docker logs:*)"
+      "Bash(docker logs:*)",
+      "Bash(php:*)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
