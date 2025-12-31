@@ -355,6 +355,9 @@ if [ "$INIT_DB" = "true" ] || [ ! -f /var/www/storage/.initialized ]; then
     echo "✅ Initialization complete"
 fi
 
+# Очистка старых кешей перед оптимизацией
+clear_caches
+
 # Очистка и оптимизация кешей для production
 if [ "$APP_ENV" = "production" ]; then
     echo "⚡ Optimizing for production..."
