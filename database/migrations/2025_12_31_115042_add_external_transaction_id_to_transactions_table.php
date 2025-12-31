@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->string('external_transaction_id')->nullable()->after('metadata')->index();
+            if (!Schema::hasColumn('transactions', 'external_transaction_id')) {
+                $table->string('external_transaction_id')->nullable()->after('metadata')->index();
+            }
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn('external_transaction_id');
+            if (Schema::hasColumn('transactions', 'external_transaction_id')) {
+                $table->dropColumn('external_transaction_id');
+            }
         });
     }
 };
