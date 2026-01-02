@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Posts;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Post\ReportPostRequest;
 use App\Http\Requests\Post\StorePostRequest;
 use App\Http\Requests\Post\UpdatePostRequest;
 use App\Http\Resources\Media\ThumbMediaResource;
 use App\Http\Resources\Posts\PostResource;
 use App\Http\Resources\PostStatResource;
 use App\Http\Resources\StorePostResource;
+use App\Services\Posts\PostReportService;
 use App\Services\Posts\PostService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,11 +24,13 @@ use Illuminate\Support\Facades\Cache;
 class PostController extends Controller
 {
     protected PostService $postService;
+    protected PostReportService $postReportService;
     private const CACHE_KEY_POST = 'post_';
 
-    public function __construct(PostService $postService)
+    public function __construct(PostService $postService, PostReportService $postReportService)
     {
         $this->postService = $postService;
+        $this->postReportService = $postReportService;
     }
 
     // Получение списка всех постов
@@ -140,5 +144,21 @@ class PostController extends Controller
         }
 
         return $fileResponse;
+    }
+
+    // Отправка жалобы на пост
+    public function report(ReportPostRequest $request, int $id)
+    {
+        try {
+            $report = $this->postReportService->reportPost(
+                $id,
+                $request->input('category'),
+                $request->input('reason')
+            );
+            return $this->successResponse($report);
+        } catch (\Exception $e) {
+            $this->logError('Failed to report post', ['error' => $e->getMessage()], $e);
+            return $this->errorResponse($e->getMessage(), $e->getCode() != 0 ? $e->getCode() : 400);
+        }
     }
 }

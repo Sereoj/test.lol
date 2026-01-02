@@ -105,9 +105,17 @@ class CommentController extends Controller
     // Отправка жалобы на комментарий
     public function report(ReportCommentRequest $request, $post_id, $comment_id)
     {
-        return $this->successResponse(
-            $this->commentService->reportComment($comment_id, $request->input('reason'))
-        );
+        try {
+            $report = $this->commentService->reportComment(
+                $comment_id,
+                $request->input('category'),
+                $request->input('reason')
+            );
+            return $this->successResponse($report);
+        } catch (\Exception $e) {
+            $this->logError('Failed to report comment', ['error' => $e->getMessage()], $e);
+            return $this->errorResponse($e->getMessage(), $e->getCode() != 0 ? $e->getCode() : 400);
+        }
     }
 
     // Репост комментария

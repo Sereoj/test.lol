@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Requests\Comment;
+namespace App\Http\Requests\Post;
 
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,9 +9,9 @@ use OpenApi\Attributes as OA;
 
 /**
  * @OA\Schema(
- *     schema="ReportCommentRequest",
+ *     schema="ReportPostRequest",
  *     type="object",
- *     title="ReportComment Request",
+ *     title="ReportPost Request",
  *     required={"category"},
  *     @OA\Property(
  *         property="category",
@@ -28,7 +28,7 @@ use OpenApi\Attributes as OA;
  *     ),
  * )
  */
-class ReportCommentRequest extends FormRequest
+class ReportPostRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

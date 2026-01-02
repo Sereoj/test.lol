@@ -122,11 +122,21 @@ class CommentRepository
         });
     }
 
-    public function updateOrCreateReport($commentId, $userId, $reason)
+    public function updateOrCreateReport($commentId, $userId, $category, $reason)
     {
+        $comment = Comment::findOrFail($commentId);
+
+        if ($comment->user_id === $userId) {
+            throw new \Exception('Нельзя пожаловаться на собственный комментарий', 403);
+        }
+
         return CommentReport::updateOrCreate(
             ['comment_id' => $commentId, 'user_id' => $userId],
-            ['reason' => $reason]
+            [
+                'category' => $category,
+                'reason' => $reason,
+                'status' => 'pending'
+            ]
         );
     }
 

@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Models\Comments;
+namespace App\Models\Posts;
 
 use App\Models\Users\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class CommentReport extends Model
+class PostReport extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'user_id',
-        'comment_id',
+        'post_id',
         'category',
         'reason',
         'status',
@@ -23,9 +23,9 @@ class CommentReport extends Model
         'reviewed_at' => 'datetime',
     ];
 
-    public function comment()
+    public function post()
     {
-        return $this->belongsTo(Comment::class);
+        return $this->belongsTo(Post::class);
     }
 
     public function user()

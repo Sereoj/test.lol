@@ -141,9 +141,9 @@ class CommentService
         return $this->commentRepository->updateOrCreateReaction($commentId, Auth::id(), $type);
     }
 
-    public function reportComment($commentId, $reason)
+    public function reportComment(int $commentId, string $category, string $reason)
     {
-        return $this->commentRepository->updateOrCreateReport($commentId, Auth::id(), $reason);
+        return $this->commentRepository->updateOrCreateReport($commentId, Auth::id(), $category, $reason);
     }
 
     public function repostComment($commentId)

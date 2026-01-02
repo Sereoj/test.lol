@@ -287,6 +287,8 @@ Route::middleware('auth:api')->group(function () {
             ->name('posts.like');
         Route::post('/{id}/repost', [PostController::class, 'repost'])
             ->name('posts.repost');
+        Route::post('/{id}/report', [PostController::class, 'report'])
+            ->name('posts.report');
         Route::get('/{id}/download', [PostController::class, 'download'])
             ->name('post.download');
 

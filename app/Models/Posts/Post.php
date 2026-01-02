@@ -91,6 +91,11 @@ class Post extends Model
             ->withTimestamps();
     }
 
+    public function reports()
+    {
+        return $this->hasMany(PostReport::class);
+    }
+
     public function scopePublished($query)
     {
         return $query->where('status', self::STATUS_PUBLISHED);

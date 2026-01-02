@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Resources\Comments;
+namespace App\Http\Resources\Posts;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class CommentReportResource extends JsonResource
+class PostReportResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -17,7 +17,7 @@ class CommentReportResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
-            'comment_id' => $this->comment_id,
+            'post_id' => $this->post_id,
             'category' => $this->category,
             'reason' => $this->reason,
             'status' => $this->status,
