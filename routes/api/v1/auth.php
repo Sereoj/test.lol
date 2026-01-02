@@ -17,6 +17,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Posts\MediaController;
 use App\Http\Controllers\Posts\PostController;
 use App\Http\Controllers\Posts\PostStatisticController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\TagController;
 use App\Http\Controllers\Users\UserAccountController;
 use App\Http\Controllers\Users\UserAchievementController;
@@ -400,6 +401,12 @@ Route::middleware('auth:api')->group(function () {
             ->name('challenges.join');
         Route::post('/{id}/leave', [ChallengeController::class, 'leave'])
             ->name('challenges.leave');
+    });
+
+    // Жалобы (универсальный endpoint)
+    Route::prefix('reports')->group(function () {
+        Route::post('/', [ReportController::class, 'store'])
+            ->name('reports.store');
     });
 });
 
