@@ -133,13 +133,27 @@ class UserCoverService
     {
         if ($user->cover) {
             $path = $user->cover;
+            // Используем диск из модели пользователя, если он есть, иначе текущий диск
+            $disk = $user->disk ?? $this->disk;
 
-            Log::info('Cover path:', [
-                'path' => $path
+            Log::info('Removing cover', [
+                'path' => $path,
+                'disk' => $disk
             ]);
 
-            if (Storage::disk($this->disk)->exists($path)) {
-                Storage::disk($this->disk)->delete($path);
+            try {
+                if (Storage::disk($disk)->exists($path)) {
+                    Storage::disk($disk)->delete($path);
+                    Log::info('Cover deleted successfully', ['path' => $path, 'disk' => $disk]);
+                } else {
+                    Log::warning('Cover file not found', ['path' => $path, 'disk' => $disk]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to delete cover', [
+                    'path' => $path,
+                    'disk' => $disk,
+                    'error' => $e->getMessage()
+                ]);
             }
         }
     }

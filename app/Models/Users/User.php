@@ -82,6 +82,7 @@ class User extends Authenticatable
         'slug',
         'description',
         'cover',
+        'disk',
         'website',
         'email',
         'email_verified_at',
