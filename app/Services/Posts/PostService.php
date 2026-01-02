@@ -62,7 +62,7 @@ class PostService
         return $this->postRepository->createPost($data);
     }
 
-    public function updatePost(int $id, array $data)
+    public function updatePost($id, array $data)
     {
         $post = $this->postRepository->updatePost($id, $data);
         return [
@@ -72,7 +72,7 @@ class PostService
         ];
     }
 
-    public function deletePost(int $id): void
+    public function deletePost($id): void
     {
         $this->postRepository->deletePost($id);
     }
@@ -144,18 +144,18 @@ class PostService
         return (bool)$this->statService->isUserLiked($userId, $postId);
     }
 
-    public function repostPost(int $id)
+    public function repostPost($id)
     {
         $post = $this->postRepository->getPost($id);
 
         return $this->statService->repostPost($post->id);
     }
 
-    public function download(int $postId, ?array $mediaIds = null)
+    public function download($postId, ?array $mediaIds = null)
     {
         $filename = md5(Auth::user().$postId);
 
-        $post = Post::with('media')->find($postId);
+        $post = $this->postRepository->getPost($postId);
 
         if (! $post) {
             Log::error(sprintf('Пост с ID %s не найден.', $postId));

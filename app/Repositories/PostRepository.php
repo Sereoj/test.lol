@@ -114,15 +114,13 @@ class PostRepository
 
     public function getPost($id)
     {
-        $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions'])
-            ->where('slug', $id)
-            ->firstOrFail();
-        if(!$post && is_numeric($id))
-        {
-            $post = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions'])
-                ->findOrFail($id);
+        $query = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions']);
+
+        if (is_numeric($id)) {
+            return $query->findOrFail($id);
         }
-        return $post;
+
+        return $query->where('slug', $id)->firstOrFail();
     }
 
     public function createPost(array $data)
@@ -200,10 +198,11 @@ class PostRepository
         });
     }
 
-    public function updatePost(int $id, array $data)
+    public function updatePost($id, array $data)
     {
         return DB::transaction(function () use ($id, $data) {
-            $post = Post::query()->findOrFail($id);
+            $query = Post::query();
+            $post = is_numeric($id) ? $query->findOrFail($id) : $query->where('slug', $id)->firstOrFail();
 
             $post->update(array_filter([
                 'title' => $data['title'] ?? $post->title,
@@ -245,9 +244,10 @@ class PostRepository
         });
     }
 
-    public function deletePost(int $id): void
+    public function deletePost($id): void
     {
-        $post = Post::query()->findOrFail($id);
+        $query = Post::query();
+        $post = is_numeric($id) ? $query->findOrFail($id) : $query->where('slug', $id)->firstOrFail();
         $post->delete();
     }
 }

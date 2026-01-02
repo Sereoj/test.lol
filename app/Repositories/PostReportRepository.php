@@ -2,21 +2,27 @@
 
 namespace App\Repositories;
 
-use App\Models\Posts\Post;
 use App\Models\Posts\PostReport;
 use Exception;
 
 class PostReportRepository
 {
-    public function createReport(int $postId, int $userId, string $category, string $reason): PostReport
+    protected PostRepository $postRepository;
+
+    public function __construct(PostRepository $postRepository)
     {
-        $post = Post::findOrFail($postId);
+        $this->postRepository = $postRepository;
+    }
+
+    public function createReport($postId, int $userId, string $category, string $reason): PostReport
+    {
+        $post = $this->postRepository->getPost($postId);
 
         if ($post->user_id === $userId) {
             throw new Exception('Нельзя пожаловаться на собственный пост', 403);
         }
 
-        $existingReport = PostReport::where('post_id', $postId)
+        $existingReport = PostReport::where('post_id', $post->id)
             ->where('user_id', $userId)
             ->first();
 
@@ -25,7 +31,7 @@ class PostReportRepository
         }
 
         return PostReport::create([
-            'post_id' => $postId,
+            'post_id' => $post->id,
             'user_id' => $userId,
             'category' => $category,
             'reason' => $reason,

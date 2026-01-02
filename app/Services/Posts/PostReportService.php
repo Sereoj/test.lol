@@ -17,7 +17,7 @@ class PostReportService
         $this->postReportRepository = $postReportRepository;
     }
 
-    public function reportPost(int $postId, string $category, string $reason)
+    public function reportPost($postId, string $category, string $reason)
     {
         $userId = Auth::id();
 

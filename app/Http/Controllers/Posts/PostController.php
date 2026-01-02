@@ -78,7 +78,7 @@ class PostController extends Controller
     }
 
     // Обновление поста
-    public function update(UpdatePostRequest $request, int $id)
+    public function update(UpdatePostRequest $request, $id)
     {
         $post = $this->postService->updatePost($id, $request->validated());
         $this->forgetCache(self::CACHE_KEY_POST . $id);
@@ -89,7 +89,7 @@ class PostController extends Controller
     }
 
     // Удаление поста
-    public function destroy(int $id)
+    public function destroy($id)
     {
         $this->postService->deletePost($id);
         $this->forgetCache(self::CACHE_KEY_POST . $id);
@@ -119,7 +119,7 @@ class PostController extends Controller
     }
 
     // Репост поста
-    public function repost(int $id)
+    public function repost($id)
     {
         $post = $this->postService->repostPost($id);
         $this->forgetCache(self::CACHE_KEY_POST . $id);
@@ -132,7 +132,7 @@ class PostController extends Controller
     }
 
     // Скачивание медиа-файлов
-    public function download(Request $request, int $id)
+    public function download(Request $request, $id)
     {
         $fileResponse = $this->postService->download($id, $request->input('media'));
 
@@ -147,7 +147,7 @@ class PostController extends Controller
     }
 
     // Отправка жалобы на пост
-    public function report(ReportPostRequest $request, int $id)
+    public function report(ReportPostRequest $request, $id)
     {
         try {
             $report = $this->postReportService->reportPost(
