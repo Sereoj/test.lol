@@ -17,7 +17,6 @@ use App\Models\Users\User;
 use App\Services\Media\StorageService;
 use Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserProfileService
 {
@@ -33,15 +32,9 @@ class UserProfileService
         return (bool)$user;
     }
 
-    public function getUserProfile(string $slug): array
+    public function getUserProfile(User $user): array
     {
         $authUser = Auth::guard('api')->user();
-        $user = User::where('slug', $slug)->first();
-
-        if(!$user)
-        {
-            throw new ModelNotFoundException('Пользователь не найден');
-        }
 
         $isMyProfile = $authUser?->id === $user->id;
 

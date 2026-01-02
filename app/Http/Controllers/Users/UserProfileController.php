@@ -9,7 +9,6 @@ use App\Http\Resources\Users\UserLongResource;
 use App\Services\Users\UserProfileService;
 use App\Services\Users\UserService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log;
 use Exception;
 
 // Контроллер для работы с профилем пользователя
@@ -35,23 +34,24 @@ class UserProfileController extends Controller
             $user = $this->userService->getBySlug($slug);
 
             if (!$user) {
-                throw new Exception("User not found");
+                $this->logError('User not found', ['slug' => $slug]);
+                return $this->errorResponse('Пользователь не найден', 404);
             }
 
             $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
-                if($this->userProfileService->checkUser($user))
-                {
-                    Log::info('User profile retrieved successfully', ['user_id' => $user->id]);
-                    return new UserProfileResource($this->userProfileService->getUserProfile($user->slug));
-                }
-                throw new Exception("User profile not found");
+                $this->logInfo('User profile retrieved successfully', ['user_id' => $user->id]);
+                return new UserProfileResource($this->userProfileService->getUserProfile($user));
             });
 
             return $this->successResponse($profile);
         } catch (Exception $e) {
-            Log::error('Error retrieving user profile: ' . $e->getMessage(), ['user_id' => Auth::id()]);
-            return $this->errorResponse($e->getMessage());
+            $this->logError('Error retrieving user profile', [
+                'slug' => $slug,
+                'error' => $e->getMessage(),
+                'auth_user_id' => Auth::id()
+            ], $e);
+            return $this->errorResponse('Ошибка при получении профиля пользователя', 500);
         }
     }
 }

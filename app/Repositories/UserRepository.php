@@ -102,6 +102,7 @@ class UserRepository
     public function findBySlug(string $slug)
     {
         return User::query()
+            ->with(UserRelations::getUserRelations())
             ->where('slug', $slug)
             ->first();
     }
