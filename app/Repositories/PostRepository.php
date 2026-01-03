@@ -126,7 +126,7 @@ class PostRepository
         $query = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions']);
 
         if (is_numeric($id)) {
-            return $query->findOrFail($id);
+            return $query->where('id', $id)->firstOrFail();
         }
 
         return $query->where('slug', $id)->firstOrFail();
