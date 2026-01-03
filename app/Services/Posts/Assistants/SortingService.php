@@ -5,6 +5,8 @@ namespace App\Services\Posts\Assistants;
 use App\Strategies\Posts\DefaultSortingStrategy;
 use App\Strategies\Posts\DownloadsSortingStrategy;
 use App\Strategies\Posts\LikesSortingStrategy;
+use App\Strategies\Posts\NewestSortingStrategy;
+use App\Strategies\Posts\OldestSortingStrategy;
 use App\Strategies\Posts\PopularitySortingStrategy;
 
 class SortingService
@@ -18,6 +20,8 @@ class SortingService
             'popularity' => new PopularitySortingStrategy(),
             'downloads' => new DownloadsSortingStrategy(),
             'likes' => new LikesSortingStrategy(),
+            'newest' => new NewestSortingStrategy(),
+            'oldest' => new OldestSortingStrategy(),
             'default' => new DefaultSortingStrategy(),
         ];
 

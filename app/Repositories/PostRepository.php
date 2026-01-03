@@ -52,10 +52,14 @@ class PostRepository
             ])
             ->leftJoin('post_statistics', 'posts.id', '=', 'post_statistics.post_id');
 
+        // Определение стратегии сортировки с учетом приоритета
+        // Приоритет 1: параметр sort из запроса
+        $sortStrategy = $filters['sort'] ?? null;
+
         // Учет предпочтений пользователя
         if ($userId) {
             $user = User::find($userId);
-            $userPreferences = optional($user->userSettings)->preferences_feed ?? 'default';
+            $userPreferences = optional($user->userSettings)->preferences_feed ?? null;
             $recentInteractions = Interaction::where('user_id', $userId)
                 ->orderBy('created_at', 'desc')
                 ->limit(30)
@@ -66,12 +70,17 @@ class PostRepository
                 $query->whereNotIn('posts.id', $recentInteractions);
             });
 
-            // Применение стратегии сортировки через сервис
-            app(SortingService::class)->apply($query, $userPreferences);
-        } else {
-            // Применение стандартной сортировки
-            app(SortingService::class)->apply($query, 'default');
+            // Приоритет 2: настройки пользователя (если не передан sort в запросе)
+            if (!$sortStrategy) {
+                $sortStrategy = $userPreferences;
+            }
         }
+
+        // Приоритет 3: popularity по умолчанию
+        $sortStrategy = $sortStrategy ?? 'popularity';
+
+        // Применение стратегии сортировки через сервис
+        app(SortingService::class)->apply($query, $sortStrategy);
 
         // Применение фильтрации по временному диапазону
         app(TimeFrameFilterService::class)->apply($query, $filters['time_frame'] ?? null);
