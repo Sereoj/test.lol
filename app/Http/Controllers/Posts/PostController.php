@@ -33,7 +33,24 @@ class PostController extends Controller
         $this->postReportService = $postReportService;
     }
 
-    // Получение списка всех постов
+    /**
+     * Получение списка всех постов
+     *
+     * @queryParam sort string Сортировка постов. Возможные значения: newest, oldest, popularity, likes, downloads. По умолчанию: popularity. Example: newest
+     * @queryParam per_page integer Количество постов на странице. По умолчанию: 10. Example: 20
+     * @queryParam page integer Номер страницы. Example: 1
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "data": [...],
+     *   "pagination": {
+     *     "total": 100,
+     *     "per_page": 10,
+     *     "current_page": 1,
+     *     "last_page": 10
+     *   }
+     * }
+     */
     public function index(Request $request)
     {
         try {
