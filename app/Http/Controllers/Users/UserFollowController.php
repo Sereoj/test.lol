@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Users;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Users\UserFollowerResource;
 use App\Services\Users\UserFollowService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -144,7 +145,7 @@ class UserFollowController extends Controller
 
             Log::info('Followers retrieved successfully', ['user_id' => $userId]);
 
-            return $this->successResponse($followers);
+            return $this->successResponse(UserFollowerResource::collection($followers));
         } catch (Exception $e) {
             Log::error('Error retrieving followers: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving followers: ' . $e->getMessage(), 500);
@@ -165,7 +166,7 @@ class UserFollowController extends Controller
 
             Log::info('Following list retrieved successfully', ['user_id' => $userId]);
 
-            return $this->successResponse($following);
+            return $this->successResponse(UserFollowerResource::collection($following));
         } catch (Exception $e) {
             Log::error('Error retrieving following list: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving following list: ' . $e->getMessage(), 500);

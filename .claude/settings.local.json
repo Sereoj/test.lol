@@ -39,7 +39,9 @@
       "WebFetch(domain:axiom.co)",
       "Bash(docker logs:*)",
       "Bash(php:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(ping:*)",
+      "Bash(ipconfig /flushdns:*)"
     ],
     "deny": [],
     "ask": []

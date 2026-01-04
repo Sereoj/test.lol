@@ -159,7 +159,17 @@ class UserFollowService
             return collect();
         }
 
+        $currentUserId = Auth::id();
         $followers = $user->followers;
+
+        // Добавляем информацию о подписке текущего пользователя
+        if ($currentUserId) {
+            $followers->each(function ($follower) use ($currentUserId) {
+                $follower->is_following = $follower->followers()
+                    ->where('follower_id', $currentUserId)
+                    ->exists();
+            });
+        }
 
         Log::info('Retrieved user followers', [
             'user_id' => $userId,
@@ -198,7 +208,17 @@ class UserFollowService
             return collect();
         }
 
+        $currentUserId = Auth::id();
         $following = $user->following;
+
+        // Добавляем информацию о подписке текущего пользователя
+        if ($currentUserId) {
+            $following->each(function ($followingUser) use ($currentUserId) {
+                $followingUser->is_following = $followingUser->followers()
+                    ->where('follower_id', $currentUserId)
+                    ->exists();
+            });
+        }
 
         Log::info('Retrieved user following', [
             'user_id' => $userId,

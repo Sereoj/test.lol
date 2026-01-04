@@ -29,13 +29,12 @@ class PasswordResetController extends Controller
         try {
             $email = $request->input('email');
             $this->passwordResetService->sendPasswordResetEmail($email);
-            
-            Log::info('Password reset email sent successfully', ['email' => $email]);
 
             return $this->successResponse(['message' => 'Password reset email sent successfully']);
         } catch (Exception $e) {
-            Log::error('Error sending password reset email: ' . $e->getMessage(), ['email' => $request->input('email')]);
-            return $this->errorResponse($e->getMessage(), 500);
+            $this->logError('Error sending password reset email', ['email' => $request->input('email')], $e);
+            $statusCode = $e->getCode() ?: 500;
+            return $this->errorResponse($e->getMessage(), $statusCode);
         }
     }
 
@@ -51,16 +50,13 @@ class PasswordResetController extends Controller
             $token = $request->input('token');
             $newPassword = $request->input('new_password');
 
-            if ($this->passwordResetService->resetPassword($email, $token, $newPassword)) {
-                Log::info('Password reset successfully', ['email' => $email]);
-                return $this->successResponse(['message' => 'Password reset successfully']);
-            }
-            
-            Log::warning('Invalid token or email for password reset', ['email' => $email]);
-            return $this->errorResponse('Invalid token or email', 400);
+            $this->passwordResetService->resetPassword($email, $token, $newPassword);
+
+            return $this->successResponse(['message' => 'Password reset successfully']);
         } catch (Exception $e) {
-            Log::error('Error resetting password: ' . $e->getMessage(), ['email' => $request->input('email')]);
-            return $this->errorResponse($e->getMessage(), 500);
+            $this->logError('Error resetting password', ['email' => $request->input('email')], $e);
+            $statusCode = $e->getCode() ?: 500;
+            return $this->errorResponse($e->getMessage(), $statusCode);
         }
     }
 }
