@@ -66,6 +66,7 @@ class UsersTableSeeder extends Seeder
                 'verification' => true,
                 'experience' => 100,
                 'gender' => 'other',
+                'language' => 'en',
                 'age' => 22,
                 'password' => Hash::make('devpassword'),
                 'role_id' => 3,
