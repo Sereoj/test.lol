@@ -7,6 +7,10 @@
 /vendor
 .env
 .env.backup
+.env.development
+.env.production
+.env.local
+switch-env.bat
 .phpunit.result.cache
 Homestead.json
 Homestead.yaml
