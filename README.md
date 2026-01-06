@@ -17,68 +17,500 @@ Art Platform - это платформа для художников, котор
 
 ## Технологический стек
 
-- **Backend**: Laravel 10, PHP 8.2+
-- **Database**: MySQL
-- **Authentication**: Laravel Passport
-- **Media Storage**: Локальное хранилище / S3
-- **Real-Time**: Laravel Reverb для уведомлений в реальном времени
+### Backend
+- **Laravel 10** – фреймворк приложения
+- **PHP 8.2+** – язык программирования
+- **MySQL** – реляционная база данных
+- **Laravel Passport** – OAuth2 аутентификация
+- **Laravel Reverb** – WebSocket сервер для реал-тайм уведомлений
+- **Redis** – кеширование, очереди задач, сессии
+- **FFmpeg** – обработка и кодирование видео
+- **Intervention Image** – обработка и оптимизация изображений
+
+### Frontend
+- **Vite** – сборщик модулей и dev-сервер
+- **Laravel Blade** – шаблонизатор
+- **Laravel Echo** – JavaScript клиент для WebSocket
+- **Pusher JS** – поддержка реал-тайм событий
+
+### Infrastructure & DevOps
+- **Docker** – контейнеризация приложения
+- **Docker Compose** – оркестрация контейнеров
+- **Caddy** – веб-сервер с автоматическим SSL (production)
+- **PHP-FPM** – FastCGI процесс менеджер
+- **Composer** – менеджер PHP зависимостей
+- **npm** – менеджер Node.js зависимостей
+
+### Development Tools
+- **PHPUnit** – unit тестирование
+- **PHP CS Fixer** – форматирование кода
+- **PHPStan** – статический анализ кода
+- **Husky** – git hooks для качества кода
+
+### Обоснование выбора ключевых технологий
+
+#### Redis – Кеширование и очереди
+
+**Зачем использовался:**
+- **Реал-тайм система сообщений**: Чаты между пользователями требуют быстрого доступа к активным сессиям. Хранение в MySQL был бы узким местом, Redis дает доступ за микросекунды
+- **Обработка видео (FFmpeg)**: Когда художник загружает видео, это тяжелая операция (кодирование, создание превью). Redis очередь позволяет обрабатывать это асинхронно через `queue:work`, не блокируя пользователя
+- **Кеширование поиска и фильтров**: Поиск работ по категориям, тегам, фильтрация по цене и рейтингу. Результаты кешируются в Redis с TTL, уменьшая нагрузку на БД
+- **Статистика и счетчики**: Подсчет просмотров работ, лайков, репостов без частых обновлений БД
+- **Сессии пользователей**: Хранение данных авторизации для мгновенного восстановления состояния
+
+**Реальный пример**: Художник загружает 500MB видео → Laravel job отправляется в Redis очередь → worker обрабатывает FFmpeg конвертацию в фоне → пользователь может продолжать работу → когда видео готово, приходит WebSocket уведомление.
+
+---
+
+#### Laravel Reverb – WebSocket для реал-тайм уведомлений
+
+**Зачем использовался:**
+- **Система уведомлений**: Когда кто-то лайкует работу, комментирует или подписывается, художник видит уведомление сразу (не за 10 минут при обновлении страницы)
+- **Онлайн статус в чатах**: При отправке сообщения оба пользователя видят статус "в сети" / "печатает" без задержек
+- **Публикация новых работ**: Подписчики художника мгновенно видят его новую работу в ленте без перезагрузки страницы
+- **Система платежей**: Когда платеж прошел, транзакция мгновенно появляется в истории баланса
+- **Уведомления о заявках**: Если художник получил заказ или запрос на сотрудничество, он видит это в реальном времени
+
+**Реальный пример**:
+1. Художник публикует новую работу в 15:30
+2. Reverb WebSocket отправляет событие `work.created` всем, кто подписан на этого художника
+3. JavaScript слушатель (Laravel Echo) в браузере получает событие и добавляет работу в ленту без перезагрузки
+4. Все подписчики видят новую работу одновременно
+
+---
+
+#### Laravel Passport (OAuth2) – Безопасная аутентификация
+
+**Зачем использовался:**
+- **API безопасность для мобильного приложения**: Если в будущем будет мобильное приложение (iOS/Android), оно не сможет использовать сессии. Passport OAuth2 токены − стандарт для мобильных приложений
+- **Защита платежных операций**: При выводе денег или пополнении баланса в USD/RUB, требуется надежная токен-based аутентификация (безопаснее, чем сессия cookie)
+- **Интеграция с партнерами**: Если платформа будет интегрироваться со сторонними сервисами (например, платежные системы, галереи), им выдаются API ключи с Passport
+- **Разделение прав доступа (scopes)**: Можно выдать токен с ограниченными правами, например:
+  - `read:profile` – только чтение профиля
+  - `write:messages` – только отправка сообщений
+  - `read:balance` – только чтение баланса (для финансовых интеграций)
+- **Отзыв токена**: При компрометации или смене пароля, все токены аккаунта можно отозвать одной командой
+
+**Реальный пример**:
+- Пользователь устанавливает мобильное приложение → логинится → получает OAuth2 токен на 1 год
+- Токен хранится в защищенном хранилище приложения
+- Все API запросы идут с этим токеном (не с паролем!)
+- Если пользователь меняет пароль, токен все еще работает (не нужно перелогиниваться в приложении)
+
+---
+
+#### Caddy – Веб-сервер вместо Nginx
+
+**Зачем использовался:**
+- **Автоматические SSL сертификаты**: Caddy автоматически получает и обновляет Let's Encrypt сертификаты. С Nginx пришлось бы писать cron скрипты для обновления, рисковать истечением сертификата
+- **HTTPS по умолчанию**: На production важно, чтобы все было через HTTPS. Caddy это гарантирует из коробки
+- **Простота конфигурации**: Вместо 50+ строк Nginx конфига, Caddy требует 5-7 строк Caddyfile
+- **Меньше ошибок при деплое**: Чем проще конфиг, тем меньше вероятность ошибки при развертывании на production
+- **HTTP/2 и HTTP/3 из коробки**: Современные протоколы для быстрой доставки контента. Особенно важно для загрузки портфолио с видео и изображениями
+- **Встроенный reverse proxy**: Caddy может проксировать запросы к PHP-FPM и WebSocket (Reverb) с минимумом конфигурации
+
+**Реальный пример конфига:**
+```
+artplatform.com {
+    encode gzip
+    reverse_proxy localhost:9000
+}
+```
+
+Вместо Nginx:
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name artplatform.com;
+
+    ssl_certificate /etc/letsencrypt/live/artplatform.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/artplatform.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    location / {
+        proxy_pass http://127.0.0.1:9000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # WebSocket поддержка для Reverb
+    location /ws {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+}
+```
+
+---
+
+### Как технологии работают вместе
+
+```
+Художник публикует работу
+        ↓
+Laravel Controller получает POST запрос
+        ↓
+Валидация (Laravel Request) → Сохранение в MySQL
+        ↓
+Event WorkPublished отправляется
+        ↓
+Listener обрабатывает событие:
+  - Отправляет уведомление в Reverb WebSocket
+  - Кеширует работу в Redis
+  - Отправляет email (через Redis очередь с FFmpeg обработкой миниатюр)
+        ↓
+Reverb WebSocket отправляет подписчикам
+        ↓
+JavaScript (Laravel Echo) в браузере получает событие
+        ↓
+Новая работа появляется в ленте подписчиков БЕЗ перезагрузки
+```
+
+**Итоговая архитектура:**
+- **Caddy** (HTTPS, reverse proxy)
+  - **PHP-FPM** (Laravel приложение)
+    - **MySQL** (основные данные)
+    - **Redis** (кеш, очереди, сессии)
+    - **Reverb** (WebSocket сервер)
+      - **JavaScript Echo** (реал-тайм уведомления в браузере)
+    - **Passport OAuth2** (API безопасность)
+
+## Требования
+
+### Для локальной разработки
+- **PHP 8.2+** с расширениями: openssl, pdo, mbstring, tokenizer, json, curl, gd, bcmath, zip, xml
+- **MySQL 8.0+** или **MariaDB 10.4+**
+- **Redis 6.0+** (опционально для локальной разработки)
+- **Node.js 18+** и **npm 9+**
+- **Composer 2.0+**
+- **FFmpeg 4.0+** (для обработки видео)
+
+### Для Docker
+- **Docker 20.10+**
+- **Docker Compose 2.0+**
 
 ## Установка и настройка
 
-1. Клонировать репозиторий
+### 1. Локальная разработка
+
+**Клонирование репозитория:**
 ```bash
 git clone https://github.com/your-organization/art-platform.git
 cd art-platform
 ```
 
-2. Установить зависимости
+**Установка зависимостей:**
 ```bash
 composer install
 npm install
 ```
 
-3. Настроить переменные окружения
+**Настройка переменных окружения:**
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-4. Настроить базу данных и выполнить миграции
+**Генерация ключей OAuth (для Passport):**
 ```bash
-php artisan migrate
+php artisan passport:keys
+php artisan passport:setup
 ```
 
-5. Запустить сервер разработки
+**Подготовка базы данных:**
 ```bash
+php artisan migrate
+php artisan db:seed  # опционально, для загрузки тестовых данных
+```
+
+**Создание символической ссылки для хранилища:**
+```bash
+php artisan storage:link
+```
+
+**Запуск в режиме разработки:**
+```bash
+# Терминал 1 - PHP-сервер
 php artisan serve
+
+# Терминал 2 - Vite dev-сервер
 npm run dev
+
+# Терминал 3 - Обработка очереди задач (опционально)
+php artisan queue:work
+```
+
+Приложение будет доступно по адресу: `http://localhost:8000`
+
+### 2. Docker (для production и локального development)
+
+**Детальная инструкция:** см. [DOCKER.md](DOCKER.md)
+
+**Быстрый старт:**
+```bash
+# Development
+docker-compose -f docker-compose.dev.yml up -d
+
+# Production
+docker-compose -f docker-compose.prod.yml up -d
+```
+
+## Переменные окружения
+
+Основные переменные в `.env`:
+
+```env
+# Приложение
+APP_NAME=ArtPlatform
+APP_ENV=local              # local, development, production
+APP_KEY=base64:...         # Генерируется автоматически
+APP_DEBUG=true
+APP_URL=http://localhost:8000
+
+# База данных
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=art_platform
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Redis (опционально)
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+
+# Mail (если используется)
+MAIL_DRIVER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=465
+MAIL_USERNAME=your_username
+MAIL_PASSWORD=your_password
+
+# S3 (опционально для хранилища)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+
+# Reverb (WebSocket)
+REVERB_APP_ID=
+REVERB_APP_KEY=
+REVERB_APP_SECRET=
+REVERB_HOST=localhost
+REVERB_PORT=8080
 ```
 
 ## API документация
 
-API документация доступна после запуска проекта по адресу `/api/documentation`.
+API документация доступна по адресу `/api/documentation` после запуска проекта.
+
+Документация генерируется автоматически из аннотаций контроллеров с использованием Swagger/OpenAPI.
 
 ## Разработка
 
-Проект следует принципам чистого кода и использует репозитории и сервисы для бизнес-логики. При разработке придерживайтесь следующей структуры:
-- Модели - описание сущностей в БД
-- Репозитории - для доступа к данным
-- Сервисы - бизнес-логика приложения
-- Контроллеры - обработка запросов и возврат ответов
+### Структура проекта
+
+```
+app/
+├── Console/          # Консольные команды
+├── Events/           # События приложения
+├── Exceptions/       # Обработчики исключений
+├── Http/
+│   ├── Controllers/  # API контроллеры
+│   ├── Requests/     # Form Request классы валидации
+│   └── Resources/    # JSON API ресурсы
+├── Jobs/             # Задачи для очереди
+├── Listeners/        # Слушатели событий
+├── Mail/             # Классы писем
+├── Models/           # Eloquent модели
+├── Notifications/    # Классы уведомлений
+├── Repositories/     # Слой доступа к данным
+├── Services/         # Бизнес-логика
+├── Strategies/       # Паттерн Strategy
+├── Traits/           # Переиспользуемые функции
+└── Utils/            # Вспомогательные функции
+
+database/
+├── migrations/       # Миграции базы данных
+├── seeders/          # Заполнение тестовых данных
+└── factories/        # Factory для создания тестовых объектов
+
+routes/
+├── api.php           # API маршруты
+├── web.php           # Web маршруты
+├── channels.php      # WebSocket каналы
+└── console.php       # Консольные команды
+
+tests/
+├── Feature/          # Feature тесты
+└── Unit/             # Unit тесты
+
+resources/
+├── views/            # Blade шаблоны
+├── js/               # JavaScript файлы
+├── css/              # CSS стили
+└── lang/             # Локализация
+```
 
 ### Конвенции кода
 
-- Все методы контроллеров используют обработку исключений с блоками try-catch
-- Логирование ошибок с использованием Log::error()
-- Форматированные ответы с использованием методов successResponse и errorResponse
-- Строгая типизация для всех методов (strict typing)
+- **Типизация**: Строгая типизация для всех методов (`declare(strict_types=1)`)
+- **Исключения**: Обработка исключений с блоками try-catch в контроллерах
+- **Логирование**: Использование `Log::error()`, `Log::info()` для отслеживания
+- **Ответы**: Форматированные JSON ответы через методы `successResponse()` и `errorResponse()`
+- **Валидация**: Form Request классы для валидации входных данных
+- **Именование**: camelCase для методов, PascalCase для классов, snake_case для таблиц БД
 
 ### Архитектура системы сообщений и уведомлений
 
 Система использует:
-- Сервисный слой для управления сообщениями и уведомлениями
-- События и слушатели для асинхронной обработки уведомлений
-- Автоматическую отправку приветственного сообщения от администратора (UserID: 1) новым пользователям
+- **Сервисный слой** для управления сообщениями и уведомлениями
+- **События и слушатели** для асинхронной обработки
+- **WebSocket (Reverb)** для реал-тайм обновлений
+- **Автоматическое приветствие** от администратора (UserID: 1) новым пользователям
+- **Очередь задач** для отправки тяжелых операций
+
+## Тестирование
+
+### Запуск тестов
+
+```bash
+# Все тесты
+php artisan test
+
+# С отчетом о покрытии кода
+php artisan test --coverage
+
+# Конкретный тестовый файл
+php artisan test tests/Feature/Auth/LoginTest.php
+
+# Только unit тесты
+php artisan test tests/Unit
+```
+
+### Написание тестов
+
+Используется PHPUnit с Laravel тестовыми утилитами:
+
+```php
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+
+class UserTest extends TestCase
+{
+    public function test_user_can_register(): void
+    {
+        $response = $this->post('/api/auth/register', [
+            'name' => 'John Doe',
+            'email' => 'john@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('users', [
+            'email' => 'john@example.com',
+        ]);
+    }
+}
+```
+
+## Контроль качества кода
+
+### Форматирование кода
+
+```bash
+# Проверка по стандартам
+composer run lint
+
+# Автоматическое форматирование
+composer run format
+```
+
+### Статический анализ
+
+```bash
+# PHPStan анализ
+composer run phpstan
+
+# PHPCS проверка
+composer run phpcs
+```
+
+### Git Hooks
+
+Проект использует Husky для автоматических проверок перед коммитом:
+- Форматирование кода
+- Линтинг
+- Статический анализ
+
+## Развертывание
+
+### Production чеклист
+
+- [ ] Установить `APP_ENV=production` и `APP_DEBUG=false`
+- [ ] Сгенерировать крепкий `APP_KEY`
+- [ ] Настроить все переменные окружения для production
+- [ ] Выполнить `php artisan config:cache`
+- [ ] Выполнить `php artisan route:cache`
+- [ ] Выполнить миграции: `php artisan migrate --force`
+- [ ] Настроить HTTPS/SSL сертификаты
+- [ ] Настроить backup для БД
+- [ ] Настроить мониторинг приложения
+- [ ] Настроить логирование и логротацию
+
+### Миграция на production (Docker)
+
+```bash
+docker-compose -f docker-compose.prod.yml up -d
+docker-compose -f docker-compose.prod.yml exec app php artisan migrate --force
+```
+
+## Поиск и решение проблем
+
+### Частые проблемы
+
+**1. "SQLSTATE[HY000]: General error: 1030"**
+```bash
+# Проверить подключение к БД и права доступа
+php artisan tinker
+DB::connection()->getPdo();
+```
+
+**2. "Class not found" при использовании моделей**
+```bash
+composer dump-autoload
+```
+
+**3. Проблемы с хранилищем файлов**
+```bash
+php artisan storage:link
+chmod -R 775 storage/
+chmod -R 775 bootstrap/cache/
+```
+
+**4. WebSocket (Reverb) не работает**
+```bash
+# Проверить, что порт открыт
+netstat -an | grep 8080
+
+# Перезапустить Reverb сервер
+php artisan reverb:start
+```
+
+## Документация проекта
+
+- [QUICK_START.md](QUICK_START.md) – Быстрый старт
+- [DOCKER.md](DOCKER.md) – Инструкция по Docker
+- [README.docker.md](README.docker.md) – Дополнительно о Docker
+- [WEBSOCKET_NOTIFICATIONS_EXAMPLE.md](WEBSOCKET_NOTIFICATIONS_EXAMPLE.md) – WebSocket уведомления
+- [VERSION.md](VERSION.md) – История версий
 
 ## Авторские права и сотрудничество
 
@@ -92,9 +524,19 @@ API документация доступна после запуска прое
 
 Для сотрудничества:
 1. Создайте форк репозитория
-2. Внесите предлагаемые изменения
-3. Отправьте pull request с описанием улучшений
+2. Создайте ветку для вашей функции (`git checkout -b feature/AmazingFeature`)
+3. Сделайте коммиты с описанием изменений (`git commit -m 'Add some AmazingFeature'`)
+4. Отправьте изменения в свой форк (`git push origin feature/AmazingFeature`)
+5. Отправьте pull request с описанием улучшений
 
 ## Лицензия
 
 Проект распространяется под лицензией [MIT](https://opensource.org/licenses/MIT) с дополнительными ограничениями на копирование концепции и создание аналогов.
+
+## Контакты и поддержка
+
+Вопросы и предложения отправляйте через Issues в репозитории.
+
+---
+
+**Последнее обновление**: 6 января 2026 г.

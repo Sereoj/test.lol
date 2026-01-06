@@ -82,7 +82,10 @@ services:
       retries: 5
     sysctls:
       - net.core.somaxconn=1024
-    command: redis-server --appendonly yes
+    command: >
+      redis-server
+      --appendonly yes
+      --replicaof no one
 
   caddy:
     image: caddy:2-alpine
@@ -91,7 +94,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "443:443/udp"  # HTTP/3 support
+      - "443:443/udp" # HTTP/3 support
     volumes:
       - ./public:/var/www/public:ro
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
