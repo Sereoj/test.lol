@@ -44,6 +44,8 @@ class PostRepository
                 'post_statistics.downloads_count',
                 'post_statistics.views_count',
                 'post_statistics.comments_count',
+                'post_statistics.reposts_count',
+                'post_statistics.purchases_count',
                 DB::raw('
                     (COALESCE(post_statistics.likes_count, 0) * 3 +
                      COALESCE(post_statistics.downloads_count, 0) * 5 +
@@ -118,6 +120,8 @@ class PostRepository
             'post_statistics.downloads_count',
             'post_statistics.views_count',
             'post_statistics.comments_count',
+            'post_statistics.reposts_count',
+            'post_statistics.purchases_count',
         ])->paginate($perPage, ['*'], 'page', $pageOffset + 1);
     }
 
