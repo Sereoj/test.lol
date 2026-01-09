@@ -3,8 +3,11 @@
 namespace App\Repositories;
 
 use App\Models\Challenge;
+use App\Models\ChallengeVote;
+use App\Models\ChallengeWinner;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class ChallengeRepository
 {
@@ -159,5 +162,186 @@ class ChallengeRepository
         return Challenge::whereHas('participants', function ($query) use ($userId) {
             $query->where('user_id', $userId);
         })->paginate($perPage);
+    }
+
+    /**
+     * Создать челлендж с призами.
+     *
+     * @param array $data
+     * @param array $prizes
+     * @return Challenge
+     */
+    public function createChallengeWithPrizes(array $data, array $prizes): Challenge
+    {
+        $challenge = Challenge::create($data);
+
+        foreach ($prizes as $prize) {
+            $challenge->prizes()->create($prize);
+        }
+
+        return $challenge->load('prizes');
+    }
+
+    /**
+     * Получить челленджи по типу.
+     *
+     * @param string $type
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
+    public function getChallengesByType(string $type, int $perPage = 10): LengthAwarePaginator
+    {
+        return Challenge::where('type', $type)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Получить челленджи организатора.
+     *
+     * @param int $organizerId
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
+    public function getOrganizerChallenges(int $organizerId, int $perPage = 10): LengthAwarePaginator
+    {
+        return Challenge::where('organizer_id', $organizerId)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Получить работы челленджа.
+     *
+     * @param int $challengeId
+     * @param int $perPage
+     * @return LengthAwarePaginator
+     */
+    public function getChallengeSubmissions(int $challengeId, int $perPage = 10): LengthAwarePaginator
+    {
+        $challenge = $this->getChallengeById($challengeId);
+        return $challenge->submissions()
+            ->with(['user', 'media'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage);
+    }
+
+    /**
+     * Обновить счетчики челленджа.
+     *
+     * @param int $challengeId
+     * @return void
+     */
+    public function updateChallengeCounters(int $challengeId): void
+    {
+        $challenge = $this->getChallengeById($challengeId);
+
+        $challenge->update([
+            'submissions_count' => $challenge->submissions()->count(),
+            'votes_count' => $challenge->votes()->count(),
+        ]);
+    }
+
+    /**
+     * Обновить статус челленджа.
+     *
+     * @param int $challengeId
+     * @param string $status
+     * @return Challenge
+     */
+    public function updateStatus(int $challengeId, string $status): Challenge
+    {
+        $challenge = $this->getChallengeById($challengeId);
+        $challenge->update(['status' => $status]);
+        return $challenge;
+    }
+
+    /**
+     * Добавить голос.
+     *
+     * @param int $challengeId
+     * @param int $userId
+     * @param int $postId
+     * @return ChallengeVote
+     */
+    public function addVote(int $challengeId, int $userId, int $postId): ChallengeVote
+    {
+        return ChallengeVote::create([
+            'challenge_id' => $challengeId,
+            'user_id' => $userId,
+            'post_id' => $postId,
+        ]);
+    }
+
+    /**
+     * Удалить голос.
+     *
+     * @param int $challengeId
+     * @param int $userId
+     * @return bool
+     */
+    public function removeVote(int $challengeId, int $userId): bool
+    {
+        return ChallengeVote::where('challenge_id', $challengeId)
+            ->where('user_id', $userId)
+            ->delete();
+    }
+
+    /**
+     * Получить топ работ по голосам.
+     *
+     * @param int $challengeId
+     * @param int $limit
+     * @return Collection
+     */
+    public function getTopSubmissionsByVotes(int $challengeId, int $limit): Collection
+    {
+        return ChallengeVote::where('challenge_id', $challengeId)
+            ->select('post_id', DB::raw('COUNT(*) as votes_count'))
+            ->groupBy('post_id')
+            ->orderBy('votes_count', 'desc')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
+     * Добавить победителя.
+     *
+     * @param array $winnerData
+     * @return ChallengeWinner
+     */
+    public function addWinner(array $winnerData): ChallengeWinner
+    {
+        return ChallengeWinner::create($winnerData);
+    }
+
+    /**
+     * Получить победителей челленджа.
+     *
+     * @param int $challengeId
+     * @return Collection
+     */
+    public function getWinners(int $challengeId): Collection
+    {
+        return ChallengeWinner::where('challenge_id', $challengeId)
+            ->with(['user', 'post'])
+            ->orderBy('place')
+            ->get();
+    }
+
+    /**
+     * Отметить, что пользователь подал работу.
+     *
+     * @param int $challengeId
+     * @param int $userId
+     * @return void
+     */
+    public function markAsSubmitted(int $challengeId, int $userId): void
+    {
+        $challenge = $this->getChallengeById($challengeId);
+        $challenge->participants()->updateExistingPivot($userId, [
+            'has_submitted' => true,
+            'submitted_at' => now(),
+        ]);
     }
 } 
