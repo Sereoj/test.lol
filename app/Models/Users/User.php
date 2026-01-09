@@ -349,6 +349,17 @@ class User extends Authenticatable
                 'upload_limit' => 20,
                 'max_file_size' => 50,
             ]);
+
+            // Создаем запись опыта работы "Нет опыта" по умолчанию
+            UserWorkExperience::create([
+                'user_id' => $user->id,
+                'company' => 'Нет опыта работы',
+                'position' => 'Нет опыта',
+                'start_date' => now(),
+                'end_date' => null,
+                'description' => null,
+                'is_current' => true,
+            ]);
         });
     }
 }
