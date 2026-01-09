@@ -4,6 +4,8 @@ namespace App\Models\Posts;
 
 use App\Models\Apps\App;
 use App\Models\Categories\Category;
+use App\Models\Challenge;
+use App\Models\ChallengeVote;
 use App\Models\Content\Tag;
 use App\Models\Interactions\Interaction;
 use App\Models\Media\Media;
@@ -37,6 +39,7 @@ class Post extends Model
         'price',
         'is_free',
         'category_id',
+        'challenge_id',
         'settings',
         'meta',
     ];
@@ -73,6 +76,16 @@ class Post extends Model
         return $this->belongsTo(Category::class);
     }
 
+    public function challenge()
+    {
+        return $this->belongsTo(Challenge::class);
+    }
+
+    public function challengeVotes()
+    {
+        return $this->hasMany(ChallengeVote::class);
+    }
+
     public function tags()
     {
         return $this->belongsToMany(Tag::class, 'post_tag', 'post_id', 'tag_id');
@@ -94,6 +107,11 @@ class Post extends Model
     public function reports()
     {
         return $this->hasMany(PostReport::class);
+    }
+
+    public function scopeChallengeSubmissions($query)
+    {
+        return $query->whereNotNull('challenge_id');
     }
 
     public function scopePublished($query)
