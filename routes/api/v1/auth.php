@@ -406,6 +406,8 @@ Route::middleware('auth:api')->group(function () {
             ->name('challenges.active');
         Route::get('/user', [ChallengeController::class, 'getUserChallenges'])
             ->name('challenges.user');
+        Route::get('/my/organized', [ChallengeController::class, 'getUserChallenges'])
+            ->name('challenges.my.organized');
         Route::get('/{id}', [ChallengeController::class, 'show'])
             ->name('challenges.show');
         Route::put('/{id}', [ChallengeController::class, 'update'])
@@ -416,6 +418,18 @@ Route::middleware('auth:api')->group(function () {
             ->name('challenges.join');
         Route::post('/{id}/leave', [ChallengeController::class, 'leave'])
             ->name('challenges.leave');
+        Route::post('/{id}/submit', [ChallengeController::class, 'submitWork'])
+            ->name('challenges.submit');
+        Route::post('/{id}/vote', [ChallengeController::class, 'vote'])
+            ->name('challenges.vote');
+        Route::post('/{id}/select-winners', [ChallengeController::class, 'selectWinners'])
+            ->name('challenges.select-winners');
+        Route::post('/{id}/cancel', [ChallengeController::class, 'cancel'])
+            ->name('challenges.cancel');
+        Route::get('/{id}/submissions', [ChallengeController::class, 'submissions'])
+            ->name('challenges.submissions');
+        Route::get('/{id}/winners', [ChallengeController::class, 'winners'])
+            ->name('challenges.winners');
     });
 
     // Жалобы (универсальный endpoint)
