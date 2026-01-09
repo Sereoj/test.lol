@@ -15,6 +15,11 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         $schedule->command('payouts:process')
             ->monthly();
+
+        // Челленджи
+        $schedule->command('challenges:start')->hourly();
+        $schedule->command('challenges:end')->hourly();
+        $schedule->command('challenges:finish-voting')->hourly();
     }
 
     /**
