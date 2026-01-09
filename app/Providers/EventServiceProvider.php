@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Events\Challenges\ChallengeCompleted;
+use App\Events\Challenges\ChallengeStarted;
+use App\Events\Challenges\PrizeDistributed;
+use App\Events\Challenges\SubmissionCreated;
 use App\Events\CommentCreated;
 use App\Events\FileDownloaded;
 use App\Events\GifPublished;
@@ -18,6 +22,10 @@ use App\Events\UserExperienceChanged;
 use App\Events\VideoPublished;
 use App\Listeners\ActivatePremiumFeatures;
 use App\Listeners\AddTaskToUsers;
+use App\Listeners\Challenges\NotifyOrganizerOnSubmission;
+use App\Listeners\Challenges\NotifyParticipantsOnCompletion;
+use App\Listeners\Challenges\NotifyParticipantsOnStart;
+use App\Listeners\Challenges\NotifyWinnerOnPrize;
 use App\Listeners\DeactivatePremiumFeatures;
 use App\Listeners\UpdateUserTasksOnCommentCreated;
 use App\Listeners\HandleFileDownloaded;
@@ -85,6 +93,18 @@ class EventServiceProvider extends ServiceProvider
         ],
         SubscriptionCancelled::class => [
             DeactivatePremiumFeatures::class,
+        ],
+        ChallengeStarted::class => [
+            NotifyParticipantsOnStart::class,
+        ],
+        ChallengeCompleted::class => [
+            NotifyParticipantsOnCompletion::class,
+        ],
+        SubmissionCreated::class => [
+            NotifyOrganizerOnSubmission::class,
+        ],
+        PrizeDistributed::class => [
+            NotifyWinnerOnPrize::class,
         ]
     ];
 
