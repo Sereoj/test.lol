@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Events\Challenges\ChallengeCreated;
 use App\Events\Challenges\ChallengeCompleted;
+use App\Events\Challenges\PrizeDistributed;
 use App\Events\Challenges\SubmissionCreated;
 use App\Events\Challenges\VoteCasted;
 use App\Events\Challenges\WinnerSelected;
@@ -488,11 +489,11 @@ class ChallengeService extends BaseService
                     throw new Exception('Нельзя голосовать за свою работу');
                 }
 
-                $this->challengeRepository->addVote($challengeId, $userId, $postId);
+                $vote = $this->challengeRepository->addVote($challengeId, $userId, $postId);
 
                 $this->challengeRepository->updateChallengeCounters($challengeId);
 
-                event(new VoteCasted($challenge, $userId, $post));
+                event(new VoteCasted($challenge, $vote));
 
                 $this->logInfo('Голос успешно учтен', [
                     'challenge_id' => $challengeId,
@@ -857,6 +858,8 @@ class ChallengeService extends BaseService
                 'transaction_id' => $transaction->id,
                 'payout_completed_at' => now(),
             ]);
+
+            event(new PrizeDistributed($winner->challenge, $winner));
 
             $this->logInfo('Приз выплачен победителю', [
                 'user_id' => $winner->user_id,
