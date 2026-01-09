@@ -71,6 +71,8 @@ class EmailVerificationService
         $user->email_verified_at = Carbon::now();
         $user->save();
 
-        return $verification->delete();
+        $verification->delete();
+
+        return ['status' => true, 'message' => 'Email verified successfully'];
     }
 }
