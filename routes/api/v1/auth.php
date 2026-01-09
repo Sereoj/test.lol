@@ -36,6 +36,7 @@ use App\Http\Controllers\Users\UserSkillController;
 use App\Http\Controllers\Users\UserSourceController;
 use App\Http\Controllers\Users\UserStatusController;
 use App\Http\Controllers\Users\UserTaskController;
+use App\Http\Controllers\Users\WorkExperienceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -109,6 +110,20 @@ Route::middleware('auth:api')->group(function () {
                 ->name('employment.status.assign');
             Route::delete('/remove', [UserEmploymentStatusController::class, 'removeEmploymentStatus'])
                 ->name('employment.status.remove');
+        });
+
+        // Опыт работы пользователя
+        Route::prefix('work-experience')->group(function () {
+            Route::get('/', [WorkExperienceController::class, 'index'])
+                ->name('work-experience.index');
+            Route::post('/', [WorkExperienceController::class, 'store'])
+                ->name('work-experience.store');
+            Route::get('/{id}', [WorkExperienceController::class, 'show'])
+                ->name('work-experience.show');
+            Route::put('/{id}', [WorkExperienceController::class, 'update'])
+                ->name('work-experience.update');
+            Route::delete('/{id}', [WorkExperienceController::class, 'destroy'])
+                ->name('work-experience.destroy');
         });
 
         // Источники пользователя

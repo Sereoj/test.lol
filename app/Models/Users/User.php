@@ -306,6 +306,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Отношение к опыту работы
+     */
+    public function workExperiences()
+    {
+        return $this->hasMany(UserWorkExperience::class)->orderByDesc('start_date');
+    }
+
+    /**
      * Проверить, есть ли у пользователя активная подписка
      */
     public function hasPremiumSubscription(): bool

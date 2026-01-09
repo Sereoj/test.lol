@@ -13,6 +13,7 @@ use App\Http\Resources\OnlineStatusResource;
 use App\Http\Resources\RoleResource;
 use App\Http\Resources\SpecializationResource;
 use App\Http\Resources\StatusResource;
+use App\Http\Resources\WorkExperienceResource;
 use App\Models\Users\User;
 use App\Services\Media\StorageService;
 use Auth;
@@ -75,8 +76,9 @@ class UserProfileService
                 'status' => new StatusResource($user->status),
                 'location' => new LocationResource($user->location),
                 'employment_status' => new EmploymentStatusResource($user->employmentStatus),
-                'usingApps' => $user->usingApps,
+                'usingApps' => $this->getUserAppsFromPosts($user),
                 'specializations' => SpecializationResource::collection($user->specializations),
+                'work_experiences' => WorkExperienceResource::collection($user->workExperiences),
                 'followers_count' => $followersCount,
                 'following_count' => $followingCount,
             ],
@@ -106,5 +108,19 @@ class UserProfileService
         }
 
         return null;
+    }
+
+    protected function getUserAppsFromPosts(User $user)
+    {
+        $apps = $user->posts()
+            ->with('apps')
+            ->published()
+            ->get()
+            ->pluck('apps')
+            ->flatten()
+            ->unique('id')
+            ->values();
+
+        return AppResource::collection($apps);
     }
 }
