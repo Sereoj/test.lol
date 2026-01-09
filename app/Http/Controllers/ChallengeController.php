@@ -4,7 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Challenge\ChallengeRequest;
 use App\Http\Requests\Challenge\ParticipateRequest;
+use App\Http\Requests\Challenge\SelectWinnersRequest;
+use App\Http\Requests\Challenge\SubmitWorkRequest;
+use App\Http\Requests\Challenge\VoteRequest;
 use App\Http\Resources\ChallengeResource;
+use App\Http\Resources\ChallengeWinnerResource;
+use App\Models\Posts\Post;
 use App\Services\ChallengeService;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -72,7 +77,8 @@ class ChallengeController extends Controller
     {
         try {
             $data = $request->validated();
-            $challenge = $this->challengeService->create($data);
+            $userId = Auth::id();
+            $challenge = $this->challengeService->createChallenge($data, $userId);
 
             $this->forgetCache(self::CACHE_KEY_CHALLENGES);
             $this->forgetCache(self::CACHE_KEY_ACTIVE_CHALLENGES);
@@ -268,6 +274,195 @@ class ChallengeController extends Controller
         } catch (Exception $e) {
             Log::error('Ошибка при выходе из челленджа: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Подать работу на челлендж.
+     *
+     * @param SubmitWorkRequest $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function submitWork(SubmitWorkRequest $request, int $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $postId = $request->validated()['post_id'];
+
+            $this->challengeService->submitWork($id, $userId, $postId);
+
+            $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
+
+            Log::info('Работа успешно подана', [
+                'user_id' => $userId,
+                'challenge_id' => $id,
+                'post_id' => $postId
+            ]);
+
+            return $this->successResponse(['message' => 'Работа успешно подана на челлендж']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при подаче работы: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Проголосовать за работу.
+     *
+     * @param VoteRequest $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function vote(VoteRequest $request, int $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $postId = $request->validated()['post_id'];
+
+            $this->challengeService->vote($id, $userId, $postId);
+
+            $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
+
+            Log::info('Голос успешно учтен', [
+                'user_id' => $userId,
+                'challenge_id' => $id,
+                'post_id' => $postId
+            ]);
+
+            return $this->successResponse(['message' => 'Голос успешно учтен']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при голосовании: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Выбрать победителей (manual).
+     *
+     * @param SelectWinnersRequest $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function selectWinners(SelectWinnersRequest $request, int $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+            $winners = $request->validated()['winners'];
+
+            $this->challengeService->selectWinners($id, $userId, $winners);
+
+            $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
+            $this->forgetCache(self::CACHE_KEY_CHALLENGES);
+
+            Log::info('Победители успешно выбраны', [
+                'organizer_id' => $userId,
+                'challenge_id' => $id,
+                'winners_count' => count($winners)
+            ]);
+
+            return $this->successResponse(['message' => 'Победители успешно выбраны и награждены']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при выборе победителей: ' . $e->getMessage(), [
+                'organizer_id' => Auth::id(),
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Получить список работ челленджа.
+     *
+     * @param Request $request
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function submissions(Request $request, int $id): JsonResponse
+    {
+        try {
+            $perPage = $request->get('per_page', 10);
+
+            $submissions = Post::where('challenge_id', $id)
+                ->with(['user', 'media'])
+                ->orderBy('created_at', 'desc')
+                ->paginate($perPage);
+
+            Log::info('Работы челленджа успешно получены', ['challenge_id' => $id]);
+
+            return $this->successResponse($submissions);
+        } catch (Exception $e) {
+            Log::error('Ошибка при получении работ челленджа: ' . $e->getMessage(), [
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Получить список победителей челленджа.
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function winners(int $id): JsonResponse
+    {
+        try {
+            $challenge = $this->challengeService->getById($id);
+            $winners = $challenge->winners()->with(['user', 'post'])->orderBy('place')->get();
+
+            Log::info('Победители челленджа успешно получены', ['challenge_id' => $id]);
+
+            return $this->successResponse(ChallengeWinnerResource::collection($winners));
+        } catch (Exception $e) {
+            Log::error('Ошибка при получении победителей челленджа: ' . $e->getMessage(), [
+                'challenge_id' => $id
+            ]);
+
+            return $this->errorResponse($e->getMessage(), 500);
+        }
+    }
+
+    /**
+     * Отменить челлендж с возвратом средств.
+     *
+     * @param int $id
+     * @return JsonResponse
+     */
+    public function cancel(int $id): JsonResponse
+    {
+        try {
+            $userId = Auth::id();
+
+            $this->challengeService->cancelChallenge($id, $userId);
+
+            $this->forgetCache(self::CACHE_KEY_CHALLENGE . $id);
+            $this->forgetCache(self::CACHE_KEY_CHALLENGES);
+            $this->forgetCache(self::CACHE_KEY_ACTIVE_CHALLENGES);
+
+            Log::info('Челлендж успешно отменен', [
+                'organizer_id' => $userId,
+                'challenge_id' => $id
+            ]);
+
+            return $this->successResponse(['message' => 'Челлендж успешно отменен, средства возвращены']);
+        } catch (Exception $e) {
+            Log::error('Ошибка при отмене челленджа: ' . $e->getMessage(), [
+                'organizer_id' => Auth::id(),
                 'challenge_id' => $id
             ]);
 
