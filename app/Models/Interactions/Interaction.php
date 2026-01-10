@@ -22,4 +22,12 @@ class Interaction extends Model
     {
         return $this->belongsTo(Post::class);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\InteractionFactory
+    {
+        return \Database\Factories\InteractionFactory::new();
+    }
 }

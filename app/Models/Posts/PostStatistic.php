@@ -28,4 +28,12 @@ class PostStatistic extends Model
     {
         return $this->belongsTo(Post::class);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\PostStatisticFactory
+    {
+        return \Database\Factories\PostStatisticFactory::new();
+    }
 }

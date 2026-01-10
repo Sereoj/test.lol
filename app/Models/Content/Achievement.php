@@ -26,4 +26,12 @@ class Achievement extends Model
     {
         return $this->belongsToMany(User::class, 'user_achievements');
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\AchievementFactory
+    {
+        return \Database\Factories\AchievementFactory::new();
+    }
 }

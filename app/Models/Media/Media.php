@@ -113,4 +113,12 @@ class Media extends Model
     {
         return $query->where('type', self::STATUS_COMPRESSED);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\MediaFactory
+    {
+        return \Database\Factories\MediaFactory::new();
+    }
 }

@@ -17,4 +17,12 @@ class UserBalance extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\UserBalanceFactory
+    {
+        return \Database\Factories\UserBalanceFactory::new();
+    }
 }

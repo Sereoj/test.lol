@@ -2,6 +2,7 @@
 
 namespace App\Models\Users;
 
+use Database\Factories\UserWorkExperienceFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -34,5 +35,13 @@ class UserWorkExperience extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): UserWorkExperienceFactory
+    {
+        return UserWorkExperienceFactory::new();
     }
 }

@@ -25,4 +25,12 @@ class Category extends Model
         'meta' => 'json',
         'name' => 'json',
     ];
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\CategoryFactory
+    {
+        return \Database\Factories\CategoryFactory::new();
+    }
 }

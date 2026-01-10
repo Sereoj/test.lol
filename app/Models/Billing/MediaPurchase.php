@@ -22,4 +22,12 @@ class MediaPurchase extends Model
     {
         return $this->belongsTo(Media::class);
     }
+
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory(): \Database\Factories\MediaPurchaseFactory
+    {
+        return \Database\Factories\MediaPurchaseFactory::new();
+    }
 }
