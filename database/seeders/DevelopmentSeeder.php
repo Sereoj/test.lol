@@ -165,6 +165,30 @@ class DevelopmentSeeder extends Seeder
         Challenge::factory()->count(2)->upcoming()->create();
         Challenge::factory()->count(5)->completed()->create();
 
+        // Создаем призы для челленджей
+        $this->command->info('Creating challenge prizes...');
+        $this->call(ChallengePrizeSeeder::class);
+
+        // Создаем голоса для челленджей
+        $this->command->info('Creating challenge votes...');
+        $this->call(ChallengeVoteSeeder::class);
+
+        // Создаем победителей челленджей
+        $this->command->info('Creating challenge winners...');
+        $this->call(ChallengeWinnerSeeder::class);
+
+        // Создаем опыт работы пользователей
+        $this->command->info('Creating user work experiences...');
+        $this->call(UserWorkExperienceSeeder::class);
+
+        // Создаем соавторов постов
+        $this->command->info('Creating post collaborators...');
+        $this->call(PostCollaboratorSeeder::class);
+
+        // Создаем покупки медиа
+        $this->command->info('Creating media purchases...');
+        $this->call(MediaPurchaseSeeder::class);
+
         // Включаем внешние ключи
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
@@ -178,9 +202,15 @@ class DevelopmentSeeder extends Seeder
     {
         DB::table('post_tag')->truncate();
         DB::table('post_media')->truncate();
+        DB::table('post_collaborators')->truncate();
         DB::table('comment_likes')->truncate();
         DB::table('comment_reports')->truncate();
         DB::table('comment_reposts')->truncate();
+        DB::table('challenge_prizes')->truncate();
+        DB::table('challenge_votes')->truncate();
+        DB::table('challenge_winners')->truncate();
+        DB::table('media_purchases')->truncate();
+        DB::table('user_work_experiences')->truncate();
         Post::truncate();
         Comment::truncate();
         Media::truncate();
