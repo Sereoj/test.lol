@@ -12,6 +12,13 @@ use Illuminate\Support\Str;
 class TransactionFactory extends Factory
 {
     /**
+     * The name of the factory's corresponding model.
+     *
+     * @var class-string<\Illuminate\Database\Eloquent\Model>
+     */
+    protected $model = Transaction::class;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
