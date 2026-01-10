@@ -2,11 +2,11 @@
 
 namespace Database\Factories;
 
-use App\Models\PostStatistic;
+use App\Models\Posts\PostStatistic;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PostStatistic>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Posts\PostStatistic>
  */
 class PostStatisticFactory extends Factory
 {
@@ -25,7 +25,7 @@ class PostStatisticFactory extends Factory
     public function definition(): array
     {
         return [
-            'post_id' => fake()->unique()->numberBetween(1, 50),
+            'post_id' => fake()->unique()->numberBetween(1, 100),
             'views_count' => fake()->numberBetween(0, 5000),
             'likes_count' => fake()->numberBetween(0, 500),
             'reposts_count' => fake()->numberBetween(0, 100),
@@ -85,4 +85,4 @@ class PostStatisticFactory extends Factory
             'engagement_score' => fake()->numberBetween(90, 100),
         ]);
     }
-} 
+}

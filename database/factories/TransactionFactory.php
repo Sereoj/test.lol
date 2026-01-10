@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Transaction;
+use App\Models\Billing\Transaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -27,7 +27,7 @@ class TransactionFactory extends Factory
     {
         $type = fake()->randomElement(['topup', 'purchase', 'withdrawal', 'transfer']);
         $amount = fake()->randomFloat(2, 1, 500);
-        
+
         return [
             'user_id' => fake()->numberBetween(1, 20),
             'type' => $type,
@@ -110,4 +110,4 @@ class TransactionFactory extends Factory
             ]),
         ]);
     }
-} 
+}

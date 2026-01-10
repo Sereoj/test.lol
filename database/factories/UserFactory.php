@@ -35,7 +35,7 @@ class UserFactory extends Factory
         return [
             'username' => $username,
             'slug' => Str::slug($username) . '-' . Str::random(5),
-            'description' => fake()->paragraph(),
+            'description' => fake()->sentence(10), // Ограничиваем длину до одного предложения
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'verification' => fake()->boolean(20), // 20% вероятность быть верифицированным

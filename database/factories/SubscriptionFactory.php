@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Subscription;
+use App\Models\Billing\Subscription;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -29,7 +29,7 @@ class SubscriptionFactory extends Factory
         $endDate = fake()->dateTimeBetween($startDate, '+6 months');
         $status = $endDate > now() ? 'active' : 'expired';
         $planName = fake()->randomElement(['basic', 'premium', 'pro']);
-        
+
         return [
             'user_id' => fake()->numberBetween(1, 20),
             'plan' => $planName,
@@ -50,7 +50,7 @@ class SubscriptionFactory extends Factory
     {
         $startDate = fake()->dateTimeBetween('-3 months', 'now');
         $endDate = fake()->dateTimeBetween('+1 day', '+6 months');
-        
+
         return $this->state(fn (array $attributes) => [
             'status' => 'active',
             'started_at' => $startDate,
@@ -65,7 +65,7 @@ class SubscriptionFactory extends Factory
     {
         $startDate = fake()->dateTimeBetween('-1 year', '-1 month');
         $endDate = fake()->dateTimeBetween('-1 month', '-1 day');
-        
+
         return $this->state(fn (array $attributes) => [
             'status' => 'expired',
             'started_at' => $startDate,
@@ -113,11 +113,11 @@ class SubscriptionFactory extends Factory
     {
         $startDate = fake()->dateTimeBetween('-6 months', '-1 day');
         $cancelDate = fake()->dateTimeBetween($startDate, 'now');
-        
+
         return $this->state(fn (array $attributes) => [
             'status' => 'inactive',
             'started_at' => $startDate,
             'expires_at' => $cancelDate,
         ]);
     }
-} 
+}

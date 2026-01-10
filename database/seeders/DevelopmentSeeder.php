@@ -89,14 +89,36 @@ class DevelopmentSeeder extends Seeder
 
         // Создаем медиафайлы
         $this->command->info('Creating mock media...');
-        Media::factory()->count(40)->image()->create();
-        Media::factory()->count(10)->video()->create();
-        Media::factory()->count(5)->resized()->create();
-        Media::factory()->count(5)->compressed()->create();
+        $allMedia = [];
+        $allMedia = array_merge($allMedia, Media::factory()->count(40)->image()->create()->toArray());
+        $allMedia = array_merge($allMedia, Media::factory()->count(10)->video()->create()->toArray());
+        $allMedia = array_merge($allMedia, Media::factory()->count(5)->resized()->create()->toArray());
+        $allMedia = array_merge($allMedia, Media::factory()->count(5)->compressed()->create()->toArray());
 
         // Связываем посты с медиафайлами
         $this->command->info('Creating post media links...');
-        PostMedia::factory()->count(50)->create();
+        $posts = Post::all();
+        $mediaIds = Media::pluck('id')->toArray();
+        $createdLinks = 0;
+
+        foreach ($posts as $post) {
+            $mediaCount = rand(2, 5);
+            $selectedMedia = array_rand($mediaIds, min($mediaCount, count($mediaIds)));
+            $selectedMedia = is_array($selectedMedia) ? $selectedMedia : [$selectedMedia];
+
+            foreach ($selectedMedia as $index) {
+                try {
+                    PostMedia::create([
+                        'post_id' => $post->id,
+                        'media_id' => $mediaIds[$index],
+                        'sort_order' => $createdLinks % 10,
+                    ]);
+                    $createdLinks++;
+                } catch (\Exception $e) {
+                    // Игнорируем дубликаты
+                }
+            }
+        }
 
         // Создаем комментарии
         $this->command->info('Creating mock comments...');
@@ -105,8 +127,50 @@ class DevelopmentSeeder extends Seeder
 
         // Создаем лайки комментариев
         $this->command->info('Creating comment likes...');
-        CommentLike::factory()->count(50)->like()->create();
-        CommentLike::factory()->count(20)->dislike()->create();
+        $users = User::pluck('id')->toArray();
+        $comments = Comment::pluck('id')->toArray();
+        $likeTypes = ['like', 'dislike'];
+        $createdLikes = [];
+
+        for ($i = 0; $i < 50; $i++) {
+            $userId = $users[array_rand($users)];
+            $commentId = $comments[array_rand($comments)];
+            $type = 'like';
+            $key = "$userId-$commentId-$type";
+
+            if (!isset($createdLikes[$key])) {
+                try {
+                    CommentLike::create([
+                        'user_id' => $userId,
+                        'comment_id' => $commentId,
+                        'type' => $type,
+                    ]);
+                    $createdLikes[$key] = true;
+                } catch (\Exception $e) {
+                    // Игнорируем дубликаты
+                }
+            }
+        }
+
+        for ($i = 0; $i < 20; $i++) {
+            $userId = $users[array_rand($users)];
+            $commentId = $comments[array_rand($comments)];
+            $type = 'dislike';
+            $key = "$userId-$commentId-$type";
+
+            if (!isset($createdLikes[$key])) {
+                try {
+                    CommentLike::create([
+                        'user_id' => $userId,
+                        'comment_id' => $commentId,
+                        'type' => $type,
+                    ]);
+                    $createdLikes[$key] = true;
+                } catch (\Exception $e) {
+                    // Игнорируем дубликаты
+                }
+            }
+        }
 
         // Создаем взаимодействия с постами
         $this->command->info('Creating post interactions...');
@@ -229,8 +293,6 @@ class DevelopmentSeeder extends Seeder
         Interaction::truncate();
         PostStatistic::truncate();
         Follow::truncate();
-
-        // Оставляем пользователей из основного сидера и удаляем только моковых
-        User::where('id', '>', 10)->delete();
+        User::truncate();
     }
 }

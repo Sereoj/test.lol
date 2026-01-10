@@ -52,7 +52,12 @@
       "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan make:command:*)",
       "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan:*)",
       "Bash(e/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan route:list:*)",
-      "Bash(\"e/Programs/OpenServer/modules/php/PHP_8.2/php.exe\" artisan make:migration create_post_collaborators_table)"
+      "Bash(\"e/Programs/OpenServer/modules/php/PHP_8.2/php.exe\" artisan make:migration create_post_collaborators_table)",
+      "Bash(for file in database/factories/*Factory.php)",
+      "Bash(do if ! grep -q \"protected $model\" \"$file\")",
+      "Bash(then echo \"$file\")",
+      "Bash(fi)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

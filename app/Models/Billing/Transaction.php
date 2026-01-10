@@ -10,6 +10,14 @@ class Transaction extends Model
 {
     use HasFactory;
 
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\TransactionFactory::new();
+    }
+
     protected $fillable = ['user_id', 'type', 'amount', 'currency', 'status', 'metadata', 'external_transaction_id'];
 
     protected $casts = [

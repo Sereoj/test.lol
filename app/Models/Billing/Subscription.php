@@ -11,6 +11,14 @@ class Subscription extends Model
 {
     use HasFactory;
 
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\SubscriptionFactory::new();
+    }
+
     protected $fillable = [
         'user_id',
         'plan',

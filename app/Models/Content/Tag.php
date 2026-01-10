@@ -12,6 +12,14 @@ class Tag extends Model
     use HasFactory;
     use SoftDeletes;
 
+    /**
+     * Create a new factory instance for the model.
+     */
+    protected static function newFactory()
+    {
+        return \Database\Factories\TagFactory::new();
+    }
+
     protected $fillable = ['name', 'slug', 'meta'];
 
     protected $casts = [

@@ -24,14 +24,17 @@ class FollowFactory extends Factory
      */
     public function definition(): array
     {
-        // Убеждаемся, что follower_id и following_id разные
-        $follower = fake()->numberBetween(1, 20);
-        $following = fake()->numberBetween(1, 20);
-        
-        while ($follower === $following) {
+        // Генерируем уникальную комбинацию follower_id и following_id
+        static $usedPairs = [];
+
+        do {
+            $follower = fake()->numberBetween(1, 20);
             $following = fake()->numberBetween(1, 20);
-        }
-        
+            $pair = $follower . '-' . $following;
+        } while ($follower === $following || isset($usedPairs[$pair]));
+
+        $usedPairs[$pair] = true;
+
         return [
             'follower_id' => $follower,
             'following_id' => $following,
@@ -41,4 +44,4 @@ class FollowFactory extends Factory
             },
         ];
     }
-} 
+}
