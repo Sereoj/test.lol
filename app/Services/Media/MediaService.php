@@ -28,7 +28,7 @@ class MediaService
     }
 
     // Загрузка медиа-файлов
-    public function upload($files)
+    public function upload($files, $sourceFiles = [], $sourcePrices = [])
     {
         $originalPath = 'originals';
         $processedPath = 'processed';
@@ -47,6 +47,7 @@ class MediaService
             return $file->isValid() && $file->getMimeType();
         });
 
+        $fileIndex = 0;
         foreach ($files as $file) {
             try {
                 $mimeType = $file->getMimeType();
@@ -155,6 +156,47 @@ class MediaService
                     ]);
                 }
 
+                // Обработка исходного файла, если он был загружен
+                if (isset($sourceFiles[$fileIndex]) && $sourceFiles[$fileIndex] && $originalMedia) {
+                    $sourceFile = $sourceFiles[$fileIndex];
+                    $sourcePrice = $sourcePrices[$fileIndex] ?? null;
+
+                    if ($sourceFile->isValid() && $sourcePrice !== null && $sourcePrice > 0) {
+                        try {
+                            Log::info('MediaService: Processing source file', [
+                                'media_id' => $originalMedia->id,
+                                'source_file_name' => $sourceFile->getClientOriginalName(),
+                                'source_price' => $sourcePrice,
+                            ]);
+
+                            // Загружаем исходник в отдельную папку
+                            $sourcePath = 'sources/' . date('Y/m');
+                            $sourceFileName = uniqid() . '_' . $sourceFile->getClientOriginalName();
+                            $disk = StorageService::get();
+
+                            $uploadedSourcePath = $sourceFile->storeAs($sourcePath, $sourceFileName, $disk);
+
+                            // Обновляем запись оригинального медиа
+                            $this->mediaRepository->update($originalMedia->id, [
+                                'source_file_path' => $uploadedSourcePath,
+                                'source_price' => $sourcePrice,
+                                'has_source' => true,
+                            ]);
+
+                            Log::info('MediaService: Source file uploaded successfully', [
+                                'media_id' => $originalMedia->id,
+                                'source_path' => $uploadedSourcePath,
+                                'source_price' => $sourcePrice,
+                            ]);
+                        } catch (Exception $e) {
+                            Log::error('MediaService: Error processing source file', [
+                                'media_id' => $originalMedia->id,
+                                'error' => $e->getMessage(),
+                            ]);
+                        }
+                    }
+                }
+
                 Cache::put($cacheKey, $mediaData, now()->addMinutes(60));
                 $allCreatedFiles = array_merge($allCreatedFiles, $mediaData);
 
@@ -166,12 +208,14 @@ class MediaService
                     'media_count' => count($mediaData),
                 ]);
 
+                $fileIndex++;
             } catch (Exception $e) {
                 Log::error("MediaService: Error processing file", [
                     'file_name' => $file->getClientOriginalName(),
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
                 ]);
+                $fileIndex++;
             }
         }
 

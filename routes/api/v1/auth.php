@@ -5,6 +5,7 @@ use App\Http\Controllers\Authentication\AccountRecoveryController;
 use App\Http\Controllers\Authentication\AuthController;
 use App\Http\Controllers\Authentication\StepController;
 use App\Http\Controllers\Billing\BalanceController;
+use App\Http\Controllers\Billing\MediaPurchaseController;
 use App\Http\Controllers\Billing\PurchaseController;
 use App\Http\Controllers\Billing\SubscriptionController;
 use App\Http\Controllers\Billing\TransactionController;
@@ -92,6 +93,13 @@ Route::middleware('auth:api')->group(function () {
 
         // Покупки
         Route::post('/posts/{postId}/purchase', [PurchaseController::class, 'purchasePost']);
+
+        // Покупки медиа
+        Route::prefix('media-purchases')->group(function () {
+            Route::post('/{mediaId}/purchase', [MediaPurchaseController::class, 'purchaseMediaSource']);
+            Route::get('/', [MediaPurchaseController::class, 'getUserMediaPurchases']);
+            Route::get('/{mediaId}/download', [MediaPurchaseController::class, 'downloadSource']);
+        });
 
         // Подписки
         Route::prefix('subscriptions')->group(function () {

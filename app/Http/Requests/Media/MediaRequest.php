@@ -68,6 +68,8 @@ class MediaRequest extends FormRequest
     {
         return [
             'file.*' => 'file|mimes:jpeg,jpg,png,gif,webp,mp4,avi,mov|max:20480',
+            'source_file.*' => 'nullable|file|max:102400',
+            'source_prices.*' => 'nullable|numeric|min:0',
             'is_adult' => 'nullable|boolean',
             'is_subscription' => 'nullable|boolean',
             'is_paid' => 'nullable|boolean',

@@ -8,6 +8,7 @@ use App\Events\Challenges\PrizeDistributed;
 use App\Events\Challenges\SubmissionCreated;
 use App\Events\CommentCreated;
 use App\Events\FileDownloaded;
+use App\Events\MediaSourcePurchased;
 use App\Events\PostCollaboratorAdded;
 use App\Events\GifPublished;
 use App\Events\ImagePublished;
@@ -34,6 +35,7 @@ use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleNotificationSettingsUpdated;
 use App\Listeners\HandleProfileComplected;
 use App\Listeners\PostPublishedListener;
+use App\Listeners\SendMediaPurchaseNotification;
 use App\Listeners\UpdateOnlineStatus;
 use App\Listeners\UpdateUserExperience;
 use App\Listeners\UpdateUserLevel;
@@ -110,6 +112,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         PostCollaboratorAdded::class => [
             NotifyCollaboratorsOnPostPublished::class,
+        ],
+        MediaSourcePurchased::class => [
+            SendMediaPurchaseNotification::class,
         ],
     ];
 

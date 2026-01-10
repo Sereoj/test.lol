@@ -2,6 +2,7 @@
 
 namespace App\Models\Media;
 
+use App\Models\Billing\MediaPurchase;
 use App\Models\Posts\Post;
 use App\Models\Users\User;
 use App\Services\Media\StorageService;
@@ -47,6 +48,9 @@ class Media extends Model
     protected $fillable = [
         'name',
         'file_path',
+        'source_file_path',
+        'source_price',
+        'has_source',
         'mime_type',
         'type',
         'size',
@@ -62,6 +66,11 @@ class Media extends Model
 
     protected $appends = ['url'];
 
+    protected $casts = [
+        'has_source' => 'boolean',
+        'source_price' => 'decimal:2',
+    ];
+
     public function posts()
     {
         return $this->belongsToMany(Post::class, 'post_media')
@@ -72,6 +81,11 @@ class Media extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function purchases()
+    {
+        return $this->hasMany(MediaPurchase::class);
     }
 
     public function getUrlAttribute()

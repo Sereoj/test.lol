@@ -27,8 +27,10 @@ class MediaController extends Controller
     {
         try {
             $files = $request->file('file');
+            $sourceFiles = $request->file('source_file') ?? [];
+            $sourcePrices = $request->input('source_prices') ?? [];
 
-            $media = $this->mediaService->upload($files);
+            $media = $this->mediaService->upload($files, $sourceFiles, $sourcePrices);
 
             Log::info('Media', [
                 'data' => $media
