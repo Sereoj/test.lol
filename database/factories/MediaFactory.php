@@ -30,6 +30,9 @@ class MediaFactory extends Factory
             'height' => fake()->numberBetween(600, 1080),
             'is_public' => true,
             'parent_id' => null,
+            'source_file_path' => null,
+            'source_price' => null,
+            'has_source' => false,
             'created_at' => fake()->dateTimeBetween('-1 year', 'now'),
             'updated_at' => function (array $attributes) {
                 return fake()->dateTimeBetween($attributes['created_at'], 'now');
@@ -117,6 +120,34 @@ class MediaFactory extends Factory
                 'file_path' => 'uploads/images/blur/' . fake()->uuid() . '.jpg',
                 'width' => fake()->numberBetween(50, 200),
                 'height' => fake()->numberBetween(50, 150),
+            ];
+        });
+    }
+
+    /**
+     * Indicate that the media has a source file for sale.
+     */
+    public function withSource(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'has_source' => true,
+                'source_file_path' => 'sources/' . date('Y/m') . '/' . fake()->uuid() . '.psd',
+                'source_price' => fake()->randomFloat(2, 10, 1000),
+            ];
+        });
+    }
+
+    /**
+     * Indicate that the media has a source file with specific price.
+     */
+    public function withSourcePrice(float $price): static
+    {
+        return $this->state(function (array $attributes) use ($price) {
+            return [
+                'has_source' => true,
+                'source_file_path' => 'sources/' . date('Y/m') . '/' . fake()->uuid() . '.psd',
+                'source_price' => $price,
             ];
         });
     }
