@@ -273,4 +273,21 @@ class UserFollowService
 
             return $isFollowing;
     }
+
+    /**
+     * Проверить, являются ли два пользователя взаимными друзьями
+     *
+     * @param int $userId1 ID первого пользователя
+     * @param int $userId2 ID второго пользователя
+     * @return bool true, если взаимные друзья, иначе false
+     */
+    public function areMutualFriends(int $userId1, int $userId2): bool
+    {
+        if ($userId1 === $userId2) {
+            return false;
+        }
+
+        return $this->isFollowing($userId1, $userId2)
+            && $this->isFollowing($userId2, $userId1);
+    }
 }

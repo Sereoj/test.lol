@@ -6,6 +6,7 @@ use App\Http\Resources\Apps\AppShortResource;
 use App\Http\Resources\Media\MediaShortResource;
 use App\Http\Resources\ShortCategoryResource;
 use App\Http\Resources\Tag\TagShortResource;
+use App\Http\Resources\Users\UserShortResource;
 use App\Http\Resources\Users\UserShortWithBalanceResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -113,6 +114,12 @@ use OpenApi\Attributes as OA;
  *         @OA\Items(type="object")
  *     ),
  *     @OA\Property(
+ *         property="collaborators",
+ *         type="array",
+ *         description="Соавторы поста",
+ *         @OA\Items(ref="#/components/schemas/UserShortResource")
+ *     ),
+ *     @OA\Property(
  *         property="tags",
  *         type="array",
  *         description="Tags"
@@ -160,6 +167,7 @@ class PostResource extends JsonResource
             'statistics' => new PostStatisticResource($this->resource['post']->statistics),
             'category' => new ShortCategoryResource($this->resource['post']->category),
             'apps' => AppShortResource::collection($this->resource['post']->apps),
+            'collaborators' => UserShortResource::collection($this->resource['post']->collaborators),
             'tags' => TagShortResource::collection($this->resource['post']->tags),
             'created_at' => $this->resource['post']->created_at,
             'updated_at' => $this->resource['post']->updated_at,

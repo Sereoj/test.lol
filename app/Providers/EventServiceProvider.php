@@ -8,6 +8,7 @@ use App\Events\Challenges\PrizeDistributed;
 use App\Events\Challenges\SubmissionCreated;
 use App\Events\CommentCreated;
 use App\Events\FileDownloaded;
+use App\Events\PostCollaboratorAdded;
 use App\Events\GifPublished;
 use App\Events\ImagePublished;
 use App\Events\NotificationSettingsUpdated;
@@ -27,6 +28,7 @@ use App\Listeners\Challenges\NotifyParticipantsOnCompletion;
 use App\Listeners\Challenges\NotifyParticipantsOnStart;
 use App\Listeners\Challenges\NotifyWinnerOnPrize;
 use App\Listeners\DeactivatePremiumFeatures;
+use App\Listeners\NotifyCollaboratorsOnPostPublished;
 use App\Listeners\UpdateUserTasksOnCommentCreated;
 use App\Listeners\HandleFileDownloaded;
 use App\Listeners\HandleNotificationSettingsUpdated;
@@ -105,7 +107,10 @@ class EventServiceProvider extends ServiceProvider
         ],
         PrizeDistributed::class => [
             NotifyWinnerOnPrize::class,
-        ]
+        ],
+        PostCollaboratorAdded::class => [
+            NotifyCollaboratorsOnPostPublished::class,
+        ],
     ];
 
     /**

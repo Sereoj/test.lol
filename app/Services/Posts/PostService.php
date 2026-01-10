@@ -8,6 +8,7 @@ use App\Http\Resources\Media\ThumbMediaResource;
 use App\Models\Posts\Post;
 use App\Models\Users\User;
 use App\Repositories\PostRepository;
+use App\Traits\LoggableTrait;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Response;
@@ -15,6 +16,8 @@ use ZipArchive;
 
 class PostService
 {
+    use LoggableTrait;
+
     private PostStatisticsService $statService;
 
     private PostRepository $postRepository;
@@ -59,12 +62,42 @@ class PostService
 
     public function createPost(array $data)
     {
-        return $this->postRepository->createPost($data);
+        $this->logInfo('Creating post', ['user_id' => Auth::id(), 'title' => $data['title'] ?? 'Untitled']);
+
+        $post = $this->postRepository->createPost($data);
+
+        // Диспатч события для уведомления соавторов
+        if (isset($data['collaborator_ids']) && !empty($data['collaborator_ids'])) {
+            event(new \App\Events\PostCollaboratorAdded($post, $data['collaborator_ids']));
+        }
+
+        $this->logInfo('Post created successfully', ['post_id' => $post->id]);
+
+        return $post;
     }
 
     public function updatePost($id, array $data)
     {
+        $this->logInfo('Updating post', ['post_id' => $id]);
+
+        // Получаем старых соавторов ДО обновления
+        $oldPost = $this->postRepository->getPost($id);
+        $oldCollaboratorIds = $oldPost->collaborators->pluck('id')->toArray();
+
         $post = $this->postRepository->updatePost($id, $data);
+
+        // Определяем НОВЫХ соавторов и отправляем уведомления только им
+        if (isset($data['collaborator_ids'])) {
+            $newCollaboratorIds = $data['collaborator_ids'];
+            $addedCollaboratorIds = array_diff($newCollaboratorIds, $oldCollaboratorIds);
+
+            if (!empty($addedCollaboratorIds)) {
+                event(new \App\Events\PostCollaboratorAdded($post, $addedCollaboratorIds));
+            }
+        }
+
+        $this->logInfo('Post updated successfully', ['post_id' => $post->id]);
+
         return [
             'post' => $post,
             'isUserLiked' => false,

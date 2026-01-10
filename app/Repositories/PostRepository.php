@@ -127,7 +127,7 @@ class PostRepository
 
     public function getPost($id)
     {
-        $query = Post::with(['user', 'category', 'media', 'tags', 'apps', 'statistics', 'interactions']);
+        $query = Post::with(\App\Store\PostRelations::getPostWithCollaborators());
 
         if (is_numeric($id)) {
             return $query->where('id', $id)->firstOrFail();
@@ -203,6 +203,14 @@ class PostRepository
                 $post->media()->sync($data['media']);
             }
 
+            // Синхронизация соавторов
+            if (isset($data['collaborator_ids']) && is_array($data['collaborator_ids'])) {
+                $collaboratorData = collect($data['collaborator_ids'])->mapWithKeys(function ($userId, $index) {
+                    return [$userId => ['sort_order' => $index]];
+                });
+                $post->collaborators()->sync($collaboratorData);
+            }
+
             $post->statistics()->create(['post_id' => $post->id]);
 
             event(new PostPublished($post));
@@ -251,6 +259,14 @@ class PostRepository
                     return [$id => ['sort_order' => $index]];
                 });
                 $post->media()->sync($mediaData);
+            }
+
+            // Синхронизация соавторов
+            if (isset($data['collaborator_ids']) && is_array($data['collaborator_ids'])) {
+                $collaboratorData = collect($data['collaborator_ids'])->mapWithKeys(function ($userId, $index) {
+                    return [$userId => ['sort_order' => $index]];
+                });
+                $post->collaborators()->sync($collaboratorData);
             }
 
             return $post->load(['user', 'category', 'media', 'tags', 'apps', 'statistics']);

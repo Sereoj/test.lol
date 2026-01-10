@@ -104,6 +104,14 @@ class Post extends Model
             ->withTimestamps();
     }
 
+    public function collaborators()
+    {
+        return $this->belongsToMany(User::class, 'post_collaborators', 'post_id', 'user_id')
+            ->withPivot('sort_order')
+            ->orderBy('sort_order')
+            ->withTimestamps();
+    }
+
     public function reports()
     {
         return $this->hasMany(PostReport::class);

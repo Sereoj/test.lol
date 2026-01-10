@@ -43,7 +43,16 @@
       "Bash(ping:*)",
       "Bash(ipconfig /flushdns:*)",
       "Bash(move:*)",
-      "Bash(e/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan tinker --execute=\"echo ''Environment: '' . app\\(\\)->environment\\(\\) . PHP_EOL; echo ''Debug: '' . \\(config\\(''app.debug''\\) ? ''true'' : ''false''\\) . PHP_EOL; echo ''DB Host: '' . config\\(''database.connections.mysql.host''\\) . PHP_EOL; echo ''Cache Driver: '' . config\\(''cache.default''\\) . PHP_EOL; echo ''Queue Driver: '' . config\\(''queue.default''\\) . PHP_EOL;\")"
+      "Bash(e/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan tinker --execute=\"echo ''Environment: '' . app\\(\\)->environment\\(\\) . PHP_EOL; echo ''Debug: '' . \\(config\\(''app.debug''\\) ? ''true'' : ''false''\\) . PHP_EOL; echo ''DB Host: '' . config\\(''database.connections.mysql.host''\\) . PHP_EOL; echo ''Cache Driver: '' . config\\(''cache.default''\\) . PHP_EOL; echo ''Queue Driver: '' . config\\(''queue.default''\\) . PHP_EOL;\")",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan route:list --path=profile)",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan make:model:*)",
+      "Bash(rmdir:*)",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan make:request WorkExperience/StoreWorkExperienceRequest)",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan make:request WorkExperience/UpdateWorkExperienceRequest)",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan make:command:*)",
+      "Bash(e:/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan:*)",
+      "Bash(e/Programs/OpenServer/modules/php/PHP_8.2/php.exe artisan route:list:*)",
+      "Bash(\"e/Programs/OpenServer/modules/php/PHP_8.2/php.exe\" artisan make:migration create_post_collaborators_table)"
     ],
     "deny": [],
     "ask": []

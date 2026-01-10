@@ -117,6 +117,18 @@ use OpenApi\Attributes as OA;
  *         description="Media.*",
  *         example="Example media.*"
  *     ),
+ *     @OA\Property(
+ *         property="collaborator_ids",
+ *         type="array",
+ *         description="IDs соавторов (max: 5, только взаимные друзья)",
+ *         @OA\Items(type="integer")
+ *     ),
+ *     @OA\Property(
+ *         property="collaborator_ids.*",
+ *         type="integer",
+ *         description="User ID соавтора",
+ *         example=42
+ *     ),
  * )
  */
 class UpdatePostRequest extends FormRequest
@@ -161,6 +173,8 @@ class UpdatePostRequest extends FormRequest
             'apps_id.*' => 'exists:apps,id',
             'media' => 'array',
             'media.*' => 'exists:media,id',
+            'collaborator_ids' => 'nullable|array|max:5',
+            'collaborator_ids.*' => 'exists:users,id',
         ];
     }
 
@@ -172,6 +186,40 @@ class UpdatePostRequest extends FormRequest
             'is_nsfl_content' => $this->boolean('is_nsfl_content'),
             'has_copyright' => $this->boolean('has_copyright'),
         ]);
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            if (!$this->has('collaborator_ids') || !is_array($this->collaborator_ids)) {
+                return;
+            }
+
+            $userId = \Illuminate\Support\Facades\Auth::id();
+
+            // Проверка 1: Автор не может добавить себя
+            if (in_array($userId, $this->collaborator_ids)) {
+                $validator->errors()->add(
+                    'collaborator_ids',
+                    'Вы не можете добавить себя в соавторы.'
+                );
+                return;
+            }
+
+            // Проверка 2: Взаимная дружба
+            $followService = app(\App\Services\Users\UserFollowService::class);
+
+            foreach ($this->collaborator_ids as $collaboratorId) {
+                if (!$followService->areMutualFriends($userId, $collaboratorId)) {
+                    $collaborator = \App\Models\Users\User::find($collaboratorId);
+                    $username = $collaborator ? $collaborator->username : "ID {$collaboratorId}";
+                    $validator->errors()->add(
+                        'collaborator_ids',
+                        "Пользователь {$username} не является вашим взаимным другом."
+                    );
+                }
+            }
+        });
     }
 
     protected function failedValidation(Validator $validator)
