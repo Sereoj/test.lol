@@ -11,7 +11,6 @@ class UserSourceService
     public function addSourceToUser($user, $sourceId)
     {
         try {
-            DB::beginTransaction();
             $existingRecord = UserSource::query()
                 ->where('user_id', $user->id)
                 ->where('source_id', $sourceId)
@@ -36,13 +35,12 @@ class UserSourceService
                 throw new Exception('The user already has other sources: '.implode(', ', $existingSourceIds));
             }
 
-            $user->sources()->syncWithoutDetaching([$sourceId]);
-
-            DB::commit();
+            DB::transaction(function () use ($user, $sourceId) {
+                $user->sources()->syncWithoutDetaching([$sourceId]);
+            });
 
             return true;
         } catch (Exception $e) {
-            DB::rollBack();
             throw $e;
         }
     }

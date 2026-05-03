@@ -83,27 +83,25 @@ class UserBadgeService
     public function setActiveBadgeForUser($userId, $badgeId)
     {
         try {
-            DB::beginTransaction();
+            DB::transaction(function () use ($userId, $badgeId) {
+                UserBadge::query()
+                    ->where('user_id', $userId)
+                    ->where('is_active', true)
+                    ->update(['is_active' => false]);
 
-            UserBadge::query()
-                ->where('user_id', $userId)
-                ->where('is_active', true)
-                ->update(['is_active' => false]);
+                $userBadge = UserBadge::query()
+                    ->where('user_id', $userId)
+                    ->where('badge_id', $badgeId)
+                    ->first();
 
-            $userBadge = UserBadge::query()
-                ->where('user_id', $userId)
-                ->where('badge_id', $badgeId)
-                ->first();
+                if (! $userBadge) {
+                    throw new Exception('Badge not found for the user.');
+                }
+                $userBadge->update(['is_active' => true]);
+            });
 
-            if (! $userBadge) {
-                throw new Exception('Badge not found for the user.');
-            }
-            $userBadge->update(['is_active' => true]);
-
-            DB::commit();
             return true;
         } catch (Exception $e) {
-            DB::rollBack();
             Log::error('Error setting active badge: '.$e->getMessage(), [
                 'user_id' => $userId,
                 'badge_id' => $badgeId

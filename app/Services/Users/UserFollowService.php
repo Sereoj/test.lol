@@ -31,7 +31,6 @@ class UserFollowService
         }
 
         try {
-            DB::beginTransaction();
             $follower = User::find($followerId);
             $following = User::find($followingId);
 
@@ -53,10 +52,9 @@ class UserFollowService
                 return true;
             }
 
-            $follower->following()->attach($followingId);
-
-            // Коммитим транзакцию ПЕРЕД отправкой уведомления
-            DB::commit();
+            DB::transaction(function () use ($follower, $followingId) {
+                $follower->following()->attach($followingId);
+            });
 
             Log::info('User followed successfully', [
                 'follower_id' => $followerId,
@@ -77,7 +75,6 @@ class UserFollowService
             return true;
         }catch (Exception $exception)
         {
-            DB::rollBack();
             Log::error('Error user following'. $exception->getMessage(), [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
@@ -102,7 +99,6 @@ class UserFollowService
         }
 
         try {
-            DB::beginTransaction();
             $follower = User::find($followerId);
             $following = User::find($followingId);
 
@@ -124,10 +120,9 @@ class UserFollowService
                 return false;
             }
 
-            $follower->following()->detach($followingId);
-
-            // Коммитим транзакцию
-            DB::commit();
+            DB::transaction(function () use ($follower, $followingId) {
+                $follower->following()->detach($followingId);
+            });
 
             Log::info('User unfollowed successfully', [
                 'follower_id' => $followerId,
@@ -136,7 +131,6 @@ class UserFollowService
 
             return true;
         }catch(Exception $exception){
-            DB::rollBack();
             Log::error('Error user unfollowing: ' . $exception->getMessage(), [
                 'follower_id' => $followerId,
                 'following_id' => $followingId,
