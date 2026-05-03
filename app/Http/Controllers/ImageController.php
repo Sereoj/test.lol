@@ -17,6 +17,22 @@ class ImageController extends Controller
     public function getOriginal(string $filename)
     {
         try {
+            // Защита от path traversal атак
+            if (strpos($filename, '..') !== false || strpos($filename, '/') !== false || strpos($filename, '\\') !== false) {
+                $this->logWarning('Попытка path traversal атаки', [
+                    'filename' => $filename,
+                ]);
+                return $this->errorResponse('Invalid filename', 400);
+            }
+
+            // Допустимые символы: буквы, цифры, точка, подчеркивание, дефис
+            if (!preg_match('/^[a-zA-Z0-9._-]+$/', $filename)) {
+                $this->logWarning('Недопустимые символы в имени файла', [
+                    'filename' => $filename,
+                ]);
+                return $this->errorResponse('Invalid filename', 400);
+            }
+
             $disk = StorageService::get();
             $path = 'originals/' . $filename;
 
