@@ -24,17 +24,13 @@ yarn-error.log
 /.scribe/endpoints/00.yaml
 /.scribe/endpoints.cache/00.yaml
 /.scribe/
+.claude
+.files
 
 # Production deployment - СЕКРЕТНЫЕ ФАЙЛЫ (НЕ КОМИТИТЬ!)
 .env.deploy
 .env.production.tmp
 *.tar.gz
-
-# Documentation files (не нужны в репозитории)
-DEPLOYMENT.md
-QUICK_START.md
-DEPLOYMENT_README.md
-EXTERNAL_DB_NOTES.md
 
 # Backup files
 backup_*.sql
@@ -43,5 +39,3 @@ backup_*.sql
 # Certbot (если используется)
 /certbot/endpoints/custom.0.yaml
 /.scribe/
-
-check-db-connection.php
