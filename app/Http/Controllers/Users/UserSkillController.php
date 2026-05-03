@@ -38,11 +38,11 @@ class UserSkillController extends Controller
                 return $this->skillService->getAllSkills();
             });
 
-            Log::info('Skills retrieved successfully');
+            Log::info('Навыки успешно получены');
 
             return $this->successResponse($skills);
         } catch (Exception $e) {
-            Log::error('Error retrieving skills: '.$e->getMessage());
+            Log::error('Ошибка при получении навыков: '.$e->getMessage());
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -57,11 +57,11 @@ class UserSkillController extends Controller
     {
         try {
             $skill = $this->skillService->getSkillById($id);
-            Log::info('Skill retrieved successfully', ['id' => $id]);
+            Log::info('Навык успешно получен', ['id' => $id]);
 
             return $this->successResponse($skill);
         } catch (Exception $e) {
-            Log::error('Error retrieving skill: '.$e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при получении навыка: '.$e->getMessage(), ['id' => $id]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -72,13 +72,13 @@ class UserSkillController extends Controller
         try {
             //TODO: storeSkill
             $skill = $this->skillService->storeSkill($request->all());
-            Log::info('Skill stored successfully', ['skill_id' => $skill->id, 'data' => $request->all()]);
+            Log::info('Навык успешно сохранен', ['skill_id' => $skill->id, 'data' => $request->all()]);
 
             $this->forgetCache(self::CACHE_KEY_SKILLS_LIST);
 
             return $this->successResponse(['message' => 'Skill stored successfully', 'skill' => $skill], 201);
         } catch (Exception $e) {
-            Log::error('Error storing skill: '.$e->getMessage(), ['data' => $request->all()]);
+            Log::error('Ошибка при сохранении навыка: '.$e->getMessage(), ['data' => $request->all()]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -94,13 +94,13 @@ class UserSkillController extends Controller
         try {
             $user = Auth::user();
             $this->skillService->addSkillToUser($user->id, $request->input('skill_ids'));
-            Log::info('Skill added to user', ['user_id' => $user->id, 'skill_ids' => $request->input('skill_ids')]);
+            Log::info('Навык добавлен пользователю', ['user_id' => $user->id, 'skill_ids' => $request->input('skill_ids')]);
 
             $this->forgetCache(self::CACHE_KEY_USER_SKILLS . $user->id);
 
             return $this->successResponse(['message' => 'Skill added successfully']);
         } catch (Exception $e) {
-            Log::error('Error adding skill to user: '.$e->getMessage(), ['user_id' => Auth::id(), 'skill_ids' => $request->input('skill_ids')]);
+            Log::error('Ошибка при добавлении навыка пользователю: '.$e->getMessage(), ['user_id' => Auth::id(), 'skill_ids' => $request->input('skill_ids')]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -116,13 +116,13 @@ class UserSkillController extends Controller
         try {
             $user = Auth::user();
             $this->skillService->removeSkillFromUser($user->id, $request->input('skill_id'));
-            Log::info('Skill removed from user', ['user_id' => $user->id, 'skill_id' => $request->input('skill_id')]);
+            Log::info('Навык удален у пользователя', ['user_id' => $user->id, 'skill_id' => $request->input('skill_id')]);
 
             $this->forgetCache(self::CACHE_KEY_USER_SKILLS . $user->id);
 
             return $this->successResponse(['message' => 'Skill removed successfully']);
         } catch (Exception $e) {
-            Log::error('Error removing skill from user: '.$e->getMessage(), ['user_id' => Auth::id(), 'skill_id' => $request->input('skill_id')]);
+            Log::error('Ошибка при удалении навыка у пользователя: '.$e->getMessage(), ['user_id' => Auth::id(), 'skill_id' => $request->input('skill_id')]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -143,11 +143,11 @@ class UserSkillController extends Controller
                 return $this->skillService->getUserSkills($user->id);
             });
 
-            Log::info('User skills retrieved successfully', ['user_id' => $user->id]);
+            Log::info('Навыки пользователя успешно получены', ['user_id' => $user->id]);
 
             return $this->successResponse($skills);
         } catch (Exception $e) {
-            Log::error('Error retrieving user skills: '.$e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении навыков пользователя: '.$e->getMessage(), ['user_id' => Auth::id()]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -163,13 +163,13 @@ class UserSkillController extends Controller
         try {
             //TODO: updateSkill
             $skill = $this->skillService->updateSkill($id, $request->all());
-            Log::info('Skill updated successfully', ['skill_id' => $id, 'data' => $request->all()]);
+            Log::info('Навык успешно обновлен', ['skill_id' => $id, 'data' => $request->all()]);
 
             $this->forgetCache(self::CACHE_KEY_SKILLS_LIST);
 
             return $this->successResponse(['message' => 'Skill updated successfully', 'skill' => $skill]);
         } catch (Exception $e) {
-            Log::error('Error updating skill: '.$e->getMessage(), ['skill_id' => $id, 'data' => $request->all()]);
+            Log::error('Ошибка при обновлении навыка: '.$e->getMessage(), ['skill_id' => $id, 'data' => $request->all()]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }
@@ -184,13 +184,13 @@ class UserSkillController extends Controller
     {
         try {
             $this->skillService->delete($id);
-            Log::info('Skill deleted successfully', ['skill_id' => $id]);
+            Log::info('Навык успешно удален', ['skill_id' => $id]);
 
             $this->forgetCache(self::CACHE_KEY_SKILLS_LIST);
 
             return $this->successResponse(['message' => 'Skill deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Error deleting skill: '.$e->getMessage(), ['skill_id' => $id]);
+            Log::error('Ошибка при удалении навыка: '.$e->getMessage(), ['skill_id' => $id]);
 
             return $this->errorResponse($e->getMessage(), 500);
         }

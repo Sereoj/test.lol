@@ -28,7 +28,7 @@ class NotifyCollaboratorsOnPostPublished implements ShouldQueue
                 $collaborator = User::find($collaboratorId);
 
                 if (!$collaborator) {
-                    Log::warning('Collaborator not found when sending notification', [
+                    Log::warning('Соавтор не найден при отправке уведомления', [
                         'collaborator_id' => $collaboratorId,
                         'post_id' => $post->id
                     ]);
@@ -37,14 +37,14 @@ class NotifyCollaboratorsOnPostPublished implements ShouldQueue
 
                 $collaborator->notify(new PostCollaboratorAddedNotification($post));
 
-                Log::info('Collaborator notification sent', [
+                Log::info('Уведомление соавтору отправлено', [
                     'collaborator_id' => $collaboratorId,
                     'post_id' => $post->id,
                     'author_id' => $post->user_id
                 ]);
 
             } catch (\Exception $e) {
-                Log::error('Failed to send collaborator notification', [
+                Log::error('Не удалось отправить уведомление соавтору', [
                     'collaborator_id' => $collaboratorId,
                     'post_id' => $post->id,
                     'error' => $e->getMessage()

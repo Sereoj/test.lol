@@ -26,13 +26,13 @@ class PasswordResetService
 
     public function sendPasswordResetEmail(string $email): void
     {
-        $this->logInfo('Attempting to send password reset email', ['email' => $email]);
+        $this->logInfo('Попытка отправки email для сброса пароля', ['email' => $email]);
 
         try {
             $locale = app()->getLocale();
             $user = User::query()->where('email', $email)->firstOrFail();
 
-            $this->logInfo('User found for password reset', [
+            $this->logInfo('Пользователь найден для сброса пароля', [
                 'email' => $email,
                 'user_id' => $user->id
             ]);
@@ -47,7 +47,7 @@ class PasswordResetService
                 'created_at' => now(),
             ]);
 
-            $this->logInfo('Password reset token created', [
+            $this->logInfo('Токен сброса пароля создан', [
                 'email' => $user->email,
                 'user_id' => $user->id
             ]);
@@ -56,28 +56,28 @@ class PasswordResetService
                 $message->to($user->email)->subject('Password Reset Request');
             });
 
-            $this->logInfo('Password reset email sent successfully', [
+            $this->logInfo('Email для сброса пароля успешно отправлен', [
                 'email' => $user->email,
                 'user_id' => $user->id
             ]);
 
         } catch (ModelNotFoundException $e) {
-            $this->logWarning('Password reset attempt for non-existent email', ['email' => $email]);
-            throw new Exception('User with this email not found', 404);
+            $this->logWarning('Попытка сброса пароля для несуществующего email', ['email' => $email]);
+            throw new Exception('Пользователь с этим email не найден', 404);
         } catch (Exception $e) {
-            $this->logError('Failed to send password reset email', ['email' => $email], $e);
+            $this->logError('Не удалось отправить email для сброса пароля', ['email' => $email], $e);
             throw $e;
         }
     }
 
     public function resetPassword(string $email, string $token, string $newPassword): void
     {
-        $this->logInfo('Attempting to reset password', ['email' => $email]);
+        $this->logInfo('Попытка сброса пароля', ['email' => $email]);
 
         $user = $this->userService->getByEmail($email);
         if (!$user) {
-            $this->logWarning('Password reset failed: user not found', ['email' => $email]);
-            throw new Exception('User not found', 404);
+            $this->logWarning('Сброс пароля не удался: пользователь не найден', ['email' => $email]);
+            throw new Exception('Пользователь не найден', 404);
         }
 
         $passwordReset = PasswordReset::query()->where('email', $user->email)
@@ -85,27 +85,28 @@ class PasswordResetService
             ->first();
 
         if (!$passwordReset) {
-            $this->logWarning('Password reset failed: invalid token', [
+            $this->logWarning('Сброс пароля не удался: недействительный токен', [
                 'email' => $email,
                 'user_id' => $user->id
             ]);
-            throw new Exception('Invalid or expired reset token', 400);
+            throw new Exception('Недействительный или истекший токен сброса пароля', 400);
         }
 
         try {
+          //DB::beginTransaction(); не безопасен
             DB::transaction(function () use ($user, $newPassword) {
                 $user->password = PasswordUtil::hash($newPassword);
                 $user->save();
                 PasswordReset::query()->where('email', $user->email)->delete();
             });
 
-            $this->logInfo('Password reset successful', [
+            $this->logInfo('Пароль успешно сброшен', [
                 'email' => $user->email,
                 'user_id' => $user->id
             ]);
 
         } catch (Exception $e) {
-            $this->logError('Password reset failed during database operation', [
+            $this->logError('Сброс пароля не удался при операции с базой данных', [
                 'email' => $email,
                 'user_id' => $user->id
             ], $e);

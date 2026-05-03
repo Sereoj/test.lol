@@ -20,17 +20,17 @@ class UserTaskService
             })
             ->get();
 
-        Log::info("Tasks: $tasks");
+        Log::info("Задачи: $tasks");
 
         foreach ($tasks as $task) {
             if ($task->completed) {
-                Log::info("Task already completed: $task");
+                Log::info("Задача уже выполнена: $task");
 
                 continue;
             }
 
             $task->increment('progress', 1);
-            Log::info("Task progress incremented: $task");
+            Log::info("Прогресс задачи увеличен: $task");
 
             if (! is_null($task->task->target) && $task->progress >= $task->task->target) {
                 $task->update([
@@ -41,10 +41,10 @@ class UserTaskService
                 //$user->increment('virtual_balance', $task->task->virtual_balance_reward);
                 $user->save();
 
-                Log::info("Added {$task->task->experience_reward} experience and {$task->task->virtual_balance_reward} virtual balance to user.");
+                Log::info("Добавлено {$task->task->experience_reward} опыта и {$task->task->virtual_balance_reward} виртуального баланса пользователю.");
             }
             $task->save();
-            Log::info("Task progress: {$task->progress} / Target: {$task->task->target}");
+            Log::info("Прогресс задачи: {$task->progress} / Цель: {$task->task->target}");
         }
     }
 
@@ -111,14 +111,14 @@ class UserTaskService
         $task = Task::find($taskId);
 
         if (! $task) {
-            throw new Exception('Task not found');
+            throw new Exception('Задача не найдена');
         }
 
         // Проверяем, существует ли задача для пользователя
         $currentTask = $user->tasks()->where('task_id', $task->id)->first();
 
         if (! $currentTask) {
-            throw new Exception('Task not found for the user');
+            throw new Exception('Задача не найдена у пользователя');
         }
 
         $currentProgress = $currentTask->pivot->progress;
@@ -127,7 +127,7 @@ class UserTaskService
 
         // Проверка периода выполнения задания
         if ($this->isPeriodExpired($periodEnd)) {
-            throw new Exception('Task period has expired');
+            throw new Exception('Срок выполнения задачи истек');
         }
 
         // Проверка, что новый прогресс не меньше текущего
@@ -150,7 +150,7 @@ class UserTaskService
             return true;
         }
 
-        throw new Exception('Invalid progress value');
+        throw new Exception('Недопустимое значение прогресса');
     }
 
     /**

@@ -60,14 +60,14 @@ class SendMediaPurchaseNotification
             // Отправляем уведомление через WebSocket
             broadcast(new NotificationSent($authorId, $notification));
 
-            Log::info('Media purchase notification sent', [
+            Log::info('Уведомление о покупке медиа отправлено', [
                 'media_id' => $media->id,
                 'author_id' => $authorId,
                 'buyer_id' => $buyer->id,
                 'purchase_id' => $mediaPurchase->id,
             ]);
         } catch (\Exception $e) {
-            Log::error('Failed to send media purchase notification: ' . $e->getMessage(), [
+            Log::error('Не удалось отправить уведомление о покупке медиа: ' . $e->getMessage(), [
                 'media_id' => $media->id,
                 'author_id' => $authorId,
                 'buyer_id' => $buyer->id,

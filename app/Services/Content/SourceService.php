@@ -26,7 +26,7 @@ class SourceService extends BaseService
         try {
             return $this->sourceRepository->getAllSources();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving sources.');
+            throw new Exception('Произошла ошибка при получении источников.');
         }
     }
 
@@ -41,7 +41,7 @@ class SourceService extends BaseService
         try {
             return $this->sourceRepository->getSourceById($id);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving the source.');
+            throw new Exception('Произошла ошибка при получении источника.');
         }
     }
 
@@ -55,7 +55,7 @@ class SourceService extends BaseService
         try {
             return $this->sourceRepository->createSource($data);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while creating the source.');
+            throw new Exception('Произошла ошибка при создании источника.');
         }
     }
 
@@ -69,7 +69,7 @@ class SourceService extends BaseService
         try {
             return $this->sourceRepository->updateSource($id, $data);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while updating the source.');
+            throw new Exception('Произошла ошибка при обновлении источника.');
         }
     }
 
@@ -84,7 +84,7 @@ class SourceService extends BaseService
         try {
             return $this->sourceRepository->deleteSource($id);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while deleting the source.');
+            throw new Exception('Произошла ошибка при удалении источника.');
         }
     }
 }

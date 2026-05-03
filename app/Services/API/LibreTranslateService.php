@@ -34,7 +34,7 @@ class LibreTranslateService
             }
 
             if ($response->failed()) {
-                Log::error('LibreTranslate API request failed', [
+                Log::error('Ошибка запроса к LibreTranslate API', [
                     'status' => $response->status(),
                     'body' => $response->body(),
                 ]);
@@ -42,9 +42,9 @@ class LibreTranslateService
                 return false;
             }
 
-            \Log::error('Translation API call failed: '.$response->body());
+            \Log::error('Ошибка вызова API перевода: '.$response->body());
         } catch (\Exception $e) {
-            \Log::error('Translation API exception: '.$e->getMessage());
+            \Log::error('Исключение API перевода: '.$e->getMessage());
         }
 
         return false;

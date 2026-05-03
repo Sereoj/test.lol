@@ -31,11 +31,11 @@ class AppController extends Controller
                 return ShortAppResource::collection($this->appService->getAllApps());
             });
 
-            Log::info('Apps list retrieved successfully');
+            Log::info('Список приложений успешно получен');
 
             return $this->successResponse($apps);
         } catch (Exception $e) {
-            Log::error('Failed to fetch apps: ' . $e->getMessage());
+            Log::error('Не удалось получить приложения: ' . $e->getMessage());
             return $this->errorResponse('Failed to fetch apps', 500);
         }
     }
@@ -48,11 +48,11 @@ class AppController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_APPS_LIST);
 
-            Log::info('App created successfully', ['app_id' => $app->id]);
+            Log::info('Приложение успешно создано', ['app_id' => $app->id]);
 
             return $this->successResponse($app,[], 201);
         } catch (Exception $e) {
-            Log::error('Failed to create app: ' . $e->getMessage(), ['data' => $request->validated()]);
+            Log::error('Не удалось создать приложение: ' . $e->getMessage(), ['data' => $request->validated()]);
             return $this->errorResponse('Failed to create app', 500);
         }
     }
@@ -67,11 +67,11 @@ class AppController extends Controller
                 return $this->appService->getAppById($id);
             });
 
-            Log::info('App retrieved successfully', ['app_id' => $id]);
+            Log::info('Приложение успешно получено', ['app_id' => $id]);
 
             return $this->successResponse($app);
         } catch (Exception $e) {
-            Log::error('Failed to fetch app: ' . $e->getMessage(), ['app_id' => $id]);
+            Log::error('Не удалось получить приложение: ' . $e->getMessage(), ['app_id' => $id]);
             return $this->errorResponse('Failed to fetch app', 500);
         }
     }
@@ -87,11 +87,11 @@ class AppController extends Controller
                 self::CACHE_KEY_APPS_LIST
             ]);
 
-            Log::info('App updated successfully', ['app_id' => $id]);
+            Log::info('Приложение успешно обновлено', ['app_id' => $id]);
 
             return $this->successResponse(['message' => 'App updated successfully']);
         } catch (Exception $e) {
-            Log::error('Failed to update app: ' . $e->getMessage(), ['app_id' => $id, 'data' => $request->validated()]);
+            Log::error('Не удалось обновить приложение: ' . $e->getMessage(), ['app_id' => $id, 'data' => $request->validated()]);
             return $this->errorResponse('Failed to update app', 500);
         }
     }
@@ -107,11 +107,11 @@ class AppController extends Controller
                 self::CACHE_KEY_APPS_LIST
             ]);
 
-            Log::info('App deleted successfully', ['app_id' => $id]);
+            Log::info('Приложение успешно удалено', ['app_id' => $id]);
 
             return $this->successResponse(['message' => 'App deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Failed to delete app: ' . $e->getMessage(), ['app_id' => $id]);
+            Log::error('Не удалось удалить приложение: ' . $e->getMessage(), ['app_id' => $id]);
             return $this->errorResponse('Failed to delete app', 500);
         }
     }

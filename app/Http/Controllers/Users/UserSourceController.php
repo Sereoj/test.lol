@@ -15,7 +15,7 @@ use Exception;
 class UserSourceController extends Controller
 {
     protected UserSourceService $userSourceService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER_SOURCES = 'user_sources_';
 
@@ -33,24 +33,24 @@ class UserSourceController extends Controller
             $user = Auth::user();
 
             $this->userSourceService->addSourceToUser($user, $request->input('source_id'));
-            
+
             $this->forgetCache(self::CACHE_KEY_USER_SOURCES . $user->id);
-            
-            Log::info('Source added successfully', [
-                'user_id' => $user->id, 
+
+            Log::info('Источник успешно добавлен', [
+                'user_id' => $user->id,
                 'source_id' => $request->input('source_id')
             ]);
 
             return $this->successResponse(['message' => 'Source added successfully']);
         } catch (ModelNotFoundException $e) {
-            Log::warning('Source not found', [
-                'user_id' => Auth::id(), 
+            Log::warning('Источник не найден', [
+                'user_id' => Auth::id(),
                 'source_id' => $request->input('source_id')
             ]);
             return $this->errorResponse('Source not found', 404);
         } catch (Exception $e) {
-            Log::error('An error occurred while adding source: ' . $e->getMessage(), [
-                'user_id' => Auth::id(), 
+            Log::error('Произошла ошибка при добавлении источника: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
                 'source_id' => $request->input('source_id')
             ]);
             return $this->errorResponse('An error occurred while adding source: ' . $e->getMessage(), 500);
@@ -65,23 +65,23 @@ class UserSourceController extends Controller
         try {
             $user = Auth::user();
             $this->userSourceService->removeSourceFromUser($user->id, $request->input('source_id'));
-            
+
             $this->forgetCache(self::CACHE_KEY_USER_SOURCES . $user->id);
-            
-            Log::info('Source removed successfully', [
-                'user_id' => $user->id, 
+
+            Log::info('Источник успешно удален', [
+                'user_id' => $user->id,
                 'source_id' => $request->input('source_id')
             ]);
 
             return $this->successResponse(['message' => 'Source removed successfully']);
         } catch (ModelNotFoundException $e) {
-            Log::warning('Source not found', [
-                'user_id' => Auth::id(), 
+            Log::warning('Источник не найден', [
+                'user_id' => Auth::id(),
                 'source_id' => $request->input('source_id')
             ]);
             return $this->errorResponse('Source not found', 404);
         } catch (Exception $e) {
-            Log::error('An error occurred while removing source: ' . $e->getMessage(), [
+            Log::error('Произошла ошибка при удалении источника: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'source_id' => $request->input('source_id')
             ]);
@@ -101,12 +101,12 @@ class UserSourceController extends Controller
             $sources = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
                 return $this->userSourceService->getUserSources($user->id);
             });
-            
-            Log::info('User sources retrieved successfully', ['user_id' => $user->id]);
+
+            Log::info('Источники пользователя успешно получены', ['user_id' => $user->id]);
 
             return $this->successResponse($sources);
         } catch (Exception $e) {
-            Log::error('An error occurred while retrieving sources: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Произошла ошибка при получении источников: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('An error occurred while retrieving sources: ' . $e->getMessage(), 500);
         }
     }

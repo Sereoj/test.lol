@@ -31,7 +31,7 @@ class WorkExperienceService extends BaseService
 
         if (isset($data['end_date']) && isset($data['start_date'])) {
             if (Carbon::parse($data['end_date'])->lt(Carbon::parse($data['start_date']))) {
-                $this->logError('End date cannot be before start date', [
+                $this->logError('Дата окончания не может быть раньше даты начала', [
                     'user_id' => $data['user_id'] ?? null,
                     'start_date' => $data['start_date'],
                     'end_date' => $data['end_date']
@@ -42,7 +42,7 @@ class WorkExperienceService extends BaseService
 
         $workExperience = $this->workExperienceRepository->create($data);
 
-        $this->logInfo('Work experience created', [
+        $this->logInfo('Опыт работы создан', [
             'user_id' => $data['user_id'],
             'work_experience_id' => $workExperience->id
         ]);
@@ -70,7 +70,7 @@ class WorkExperienceService extends BaseService
 
         if (isset($data['end_date']) && isset($data['start_date'])) {
             if (Carbon::parse($data['end_date'])->lt(Carbon::parse($data['start_date']))) {
-                $this->logError('End date cannot be before start date', [
+                $this->logError('Дата окончания не может быть раньше даты начала', [
                     'work_experience_id' => $id,
                     'start_date' => $data['start_date'],
                     'end_date' => $data['end_date']
@@ -81,7 +81,7 @@ class WorkExperienceService extends BaseService
 
         $this->workExperienceRepository->update($id, $data);
 
-        $this->logInfo('Work experience updated', [
+        $this->logInfo('Опыт работы обновлен', [
             'work_experience_id' => $id,
             'user_id' => $workExperience->user_id
         ]);
@@ -100,7 +100,7 @@ class WorkExperienceService extends BaseService
 
         $this->workExperienceRepository->delete($id);
 
-        $this->logInfo('Work experience deleted', [
+        $this->logInfo('Опыт работы удален', [
             'work_experience_id' => $id,
             'user_id' => $workExperience->user_id
         ]);

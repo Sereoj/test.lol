@@ -17,7 +17,7 @@ class UserSourceService
                 ->first();
 
             if ($existingRecord) {
-                throw new Exception('The source is already added to the user.');
+                throw new Exception('Источник уже добавлен пользователю.');
             }
 
             // Проверяем, есть ли другие источники у пользователя
@@ -32,7 +32,7 @@ class UserSourceService
                     ->pluck('source_id')
                     ->toArray();
 
-                throw new Exception('The user already has other sources: '.implode(', ', $existingSourceIds));
+                throw new Exception('У пользователя уже есть другие источники: '.implode(', ', $existingSourceIds));
             }
 
             DB::transaction(function () use ($user, $sourceId) {
@@ -54,7 +54,7 @@ class UserSourceService
 
             return $userSource->delete();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while removing the source from the user.');
+            throw new Exception('Произошла ошибка при удалении источника у пользователя.');
         }
     }
 
@@ -63,7 +63,7 @@ class UserSourceService
         try {
             return UserSource::query()->where('user_id', $userId)->get();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving the user sources.');
+            throw new Exception('Произошла ошибка при получении источников пользователя.');
         }
     }
 }

@@ -34,11 +34,11 @@ class SourceController extends Controller
                 return $this->sourceService->getAll();
             });
 
-            Log::info('Sources retrieved successfully');
+            Log::info('Источники успешно получены');
 
             return $this->successResponse($sources);
         } catch (Exception $e) {
-            Log::error('Error retrieving sources: '.$e->getMessage());
+            Log::error('Ошибка при получении источников: '.$e->getMessage());
 
             return $this->errorResponse('Failed to retrieve sources. Please try again later.', 500);
         }
@@ -57,11 +57,11 @@ class SourceController extends Controller
                 return $this->sourceService->getById($id);
             });
 
-            Log::info('Source retrieved successfully', ['id' => $id]);
+            Log::info('Источник успешно получен', ['id' => $id]);
 
             return $this->successResponse($source);
         } catch (Exception $e) {
-            Log::error('Error retrieving source: '.$e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при получении источника: '.$e->getMessage(), ['id' => $id]);
 
             return $this->errorResponse('Source not found', 404);
         }
@@ -79,11 +79,11 @@ class SourceController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_SOURCES);
 
-            Log::info('Source created successfully', ['source' => $source]);
+            Log::info('Источник успешно создан', ['source' => $source]);
 
             return $this->successResponse($source, [], 201);
         } catch (Exception $e) {
-            Log::error('Error creating source: '.$e->getMessage(), ['data' => $request->all()]);
+            Log::error('Ошибка при создании источника: '.$e->getMessage(), ['data' => $request->all()]);
 
             return $this->errorResponse('Failed to create source. Please try again later.', 500);
         }
@@ -104,11 +104,11 @@ class SourceController extends Controller
                 self::CACHE_KEY_SOURCES
             ]);
 
-            Log::info('Source updated successfully', ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
+            Log::info('Источник успешно обновлен', ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
 
             return $this->successResponse($source);
         } catch (Exception $e) {
-            Log::error('Error updating source: '.$e->getMessage(), ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
+            Log::error('Ошибка при обновлении источника: '.$e->getMessage(), ['id' => $id, 'data' => $request->only('name', 'iconUrl')]);
 
             return $this->errorResponse('Failed to update source. Please try again later.', 500);
         }
@@ -129,11 +129,11 @@ class SourceController extends Controller
                 self::CACHE_KEY_SOURCES
             ]);
 
-            Log::info('Source deleted successfully', ['id' => $id]);
+            Log::info('Источник успешно удален', ['id' => $id]);
 
             return $this->successResponse(['message' => 'Source deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Error deleting source: '.$e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при удалении источника: '.$e->getMessage(), ['id' => $id]);
 
             return $this->errorResponse('Failed to delete source. Please try again later.', 500);
         }

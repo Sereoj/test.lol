@@ -40,11 +40,11 @@ class AvatarController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
 
-            Log::info('Avatar uploaded successfully', ['user_id' => $user->id, 'avatar_id' => $avatar->id]);
+            Log::info('Аватар успешно загружен', ['user_id' => $user->id, 'avatar_id' => $avatar->id]);
 
             return $this->successResponse(['message' => 'Avatar uploaded successfully', 'avatar' => $avatar]);
         } catch (Exception $e) {
-            Log::error('Error uploading avatar: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при загрузке аватара: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -64,11 +64,11 @@ class AvatarController extends Controller
                 return AvatarResource::collection($this->avatarService->getUserAvatars($user->id));
             });
 
-            Log::info('User avatars retrieved successfully', ['user_id' => $user->id]);
+            Log::info('Аватары пользователя успешно получены', ['user_id' => $user->id]);
 
             return $this->successResponse($avatars);
         } catch (Exception $e) {
-            Log::error('Error retrieving user avatars: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении аватаров пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -87,11 +87,11 @@ class AvatarController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_USER_AVATARS . $user->id);
 
-            Log::info('Avatar deleted successfully', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
+            Log::info('Аватар успешно удален', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
 
             return $this->successResponse(['message' => 'Avatar deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Error deleting avatar: ' . $e->getMessage(), ['user_id' => Auth::id(), 'avatar_id' => $avatarId]);
+            Log::error('Ошибка при удалении аватара: ' . $e->getMessage(), ['user_id' => Auth::id(), 'avatar_id' => $avatarId]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -107,7 +107,7 @@ class AvatarController extends Controller
         try {
             $user = Auth::user();
             $this->avatarService->setActive($user, $avatarId);
-            Log::info('Avatar deleted successfully', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
+            Log::info('Аватар успешно установлен как активный', ['user_id' => $user->id, 'avatar_id' => $avatarId]);
 
             return $this->successResponse(['message' => 'Avatar deleted successfully']);
         }catch (Exception $e) {

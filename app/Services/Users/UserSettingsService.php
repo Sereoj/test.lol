@@ -55,7 +55,7 @@ class UserSettingsService
             $user->tasks()->attach($task->id, ['progress' => 0, 'completed' => false]);
         }
         // Логирование присвоения заданий пользователю
-        Log::info('Default tasks assigned to user', ['user_id' => $user->id]);
+        Log::info('Задачи по умолчанию назначены пользователю', ['user_id' => $user->id]);
     }
 
     public function attachAchievement(User $user)
@@ -67,7 +67,7 @@ class UserSettingsService
             $user->update(['experience' => $user->experience + $points]);
 
             // Логирование присвоения достижения и обновления опыта
-            Log::info('Achievement assigned and experience updated', ['user_id' => $user->id, 'achievement_id' => $achievement->id, 'points' => $points]);
+            Log::info('Достижение назначено и опыт обновлен', ['user_id' => $user->id, 'achievement_id' => $achievement->id, 'points' => $points]);
 
             event(new UserExperienceChanged($user));
         }

@@ -25,7 +25,7 @@ class UserPersonalizationController extends Controller
             $userPersonalization = $this->userPersonalizationService->update($user, $request->validated());
             return $this->successResponse($userPersonalization);
         }catch (\Exception $exception){
-            Log::error($exception);
+            Log::error('Ошибка при обновлении персонализации: ' . $exception->getMessage());
             return $this->errorResponse($exception->getMessage());
         }
     }

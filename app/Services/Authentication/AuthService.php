@@ -26,16 +26,16 @@ class AuthService
     public function login(array $credentials)
     {
         $user = $this->userService->getByEmail($credentials['email']);
-        Log::info('Login attempt', ['email' => $credentials['email']]);
+        Log::info('Попытка входа', ['email' => $credentials['email']]);
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
-            Log::warning('Invalid credentials', ['email' => $credentials['email']]);
-            throw new Exception('Email or Password is not correct!', 401);
+            Log::warning('Недействительные учетные данные', ['email' => $credentials['email']]);
+            throw new Exception('Email или пароль неверны!', 401);
         }
 
         if (! $this->attemptLogin($credentials)) {
-            Log::error('Unauthorized login attempt', ['email' => $credentials['email']]);
-            throw new Exception('Forbidden', 403);
+            Log::error('Неавторизованная попытка входа', ['email' => $credentials['email']]);
+            throw new Exception('Доступ запрещен', 403);
         }
 
         $token = $this->tokenService->generateTokens($user);

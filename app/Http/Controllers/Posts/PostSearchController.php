@@ -57,15 +57,15 @@ class PostSearchController extends Controller
                     'users' => UserSearchResource::collection($searchResults['users']),
                 ];
 
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey]);
+                Log::info("Кэширование результатов для запроса: {$query}", ['cache_key' => $cacheKey]);
                 return $formattedResults;
             });
 
-            Log::info("Results returned for query: {$query}");
+            Log::info("Результаты возвращены для запроса: {$query}");
 
             return $this->successResponse($results);
         } catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
+            Log::error('Ошибка при поиске постов: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -79,15 +79,15 @@ class PostSearchController extends Controller
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = ShortSearchTagResource::collection($this->searchService->searchInTags($query));
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                Log::info("Кэширование результатов для запроса: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
 
-            Log::info("Results returned for query: {$query}");
+            Log::info("Результаты возвращены для запроса: {$query}");
 
             return $this->successResponse($results);
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
+            Log::error('Ошибка при поиске постов: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -101,15 +101,15 @@ class PostSearchController extends Controller
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = ThumbUserMediaResource::collection($this->searchService->searchInPosts($query));
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                Log::info("Кэширование результатов для запроса: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
 
-            Log::info("Results returned for query: {$query}");
+            Log::info("Результаты возвращены для запроса: {$query}");
 
             return $this->successResponse($results);
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
+            Log::error('Ошибка при поиске постов: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -123,15 +123,15 @@ class PostSearchController extends Controller
 
             $results = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($query, $cacheKey) {
                 $searchResults = $this->searchService->searchInUsers($query);
-                Log::info("Caching results for query: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
+                Log::info("Кэширование результатов для запроса: {$query}", ['cache_key' => $cacheKey, 'results' => $searchResults]);
                 return $searchResults;
             });
 
-            Log::info("Results returned for query: {$query}");
+            Log::info("Результаты возвращены для запроса: {$query}");
                 //return $this->successResponse($results);
             return $this->successResponse(UserSearchResource::collection($results));
         }catch (Exception $e) {
-            Log::error('Error searching posts: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
+            Log::error('Ошибка при поиске постов: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -147,11 +147,11 @@ class PostSearchController extends Controller
                 return $this->searchSuggestionService->suggest($query);
             });
 
-            Log::info("Suggestions returned for query: {$query}");
+            Log::info("Предложения возвращены для запроса: {$query}");
 
             return $this->successResponse($suggestions);
         } catch (Exception $e) {
-            Log::error('Error generating search suggestions: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
+            Log::error('Ошибка при генерации предложений поиска: ' . $e->getMessage(), ['query' => $this->getSearchQuery($request)]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

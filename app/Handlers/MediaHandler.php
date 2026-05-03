@@ -49,7 +49,7 @@ class MediaHandler
         $results = [];
         $fileName = Str::random($this->length).'.'.$file->getClientOriginalExtension();
 
-        Log::info('MediaHandler: Starting file upload', [
+            Log::info('МедиаХендлер: Начало загрузки файла', [
             'original_name' => $file->getClientOriginalName(),
             'generated_name' => $fileName,
             'mime_type' => $file->getMimeType(),
@@ -79,7 +79,7 @@ class MediaHandler
             // Get full URL for verification
             $url = Storage::disk($this->disk)->url($path);
 
-            Log::info('MediaHandler: File uploaded successfully', [
+            Log::info('МедиаХендлер: Файл успешно загружен', [
                 'path' => $path,
                 'url' => $url,
                 'disk' => $this->disk,
@@ -87,7 +87,7 @@ class MediaHandler
             ]);
 
         } catch (\Exception $e) {
-            Log::error('MediaHandler: File upload failed', [
+            Log::error('МедиаХендлер: Ошибка загрузки файла', [
                 'file' => $fileName,
                 'disk' => $this->disk,
                 'error' => $e->getMessage(),

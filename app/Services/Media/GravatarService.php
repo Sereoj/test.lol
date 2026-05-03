@@ -19,7 +19,7 @@ class GravatarService
 
             return null;
         } catch (Exception $e) {
-            Log::error('Error getting avatar from Gravatar: ' . $e->getMessage());
+            Log::error('Ошибка получения аватара из Gravatar: ' . $e->getMessage());
             return null;
         }
     }

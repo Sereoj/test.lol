@@ -26,7 +26,7 @@ class FtpToS3MigrationService
      */
     public function migrate(bool $dryRun = false): array
     {
-        $this->logInfo('Starting FTP to S3 migration', ['dry_run' => $dryRun]);
+        $this->logInfo('Начало миграции с FTP на S3', ['dry_run' => $dryRun]);
 
         DB::beginTransaction();
 
@@ -42,16 +42,16 @@ class FtpToS3MigrationService
 
             if ($dryRun) {
                 DB::rollBack();
-                $this->logInfo('Dry run completed - no changes committed');
+                $this->logInfo('Тестовый запуск завершен - изменения не применены');
             } else {
                 DB::commit();
-                $this->logInfo('Migration completed successfully');
+                $this->logInfo('Миграция успешно завершена');
             }
 
             return $this->getStatistics();
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->logError('Migration failed', ['error' => $e->getMessage()], $e);
+            $this->logError('Ошибка миграции', ['error' => $e->getMessage()], $e);
             throw $e;
         }
     }
@@ -66,12 +66,12 @@ class FtpToS3MigrationService
             ->where('file_path', '!=', '')
             ->get();
 
-        $this->logInfo("Found {$mediaFiles->count()} media files to migrate");
+        $this->logInfo("Найдено {$mediaFiles->count()} медиафайлов для миграции");
 
         foreach ($mediaFiles as $media) {
             // Skip if already a full URL
             if ($this->isExternalUrl($media->file_path)) {
-                $this->logInfo("Skipping external URL", [
+                $this->logInfo("Пропуск внешнего URL", [
                     'file_path' => $media->file_path,
                     'identifier' => "media ID {$media->id}"
                 ]);
@@ -103,12 +103,12 @@ class FtpToS3MigrationService
             ->where('path', '!=', '')
             ->get();
 
-        $this->logInfo("Found {$avatars->count()} avatar files to migrate");
+        $this->logInfo("Найдено {$avatars->count()} аватаров для миграции");
 
         foreach ($avatars as $avatar) {
             // Skip if already a full URL
             if ($this->isExternalUrl($avatar->path)) {
-                $this->logInfo("Skipping external URL", [
+                $this->logInfo("Пропуск внешнего URL", [
                     'file_path' => $avatar->path,
                     'identifier' => "avatar ID {$avatar->id}"
                 ]);
@@ -140,12 +140,12 @@ class FtpToS3MigrationService
             ->where('disk', 'ftp')
             ->get();
 
-        $this->logInfo("Found {$users->count()} user cover images to migrate");
+        $this->logInfo("Найдено {$users->count()} обложек пользователей для миграции");
 
         foreach ($users as $user) {
             // Skip if already a full URL
             if ($this->isExternalUrl($user->cover)) {
-                $this->logInfo("Skipping external URL", [
+                $this->logInfo("Пропуск внешнего URL", [
                     'file_path' => $user->cover,
                     'identifier' => "user ID {$user->id} cover"
                 ]);
@@ -188,7 +188,7 @@ class FtpToS3MigrationService
         try {
             // Check if file exists on source disk
             if (!Storage::disk($sourceDisk)->exists($filePath)) {
-                $this->logWarning("File not found on {$sourceDisk}", [
+                $this->logWarning("Файл не найден на {$sourceDisk}", [
                     'file_path' => $filePath,
                     'identifier' => $identifier
                 ]);
@@ -196,14 +196,14 @@ class FtpToS3MigrationService
                 $this->errors[] = [
                     'file' => $filePath,
                     'identifier' => $identifier,
-                    'error' => 'File not found on source disk'
+                    'error' => 'Файл не найден на исходном диске'
                 ];
                 return;
             }
 
             // Check if file already exists on target disk
             if (Storage::disk($targetDisk)->exists($filePath)) {
-                $this->logInfo("File already exists on {$targetDisk}, skipping copy", [
+                $this->logInfo("Файл уже существует на {$targetDisk}, копирование пропущено", [
                     'file_path' => $filePath,
                     'identifier' => $identifier
                 ]);
@@ -218,7 +218,7 @@ class FtpToS3MigrationService
 
                 // If failed (returns null), try native FTP fallback
                 if ($fileContent === null || $fileContent === false) {
-                    $this->logInfo("Storage API returned null, trying native FTP fallback", [
+                    $this->logInfo("Storage API вернул null, попытка через нативный FTP", [
                         'file_path' => $filePath,
                         'identifier' => $identifier
                     ]);
@@ -226,7 +226,7 @@ class FtpToS3MigrationService
                     $fileContent = $this->readFileViaFtp($filePath);
 
                     if ($fileContent !== null) {
-                        $this->logInfo("Successfully read file via native FTP", [
+                        $this->logInfo("Файл успешно прочитан через нативный FTP", [
                             'file_path' => $filePath,
                             'identifier' => $identifier,
                             'size' => strlen($fileContent)
@@ -236,13 +236,13 @@ class FtpToS3MigrationService
 
                 // Check if file content was successfully read
                 if ($fileContent === null || $fileContent === false) {
-                    throw new \Exception("Failed to read file content from {$sourceDisk}");
+                    throw new \Exception("Не удалось прочитать содержимое файла с {$sourceDisk}");
                 }
 
                 // Write to target using the ORIGINAL path from database (not the hashed one)
                 Storage::disk($targetDisk)->put($filePath, $fileContent);
 
-                $this->logInfo("File copied successfully", [
+                $this->logInfo("Файл успешно скопирован", [
                     'file_path' => $filePath,
                     'actual_source' => $actualFilePath,
                     'identifier' => $identifier,
@@ -263,7 +263,7 @@ class FtpToS3MigrationService
                 'error' => $e->getMessage()
             ];
 
-            $this->logError("Failed to migrate file", [
+            $this->logError("Не удалось мигрировать файл", [
                 'file_path' => $filePath,
                 'identifier' => $identifier,
                 'error' => $e->getMessage()

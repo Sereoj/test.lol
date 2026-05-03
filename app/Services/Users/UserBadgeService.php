@@ -72,7 +72,7 @@ class UserBadgeService
             ->first();
 
         if ($existingBadge) {
-            throw new Exception('Badge already assigned to the user');
+            throw new Exception('Значок уже назначен пользователю');
         }
 
         $userBadge->update($data);
@@ -95,14 +95,14 @@ class UserBadgeService
                     ->first();
 
                 if (! $userBadge) {
-                    throw new Exception('Badge not found for the user.');
+                    throw new Exception('Значок не найден у пользователя.');
                 }
                 $userBadge->update(['is_active' => true]);
             });
 
             return true;
         } catch (Exception $e) {
-            Log::error('Error setting active badge: '.$e->getMessage(), [
+            Log::error('Ошибка при установке активного значка: '.$e->getMessage(), [
                 'user_id' => $userId,
                 'badge_id' => $badgeId
             ]);

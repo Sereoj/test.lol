@@ -29,7 +29,7 @@ class TokenService
             // Получаем или создаём Personal Access Client
             $client = $this->ensurePersonalAccessClientExists();
 
-            Log::info('Using Personal Access Client', [
+            Log::info('Использование Personal Access Client', [
                 'client_id' => $client->id,
                 'client_name' => $client->name,
             ]);
@@ -53,7 +53,7 @@ class TokenService
                 'expires_at' => $refreshTokenExpiresAt,
             ]);
 
-            Log::info('Tokens generated successfully', [
+            Log::info('Токены успешно сгенерированы', [
                 'user_id' => $user->id,
                 'access_token_expires_at' => $token->token->expires_at,
                 'refresh_token_expires_at' => $refreshTokenExpiresAt,
@@ -66,7 +66,7 @@ class TokenService
                 'expires_at' => Carbon::parse($token->token->expires_at)->toIso8601String(),
             ];
         } catch (Exception $e) {
-            Log::error('Token generation error: ', [
+            Log::error('Ошибка генерации токена: ', [
                 'user_id' => $user->id ?? null,
                 'message' => $e->getMessage(),
                 'code' => $e->getCode(),
@@ -89,13 +89,13 @@ class TokenService
             $token = Token::query()->where('id', $refreshToken)->first();
 
             if (! $token || $token->revoked || Carbon::parse($token->expires_at)->isPast()) {
-                throw new Exception('Invalid or expired refresh token');
+                throw new Exception('Недействительный или истекший токен обновления');
             }
 
             $user = $token->user;
 
             if (! $user) {
-                throw new Exception('User not found for refresh token');
+                throw new Exception('Пользователь не найден для токена обновления');
             }
 
             // Удаляем старый refresh_token
@@ -104,7 +104,7 @@ class TokenService
             // Генерируем новые токены
             return $this->generateTokens($user);
         } catch (Exception $e) {
-            Log::error('Token refresh error: '.$e->getMessage());
+            Log::error('Ошибка при обновлении токена: '.$e->getMessage());
             throw $e;
         }
     }
@@ -117,9 +117,9 @@ class TokenService
         try {
             $now = Carbon::now();
             $deletedTokens = Token::query()->where('expires_at', '<', $now)->delete();
-            Log::info('Expired tokens deleted: '.$deletedTokens);
+            Log::info('Истекшие токены удалены: '.$deletedTokens);
         } catch (Exception $e) {
-            Log::error('Token cleanup error: '.$e->getMessage());
+            Log::error('Ошибка при очистке токенов: '.$e->getMessage());
         }
     }
 
@@ -142,14 +142,14 @@ class TokenService
         $client = Client::query()->where('personal_access_client', 1)->first();
 
         if ($client) {
-            Log::info('Personal Access Client found in database', [
+            Log::info('Клиент персонального доступа найден в базе данных', [
                 'client_id' => $client->id,
             ]);
             return $client;
         }
 
         // Клиент не найден - создаём автоматически
-        Log::warning('Personal Access Client not found, creating automatically...');
+        Log::warning('Клиент персонального доступа не найден, создается автоматически...');
 
         try {
             $clientRepository = new \Laravel\Passport\ClientRepository();
@@ -159,7 +159,7 @@ class TokenService
                 config('app.url')
             );
 
-            Log::info('Personal Access Client created successfully', [
+            Log::info('Клиент персонального доступа успешно создан', [
                 'client_id' => $client->id,
                 'client_secret' => $client->secret,
             ]);
@@ -169,11 +169,11 @@ class TokenService
 
             return $client;
         } catch (Exception $e) {
-            Log::error('Failed to create Personal Access Client', [
+            Log::error('Не удалось создать Personal Access Client', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            throw new Exception('Failed to create OAuth Personal Access Client: ' . $e->getMessage());
+            throw new Exception('Не удалось создать OAuth Personal Access Client: ' . $e->getMessage());
         }
     }
 
@@ -186,7 +186,7 @@ class TokenService
             $envFile = base_path('.env');
 
             if (!file_exists($envFile) || !is_writable($envFile)) {
-                Log::warning('.env file not writable, skipping sync');
+                Log::warning('Файл .env недоступен для записи, синхронизация пропущена');
                 return;
             }
 
@@ -216,9 +216,9 @@ class TokenService
 
             file_put_contents($envFile, $content);
 
-            Log::info('.env file synchronized with Personal Access Client credentials');
+            Log::info('Файл .env синхронизирован с учетными данными Personal Access Client');
         } catch (Exception $e) {
-            Log::warning('Failed to sync .env file', ['error' => $e->getMessage()]);
+            Log::warning('Не удалось синхронизировать файл .env', ['error' => $e->getMessage()]);
             // Не бросаем исключение - это не критичная операция
         }
     }

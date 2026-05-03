@@ -37,7 +37,7 @@ class HelpSearchController extends Controller
 
             $results = $this->helpSearchService->search($query, $page, $perPage);
 
-            Log::info("Help search results returned for query: {$query}", [
+            Log::info("Результаты поиска помощи возвращены для запроса: {$query}", [
                 'page' => $page,
                 'per_page' => $perPage,
                 'total' => $results->total()
@@ -53,7 +53,7 @@ class HelpSearchController extends Controller
                 ]
             );
         } catch (Exception $e) {
-            Log::error('Error searching help articles: ' . $e->getMessage(), [
+            Log::error('Ошибка при поиске статей помощи: ' . $e->getMessage(), [
                 'query' => $request->input('q'),
                 'trace' => $e->getTraceAsString()
             ]);

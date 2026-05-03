@@ -39,7 +39,7 @@ class UserProfileService
 
         $isMyProfile = $authUser?->id === $user->id;
 
-        Log::info('Is my profile', ['is_my_profile' => $isMyProfile]);
+        Log::info('Это мой профиль', ['is_my_profile' => $isMyProfile]);
 
         $followersCount = $this->userFollowService->getFollowers($user->id)->count();
         $followingCount = $authUser ? $this->userFollowService->getFollowingByUserId($user->id)->count() : 0;

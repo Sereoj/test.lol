@@ -33,10 +33,10 @@ class TrackUserActivity
                         $request->ip()
                     ));
                     Cache::put($cacheKey, true, now()->addMinutes(2));
-                    Log::info("User {$user->id} is active. Route: ".($request->route() ? $request->route()->getName() : 'No route name'));
+                    Log::info("Пользователь {$user->id} активен. Маршрут: ".($request->route() ? $request->route()->getName() : 'Нет имени маршрута'));
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to track user activity: '.$e->getMessage());
+                Log::error('Не удалось отследить активность пользователя: '.$e->getMessage());
             }
         }
 

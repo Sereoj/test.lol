@@ -38,7 +38,7 @@ class UserCoverService
             throw new Exception('Пользователь не найден');
         }
 
-        Log::info('UserCoverService: Starting cover upload', [
+        Log::info('СервисОбложекПользователя: Начало загрузки обложки', [
             'user_id' => $userId,
             'file_name' => $coverFile->getClientOriginalName(),
             'file_size' => $coverFile->getSize(),
@@ -73,7 +73,7 @@ class UserCoverService
             // Get full URL for verification
             $url = StorageService::getPath($filePath, $this->disk);
 
-            Log::info('UserCoverService: Cover uploaded successfully', [
+            Log::info('СервисОбложекПользователя: Обложка успешно загружена', [
                 'user_id' => $userId,
                 'path' => $filePath,
                 'url' => $url,
@@ -87,7 +87,7 @@ class UserCoverService
             return $user;
 
         } catch (\Exception $e) {
-            Log::error('UserCoverService: Cover upload failed', [
+            Log::error('СервисОбложекПользователя: Ошибка загрузки обложки', [
                 'user_id' => $userId,
                 'filename' => $filename,
                 'disk' => $this->disk,
@@ -136,7 +136,7 @@ class UserCoverService
             // Используем диск из модели пользователя, если он есть, иначе текущий диск
             $disk = $user->disk ?? $this->disk;
 
-            Log::info('Removing cover', [
+            Log::info('Удаление обложки', [
                 'path' => $path,
                 'disk' => $disk
             ]);
@@ -144,12 +144,12 @@ class UserCoverService
             try {
                 if (Storage::disk($disk)->exists($path)) {
                     Storage::disk($disk)->delete($path);
-                    Log::info('Cover deleted successfully', ['path' => $path, 'disk' => $disk]);
+                    Log::info('Обложка успешно удалена', ['path' => $path, 'disk' => $disk]);
                 } else {
-                    Log::warning('Cover file not found', ['path' => $path, 'disk' => $disk]);
+                    Log::warning('Файл обложки не найден', ['path' => $path, 'disk' => $disk]);
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to delete cover', [
+                Log::error('Не удалось удалить обложку', [
                     'path' => $path,
                     'disk' => $disk,
                     'error' => $e->getMessage()

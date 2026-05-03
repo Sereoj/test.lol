@@ -40,7 +40,7 @@ class UserFollowController extends Controller
             });
 
             if ($isFollowing) {
-                Log::info('User already following', ['follower_id' => $followerId, 'user_id' => $userId]);
+                Log::info('Пользователь уже подписан', ['follower_id' => $followerId, 'user_id' => $userId]);
                 return $this->successResponse([
                     'status' => 'already_subscribed',
                     'message' => 'You are already following this user'
@@ -61,7 +61,7 @@ class UserFollowController extends Controller
                     return true;
                 }, true);
 
-                Log::info('User followed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
+                Log::info('Пользователь успешно подписан', ['follower_id' => $followerId, 'user_id' => $userId]);
 
                 return $this->successResponse([
                     'status' => 'subscribed',
@@ -69,10 +69,10 @@ class UserFollowController extends Controller
                 ]);
             }
 
-            Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
+            Log::warning('Пользователь не найден', ['follower_id' => $followerId, 'user_id' => $userId]);
             return $this->errorResponse('User not found', 404);
         } catch (Exception $e) {
-            Log::error('Error following user: ' . $e->getMessage(), [
+            Log::error('Ошибка при подписке на пользователя: ' . $e->getMessage(), [
                 'follower_id' => Auth::id(),
                 'user_id' => $userId
             ]);
@@ -95,7 +95,7 @@ class UserFollowController extends Controller
             });
 
             if (!$isFollowing) {
-                Log::info('User not following', ['follower_id' => $followerId, 'user_id' => $userId]);
+                Log::info('Пользователь не подписан', ['follower_id' => $followerId, 'user_id' => $userId]);
                 return $this->successResponse([
                     'status' => 'not_following',
                     'message' => 'You are not following this user'
@@ -112,7 +112,7 @@ class UserFollowController extends Controller
                     sprintf(self::CACHE_KEY_USER_FOLLOWING_LIST, $followerId)
                 ]);
 
-                Log::info('User unfollowed successfully', ['follower_id' => $followerId, 'user_id' => $userId]);
+                Log::info('Пользователь успешно отписан', ['follower_id' => $followerId, 'user_id' => $userId]);
 
                 return $this->successResponse([
                     'status' => 'unsubscribed',
@@ -120,10 +120,10 @@ class UserFollowController extends Controller
                 ]);
             }
 
-            Log::warning('User not found', ['follower_id' => $followerId, 'user_id' => $userId]);
+            Log::warning('Пользователь не найден', ['follower_id' => $followerId, 'user_id' => $userId]);
             return $this->errorResponse('User not found', 404);
         } catch (Exception $e) {
-            Log::error('Error unfollowing user: ' . $e->getMessage(), [
+            Log::error('Ошибка при отписке от пользователя: ' . $e->getMessage(), [
                 'follower_id' => Auth::id(),
                 'user_id' => $userId
             ]);
@@ -143,11 +143,11 @@ class UserFollowController extends Controller
                 return $this->followService->getFollowers($userId);
             });
 
-            Log::info('Followers retrieved successfully', ['user_id' => $userId]);
+            Log::info('Подписчики успешно получены', ['user_id' => $userId]);
 
             return $this->successResponse(UserFollowerResource::collection($followers));
         } catch (Exception $e) {
-            Log::error('Error retrieving followers: ' . $e->getMessage(), ['user_id' => $userId]);
+            Log::error('Ошибка при получении подписчиков: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving followers: ' . $e->getMessage(), 500);
         }
     }
@@ -164,11 +164,11 @@ class UserFollowController extends Controller
                 return $this->followService->getFollowingByUserId($userId);
             });
 
-            Log::info('Following list retrieved successfully', ['user_id' => $userId]);
+            Log::info('Список подписок успешно получен', ['user_id' => $userId]);
 
             return $this->successResponse(UserFollowerResource::collection($following));
         } catch (Exception $e) {
-            Log::error('Error retrieving following list: ' . $e->getMessage(), ['user_id' => $userId]);
+            Log::error('Ошибка при получении списка подписок: ' . $e->getMessage(), ['user_id' => $userId]);
             return $this->errorResponse('An error occurred while retrieving following list: ' . $e->getMessage(), 500);
         }
     }

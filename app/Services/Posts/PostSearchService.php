@@ -77,7 +77,7 @@ class PostSearchService
     {
         // Проверяем, что массив запросов не пуст
         if (empty($queries)) {
-            Log::error('No search queries provided');
+            Log::error('Поисковые запросы не предоставлены');
 
             return [];
         }

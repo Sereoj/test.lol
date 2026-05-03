@@ -15,7 +15,7 @@ use Exception;
 class PurchaseController extends Controller
 {
     protected PurchaseService $purchaseService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_USER_PURCHASES = 'user_purchases_';
     private const CACHE_KEY_POST_PURCHASES = 'post_purchases_';
@@ -46,7 +46,7 @@ class PurchaseController extends Controller
             $this->forgetCache(self::CACHE_KEY_USER_PURCHASES . $userId);
             $this->forgetCache(self::CACHE_KEY_POST_PURCHASES . $postId);
 
-            Log::info('Post purchased successfully', [
+            Log::info('Пост успешно куплен', [
                 'user_id' => $userId,
                 'post_id' => $postId,
                 'amount' => $validated['amount'],
@@ -55,10 +55,10 @@ class PurchaseController extends Controller
 
             return $this->successResponse($purchase, 201);
         } catch (ValidationException $e) {
-            Log::warning('Validation error during post purchase', ['errors' => $e->errors(), 'user_id' => Auth::id(), 'post_id' => $postId]);
+            Log::warning('Ошибка валидации при покупке поста', ['errors' => $e->errors(), 'user_id' => Auth::id(), 'post_id' => $postId]);
             return $this->errorResponse($e->errors(), 422);
         } catch (Exception $e) {
-            Log::error('Error purchasing post: ' . $e->getMessage(), ['user_id' => Auth::id(), 'post_id' => $postId]);
+            Log::error('Ошибка при покупке поста: ' . $e->getMessage(), ['user_id' => Auth::id(), 'post_id' => $postId]);
             return $this->errorResponse($e->getMessage(), 400);
         }
     }

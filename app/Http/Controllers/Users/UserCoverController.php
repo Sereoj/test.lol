@@ -31,14 +31,14 @@ class UserCoverController extends Controller
         try {
             $userId = Auth::id();
             $coverFile = $request->file('cover');
-            
+
             $user = $this->userCoverService->uploadCover($userId, $coverFile);
-            
+
             // Обновляем кэш
             $cacheKey = self::CACHE_KEY_USER_COVER . $userId;
             $this->forgetCache($cacheKey);
-            
-            Log::info('User cover uploaded successfully', [
+
+            Log::info('Обложка пользователя успешно загружена', [
                 'user_id' => $userId,
                 'file_name' => $coverFile->getClientOriginalName(),
                 'file_size' => $coverFile->getSize()
@@ -49,7 +49,7 @@ class UserCoverController extends Controller
                 'user' => new UserCoverResource($user)
             ]);
         } catch (Exception $e) {
-            Log::error('Error uploading user cover: ' . $e->getMessage(), [
+            Log::error('Ошибка при загрузке обложки пользователя: ' . $e->getMessage(), [
                 'user_id' => Auth::id()
             ]);
             return $this->errorResponse($e->getMessage(), 500);
@@ -63,21 +63,21 @@ class UserCoverController extends Controller
     {
         try {
             $userId = Auth::id();
-            
+
             $user = $this->userCoverService->removeCover($userId);
-            
+
             // Обновляем кэш
             $cacheKey = self::CACHE_KEY_USER_COVER . $userId;
             $this->forgetCache($cacheKey);
-            
-            Log::info('User cover removed successfully', ['user_id' => $userId]);
+
+            Log::info('Обложка пользователя успешно удалена', ['user_id' => $userId]);
 
             return $this->successResponse([
                 'message' => 'Обложка успешно удалена',
                 'user' => new UserCoverResource($user)
             ]);
         } catch (Exception $e) {
-            Log::error('Error removing user cover: ' . $e->getMessage(), [
+            Log::error('Ошибка при удалении обложки пользователя: ' . $e->getMessage(), [
                 'user_id' => Auth::id()
             ]);
             return $this->errorResponse($e->getMessage(), 500);
@@ -92,18 +92,18 @@ class UserCoverController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_USER_COVER . $userId;
-            
+
             $userCover = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
                 $user = Auth::user();
                 return new UserCoverResource($user);
             });
 
-            Log::info('User cover retrieved successfully', ['user_id' => $userId]);
+            Log::info('Обложка пользователя успешно получена', ['user_id' => $userId]);
 
             return $this->successResponse($userCover);
         } catch (Exception $e) {
-            Log::error('Error retrieving user cover: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении обложки пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
-} 
+}

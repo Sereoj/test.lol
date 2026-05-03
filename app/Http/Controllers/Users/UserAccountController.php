@@ -37,11 +37,11 @@ class UserAccountController extends Controller
                 return new UserAccountResource($this->userAccountService->getUserById($userId));
             });
 
-            Log::info('User account retrieved successfully', ['user_id' => $userId]);
+            Log::info('Аккаунт пользователя успешно получен', ['user_id' => $userId]);
 
             return $this->successResponse($userAccount);
         } catch (Exception $e) {
-            Log::error('Error retrieving user account: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении аккаунта пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -61,14 +61,14 @@ class UserAccountController extends Controller
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
 
-            Log::info('User account updated successfully', ['user_id' => $userId]);
+            Log::info('Аккаунт пользователя успешно обновлен', ['user_id' => $userId]);
 
             return $this->successResponse([
                 'message' => 'Данные аккаунта успешно обновлены',
                 'user' => new UserAccountResource($userAccount)
             ]);
         } catch (Exception $e) {
-            Log::error('Error updating user account: ' . $e->getMessage(), [
+            Log::error('Ошибка при обновлении аккаунта пользователя: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'data' => $request->validated()
             ]);
@@ -91,14 +91,14 @@ class UserAccountController extends Controller
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
 
-            Log::info('User account deleted successfully', ['user_id' => $userId]);
+            Log::info('Аккаунт пользователя успешно удален', ['user_id' => $userId]);
 
             return $this->successResponse([
                 'success' => true,
                 'message' => 'Аккаунт успешно удален'
             ]);
         } catch (Exception $e) {
-            Log::error('Error deleting user account: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при удалении аккаунта пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -118,14 +118,14 @@ class UserAccountController extends Controller
             $cacheKey = self::CACHE_KEY_USER_ACCOUNT . $userId;
             $this->forgetCache($cacheKey);
 
-            Log::info('User account restored successfully', ['user_id' => $userId]);
+            Log::info('Аккаунт пользователя успешно восстановлен', ['user_id' => $userId]);
 
             return $this->successResponse([
                 'message' => 'Аккаунт успешно восстановлен',
                 'user' => new UserAccountResource($user)
             ]);
         } catch (Exception $e) {
-            Log::error('Error restoring user account: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при восстановлении аккаунта пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

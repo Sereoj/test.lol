@@ -14,7 +14,7 @@ use Exception;
 class TransactionController extends Controller
 {
     protected TransactionService $transactionService;
-    
+
     private const CACHE_MINUTES = 5;
     private const CACHE_KEY_USER_TRANSACTIONS = 'user_transactions_';
 
@@ -29,16 +29,16 @@ class TransactionController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_USER_TRANSACTIONS . $userId;
-            
+
             $transactions = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($userId) {
                 return $this->transactionService->getUserTransactions($userId);
             });
-            
-            Log::info('User transactions retrieved successfully', ['user_id' => $userId]);
-            
+
+            Log::info('Транзакции пользователя успешно получены', ['user_id' => $userId]);
+
             return $this->successResponse($transactions);
         } catch (Exception $e) {
-            Log::error('Error retrieving user transactions: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении транзакций пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('Error retrieving user transactions: ' . $e->getMessage(), 500);
         }
     }

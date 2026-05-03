@@ -79,7 +79,7 @@ class CommentController extends Controller
     public function destroy($post_id, int $comment_id)
     {
         try {
-            \Log::info('destroy', ['id' => $comment_id]);
+            \Log::info('удалить', ['id' => $comment_id]);
             $this->commentService->deleteComment($comment_id);
             return $this->successResponse(['message' => 'Comment deleted successfully']);
         } catch (\Exception $e) {
@@ -113,7 +113,7 @@ class CommentController extends Controller
             );
             return $this->successResponse($report);
         } catch (\Exception $e) {
-            $this->logError('Failed to report comment', ['error' => $e->getMessage()], $e);
+            $this->logError('Не удалось отправить жалобу на комментарий', ['error' => $e->getMessage()], $e);
             return $this->errorResponse($e->getMessage(), $e->getCode() != 0 ? $e->getCode() : 400);
         }
     }

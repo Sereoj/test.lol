@@ -24,7 +24,7 @@ class AvatarService
         {
             Storage::disk($this->disk)->makeDirectory($this->directoryName);
 
-            Log::info('disk', [
+            Log::info('диск', [
                 'disk' => $this->disk,
                 'directory' => $this->directoryName,
                 'status' => 'created'
@@ -63,7 +63,7 @@ class AvatarService
         try {
             return $this->avatarRepository->getUserAvatars($userId);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving the user avatars.');
+            throw new Exception('Произошла ошибка при получении аватаров пользователя.');
         }
     }
 
@@ -90,7 +90,7 @@ class AvatarService
         try {
             $avatar = $this->avatarRepository->findAvatarByUserIdAndId($userId, $avatarId);
 
-            Log::info("test", [
+            Log::info("тест", [
                 'avatar_id' => $avatarId,
                 'user_id' => $userId,
                 'avatar' => $avatar,
@@ -105,7 +105,7 @@ class AvatarService
 
             return $this->avatarRepository->deleteAvatar($avatar);
         } catch (Exception $e) {
-            Log::error("An error occurred while deleting the user avatar.");
+            Log::error('Произошла ошибка при удалении аватара пользователя.');
             throw new Exception($e);
         }
     }

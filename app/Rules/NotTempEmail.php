@@ -9,6 +9,7 @@ class NotTempEmail implements ValidationRule
 {
     /**
      * Run the validation rule.
+     * Предотвращение временных почтовых ящиков
      *
      * @param  \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString  $fail
      */

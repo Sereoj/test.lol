@@ -62,7 +62,7 @@ class PostService
 
     public function createPost(array $data)
     {
-        $this->logInfo('Creating post', ['user_id' => Auth::id(), 'title' => $data['title'] ?? 'Untitled']);
+        $this->logInfo('Создание поста', ['user_id' => Auth::id(), 'title' => $data['title'] ?? 'Без названия']);
 
         $post = $this->postRepository->createPost($data);
 
@@ -71,14 +71,14 @@ class PostService
             event(new \App\Events\PostCollaboratorAdded($post, $data['collaborator_ids']));
         }
 
-        $this->logInfo('Post created successfully', ['post_id' => $post->id]);
+        $this->logInfo('Пост успешно создан', ['post_id' => $post->id]);
 
         return $post;
     }
 
     public function updatePost($id, array $data)
     {
-        $this->logInfo('Updating post', ['post_id' => $id]);
+        $this->logInfo('Обновление поста', ['post_id' => $id]);
 
         // Получаем старых соавторов ДО обновления
         $oldPost = $this->postRepository->getPost($id);
@@ -96,7 +96,7 @@ class PostService
             }
         }
 
-        $this->logInfo('Post updated successfully', ['post_id' => $post->id]);
+        $this->logInfo('Пост успешно обновлен', ['post_id' => $post->id]);
 
         return [
             'post' => $post,
@@ -148,14 +148,14 @@ class PostService
                     // Отправляем уведомление через WebSocket
                     broadcast(new NotificationSent($post->user_id, $notification));
 
-                    Log::info('Like notification sent', [
+                    Log::info('Уведомление о лайке отправлено', [
                         'post_id' => $post->id,
                         'author_id' => $post->user_id,
                         'liker_id' => $userId
                     ]);
                 }
             } catch (\Exception $e) {
-                Log::error('Failed to send like notification: ' . $e->getMessage(), [
+                Log::error('Не удалось отправить уведомление о лайке: ' . $e->getMessage(), [
                     'post_id' => $postId,
                     'user_id' => $userId,
                     'error' => $e->getMessage()
@@ -193,7 +193,7 @@ class PostService
         if (! $post) {
             Log::error(sprintf('Пост с ID %s не найден.', $postId));
 
-            return response()->json(['error' => 'Post not found'], 404);
+            return response()->json(['error' => 'Пост не найден'], 404);
         }
 
         $mediaFiles = $post->media()->when($mediaIds, function ($query) use ($mediaIds) {
@@ -205,7 +205,7 @@ class PostService
         if ($mediaFiles->isEmpty()) {
             Log::warning(sprintf('Медиафайлы для поста с ID %s не найдены.', $postId));
 
-            return response()->json(['error' => 'No media found for the post'], 404);
+            return response()->json(['error' => 'Медиафайлы не найдены для поста'], 404);
         }
 
         if ($mediaFiles->count() === 1) {
@@ -215,7 +215,7 @@ class PostService
             if (! file_exists($filePath)) {
                 Log::error(sprintf('Файл не найден: %s', $filePath));
 
-                return response()->json(['error' => 'File not found'], 404);
+                return response()->json(['error' => 'Файл не найден'], 404);
             }
             event(new FileDownloaded($media));
 
@@ -247,14 +247,14 @@ class PostService
             if (! $filesAdded) {
                 Log::warning('Не было добавлено ни одного файла в архив.');
 
-                return response()->json(['error' => 'No valid media files to download'], 404);
+                return response()->json(['error' => 'Нет валидных медиафайлов для скачивания'], 404);
             }
 
             $zip->close();
         } else {
             Log::error(sprintf('Не удалось создать ZIP-файл: %s', $zipPath));
 
-            return response()->json(['error' => 'Failed to create ZIP file'], 500);
+            return response()->json(['error' => 'Не удалось создать ZIP-файл'], 500);
         }
 
         return Response::download($zipPath)->deleteFileAfterSend();

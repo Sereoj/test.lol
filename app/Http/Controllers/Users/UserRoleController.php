@@ -33,11 +33,11 @@ class UserRoleController extends Controller
                 return Role::all();
             });
 
-            Log::info('Roles retrieved successfully');
+            Log::info('Роли успешно получены');
 
             return $this->successResponse($roles);
         } catch (Exception $e) {
-            Log::error('Error retrieving roles: ' . $e->getMessage());
+            Log::error('Ошибка при получении ролей: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -51,13 +51,13 @@ class UserRoleController extends Controller
             $data = $request->validated();
             $role = $this->roleService->create($data);
 
-            Log::info('Role created successfully', ['role_id' => $role->id]);
+            Log::info('Роль успешно создана', ['role_id' => $role->id]);
 
             $this->forgetCache(self::CACHE_KEY_ROLES_LIST);
 
             return $this->successResponse($role, 201);
         } catch (Exception $e) {
-            Log::error('Error creating role: ' . $e->getMessage(), ['data' => $request->all()]);
+            Log::error('Ошибка при создании роли: ' . $e->getMessage(), ['data' => $request->all()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -73,11 +73,11 @@ class UserRoleController extends Controller
                 return $this->roleService->getRoleById($id);
             });
 
-            Log::info('Role retrieved successfully', ['id' => $id]);
+            Log::info('Роль успешно получена', ['id' => $id]);
 
             return $this->successResponse($role);
         } catch (Exception $e) {
-            Log::error('Error retrieving role: ' . $e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при получении роли: ' . $e->getMessage(), ['id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

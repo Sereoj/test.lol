@@ -93,7 +93,7 @@ class CommentRepository
 
     public function deleteComment(Comment $comment)
     {
-        Log::info('deleteComment', [
+        Log::info('удалитьКомментарий', [
             'comment' => $comment
         ]);
         return $comment->delete();
@@ -102,7 +102,7 @@ class CommentRepository
     public function updateOrCreateReaction($commentId, $userId, $type)
     {
         return DB::transaction(function () use ($commentId, $userId, $type) {
-            Log::info("Reacting to comment {$commentId} with type {$type} by user " . $userId);
+            Log::info("Реакция на комментарий {$commentId} с типом {$type} от пользователя " . $userId);
 
             $existingReaction = CommentLike::where([
                 'comment_id' => $commentId,

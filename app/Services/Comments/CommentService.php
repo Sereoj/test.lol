@@ -40,7 +40,7 @@ class CommentService
     {
         $comment = $this->commentRepository->findCommentById($id);
         if (!$comment) {
-            throw new Exception('Comment not found.', 404);
+            throw new Exception('Комментарий не найден.', 404);
         }
         return $comment;
     }
@@ -50,7 +50,7 @@ class CommentService
         $comment = $this->commentRepository->findCommentById($id);
 
         if (! $comment) {
-            throw new Exception('Comment not found.', 404);
+            throw new Exception('Комментарий не найден.', 404);
         }
 
         if ($comment->user_id !== Auth::id()) {
@@ -135,7 +135,7 @@ class CommentService
         $comment = $this->commentRepository->findCommentById($commentId);
 
         if (! $comment) {
-            throw new Exception('Comment not found.', 404);
+            throw new Exception('Комментарий не найден.', 404);
         }
 
         return $this->commentRepository->updateOrCreateReaction($commentId, Auth::id(), $type);
@@ -153,7 +153,7 @@ class CommentService
 
     public function deleteComment(int $commentId)
     {
-        \Log::info('deleteComment', ['id' => $commentId]);
+        \Log::info('удалитьКомментарий', ['id' => $commentId]);
         $comment = $this->commentRepository->findCommentByIdWithTrashed($commentId);
 
         if ($comment->user_id !== Auth::id()) {

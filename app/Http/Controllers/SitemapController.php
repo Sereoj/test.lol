@@ -19,7 +19,7 @@ class SitemapController extends Controller
             return $this->successResponse($this->sitemapService->generateUrls());
         } catch (\Exception $exception)
         {
-            Log::error('Sitemap: ' . $exception->getMessage(), [
+            Log::error('Ошибка Sitemap: ' . $exception->getMessage(), [
                 'message' => $exception->getMessage(),
             ]);
             return $this->errorResponse($exception->getMessage());

@@ -20,14 +20,14 @@ class ImageController extends Controller
             $disk = StorageService::get();
             $path = 'originals/' . $filename;
 
-            $this->logInfo('Attempting to retrieve original file', [
+            $this->logInfo('Попытка получения исходного файла', [
                 'filename' => $filename,
                 'disk' => $disk,
                 'path' => $path,
             ]);
 
             if (!Storage::disk($disk)->exists($path)) {
-                $this->logWarning('Original file not found', [
+                $this->logWarning('Исходный файл не найден', [
                     'filename' => $filename,
                     'disk' => $disk,
                     'path' => $path,
@@ -38,7 +38,7 @@ class ImageController extends Controller
 
             $fullPath = Storage::disk($disk)->path($path);
 
-            $this->logInfo('Original file retrieved successfully', [
+            $this->logInfo('Исходный файл успешно получен', [
                 'filename' => $filename,
                 'disk' => $disk,
             ]);
@@ -46,7 +46,7 @@ class ImageController extends Controller
             return response()->file($fullPath);
 
         } catch (\Exception $e) {
-            $this->logError('Failed to retrieve original file', [
+            $this->logError('Не удалось получить исходный файл', [
                 'filename' => $filename,
                 'error' => $e->getMessage(),
             ], $e);

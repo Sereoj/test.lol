@@ -17,9 +17,9 @@ class RoleService
         $role = Role::query()->where('type', $type)->first();
 
         if (! $role) {
-            Log::error("Role with type '{$type}' not found.");
+            Log::error("Роль с типом '{$type}' не найдена.");
         } else {
-            Log::info('Role found:', ['role' => $role->toArray()]);
+            Log::info('Роль найдена:', ['role' => $role->toArray()]);
         }
 
         return $role;

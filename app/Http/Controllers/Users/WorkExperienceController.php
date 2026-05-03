@@ -27,11 +27,11 @@ class WorkExperienceController extends Controller
         try {
             $workExperiences = $this->workExperienceService->getAll();
 
-            $this->logInfo('Work experiences retrieved', ['user_id' => Auth::id()]);
+            $this->logInfo('Список опыта работы получен', ['user_id' => Auth::id()]);
 
             return $this->successResponse(WorkExperienceResource::collection($workExperiences));
         } catch (Exception $e) {
-            $this->logError('Error retrieving work experiences', [
+            $this->logError('Ошибка при получении списка опыта работы', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ], $e);
@@ -54,7 +54,7 @@ class WorkExperienceController extends Controller
             }
 
             if ($workExperience->user_id !== Auth::id()) {
-                $this->logError('Unauthorized access to work experience', [
+                $this->logError('Попытка несанкционированного доступа к опыту работы', [
                     'id' => $id,
                     'user_id' => Auth::id(),
                     'owner_id' => $workExperience->user_id
@@ -62,11 +62,11 @@ class WorkExperienceController extends Controller
                 return $this->errorResponse('Доступ запрещен', 403);
             }
 
-            $this->logInfo('Work experience retrieved', ['id' => $id, 'user_id' => Auth::id()]);
+            $this->logInfo('Опыт работы получен', ['id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse(new WorkExperienceResource($workExperience));
         } catch (Exception $e) {
-            $this->logError('Error retrieving work experience', [
+            $this->logError('Ошибка при получении опыта работы', [
                 'id' => $id,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
@@ -87,14 +87,14 @@ class WorkExperienceController extends Controller
 
             $workExperience = $this->workExperienceService->create($data);
 
-            $this->logInfo('Work experience created', [
+            $this->logInfo('Опыт работы создан', [
                 'id' => $workExperience->id,
                 'user_id' => Auth::id()
             ]);
 
             return $this->successResponse(new WorkExperienceResource($workExperience), 201);
         } catch (Exception $e) {
-            $this->logError('Error creating work experience', [
+            $this->logError('Ошибка при создании опыта работы', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ], $e);
@@ -112,12 +112,12 @@ class WorkExperienceController extends Controller
             $workExperience = $this->workExperienceService->getById($id);
 
             if (!$workExperience) {
-                $this->logError('Work experience not found', ['id' => $id, 'user_id' => Auth::id()]);
+                $this->logError('Опыт работы не найден', ['id' => $id, 'user_id' => Auth::id()]);
                 return $this->errorResponse('Опыт работы не найден', 404);
             }
 
             if ($workExperience->user_id !== Auth::id()) {
-                $this->logError('Unauthorized update attempt', [
+                $this->logError('Попытка несанкционированного обновления', [
                     'id' => $id,
                     'user_id' => Auth::id(),
                     'owner_id' => $workExperience->user_id
@@ -128,11 +128,11 @@ class WorkExperienceController extends Controller
             $data = $request->validated();
             $updatedWorkExperience = $this->workExperienceService->update($id, $data);
 
-            $this->logInfo('Work experience updated', ['id' => $id, 'user_id' => Auth::id()]);
+            $this->logInfo('Опыт работы обновлен', ['id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse(new WorkExperienceResource($updatedWorkExperience));
         } catch (Exception $e) {
-            $this->logError('Error updating work experience', [
+            $this->logError('Ошибка при обновлении опыта работы', [
                 'id' => $id,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
@@ -151,12 +151,12 @@ class WorkExperienceController extends Controller
             $workExperience = $this->workExperienceService->getById($id);
 
             if (!$workExperience) {
-                $this->logError('Work experience not found', ['id' => $id, 'user_id' => Auth::id()]);
+                $this->logError('Опыт работы не найден', ['id' => $id, 'user_id' => Auth::id()]);
                 return $this->errorResponse('Опыт работы не найден', 404);
             }
 
             if ($workExperience->user_id !== Auth::id()) {
-                $this->logError('Unauthorized delete attempt', [
+                $this->logError('Попытка несанкционированного удаления', [
                     'id' => $id,
                     'user_id' => Auth::id(),
                     'owner_id' => $workExperience->user_id
@@ -166,11 +166,11 @@ class WorkExperienceController extends Controller
 
             $this->workExperienceService->delete($id);
 
-            $this->logInfo('Work experience deleted', ['id' => $id, 'user_id' => Auth::id()]);
+            $this->logInfo('Опыт работы удален', ['id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse(null, 204);
         } catch (Exception $e) {
-            $this->logError('Error deleting work experience', [
+            $this->logError('Ошибка при удалении опыта работы', [
                 'id' => $id,
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()

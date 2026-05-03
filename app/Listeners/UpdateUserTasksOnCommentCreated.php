@@ -26,7 +26,7 @@ class UpdateUserTasksOnCommentCreated
         $comment = $event->comment;
         $user = $comment->user;
 
-        Log::info("Comment created: $comment");
+        Log::info("Комментарий создан: $comment");
         $this->userTaskService->processTasks($user, 'leave_comments');
     }
 }

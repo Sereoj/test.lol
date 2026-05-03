@@ -58,7 +58,7 @@ class UserService
         $this->userSettingsService->attachAchievement($user);
 
         // Логирование успешного создания пользователя
-        Log::info('User created successfully', ['user_id' => $user->id, 'username' => $user->username]);
+        Log::info('Пользователь успешно создан', ['user_id' => $user->id, 'username' => $user->username]);
 
         return $user;
     }

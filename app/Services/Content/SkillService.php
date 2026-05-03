@@ -13,7 +13,7 @@ class SkillService
         try {
             return Skill::all();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving skills.');
+            throw new Exception('Произошла ошибка при получении навыков.');
         }
     }
 
@@ -27,7 +27,7 @@ class SkillService
         try {
             return Skill::findOrFail($id);
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving the skill.');
+            throw new Exception('Произошла ошибка при получении навыка.');
         }
     }
 
@@ -35,7 +35,7 @@ class SkillService
     {
         $skill = Skill::find($id);
         if (! $skill) {
-            throw new Exception('Skill not found');
+            throw new Exception('Навык не найден');
         }
 
         return $skill->update($data);
@@ -45,7 +45,7 @@ class SkillService
     {
         $skill = Skill::find($id);
         if (! $skill) {
-            throw new Exception('Skill not found');
+            throw new Exception('Навык не найден');
         }
 
         return $skill->delete();
@@ -73,7 +73,7 @@ class SkillService
                     'skill_id' => $skill->id,
                 ]);
             } catch (Exception $e) {
-                throw new Exception('An error occurred while adding the skills to the user.');
+                throw new Exception('Произошла ошибка при добавлении навыков пользователю.');
             }
         }
 
@@ -90,7 +90,7 @@ class SkillService
 
             return $skillUser->delete();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while removing the skill from the user.');
+            throw new Exception('Произошла ошибка при удалении навыка у пользователя.');
         }
     }
 
@@ -99,7 +99,7 @@ class SkillService
         try {
             return UserSkill::query()->where('user_id', $userId)->get();
         } catch (Exception $e) {
-            throw new Exception('An error occurred while retrieving the user skills.');
+            throw new Exception('Произошла ошибка при получении навыков пользователя.');
         }
     }
 }

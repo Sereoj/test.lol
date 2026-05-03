@@ -30,19 +30,19 @@ class StepController extends Controller
     {
         try {
             $request->user()->sources()->syncWithoutDetaching($request->get('source_id'));
-            
-            Log::info('User onboarding step one completed', [
+
+            Log::info('Первый шаг онбординга пользователя завершен', [
                 'user_id' => Auth::id(),
                 'source_id' => $request->get('source_id')
             ]);
-            
+
             return $this->successResponse(['message' => 'Source successfully added']);
         } catch (Exception $e) {
-            Log::error('Error completing onboarding step one: ' . $e->getMessage(), [
+            Log::error('Ошибка завершения первого шага онбординга: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'source_id' => $request->get('source_id')
             ]);
-            
+
             return $this->errorResponse('Failed to complete step one. Please try again.', 500);
         }
     }
@@ -52,19 +52,19 @@ class StepController extends Controller
     {
         try {
             $request->user()->skills()->syncWithoutDetaching($request->get('skill_ids'));
-            
-            Log::info('User onboarding step two completed', [
+
+            Log::info('Второй шаг онбординга пользователя завершен', [
                 'user_id' => Auth::id(),
                 'skill_ids' => $request->get('skill_ids')
             ]);
-            
+
             return $this->successResponse(['message' => 'Skills successfully added']);
         } catch (Exception $e) {
-            Log::error('Error completing onboarding step two: ' . $e->getMessage(), [
+            Log::error('Ошибка завершения второго шага онбординга: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'skill_ids' => $request->get('skill_ids')
             ]);
-            
+
             return $this->errorResponse('Failed to complete step two. Please try again.', 500);
         }
     }
@@ -73,16 +73,16 @@ class StepController extends Controller
     public function three(UploadAvatarRequest $request)
     {
         try {
-            Log::info('Initiating onboarding step three (avatar upload)', [
+            Log::info('Инициализация третьего шага онбординга (загрузка аватара)', [
                 'user_id' => Auth::id()
             ]);
-            
+
             return $this->avatarController->uploadAvatar($request);
         } catch (Exception $e) {
-            Log::error('Error in onboarding step three: ' . $e->getMessage(), [
+            Log::error('Ошибка в третьем шаге онбординга: ' . $e->getMessage(), [
                 'user_id' => Auth::id()
             ]);
-            
+
             return $this->errorResponse('Failed to upload avatar. Please try again.', 500);
         }
     }

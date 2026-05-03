@@ -36,14 +36,14 @@ class UserLanguageController extends Controller
                 $user->language = $request->input('language');
                 $user->save();
 
-                Log::info('User language updated successfully', [
+                Log::info('Язык пользователя успешно обновлен', [
                     'user_id' => $user->id,
                     'language' => $request->input('language')
                 ]);
             } else {
                 session(['language' => $request->input('language')]);
 
-                Log::info('Session language updated successfully', [
+                Log::info('Язык сессии успешно обновлен', [
                     'session_id' => session()->getId(),
                     'language' => $request->input('language')
                 ]);
@@ -51,7 +51,7 @@ class UserLanguageController extends Controller
 
             return $this->successResponse(['message' => 'Language updated successfully']);
         } catch (Exception $e) {
-            Log::error('Error updating language: ' . $e->getMessage(), [
+            Log::error('Ошибка при обновлении языка: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'language' => $request->input('language')
             ]);

@@ -33,11 +33,11 @@ class UserLocationController extends Controller
                 return LocationResource::collection($this->locationService->getAllLocations());
             });
 
-            Log::info('Locations retrieved successfully');
+            Log::info('Местоположения успешно получены');
 
             return $this->successResponse($locations);
         } catch (Exception $e) {
-            Log::error('Error retrieving locations: ' . $e->getMessage());
+            Log::error('Ошибка при получении местоположений: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -53,11 +53,11 @@ class UserLocationController extends Controller
                 return $this->locationService->getLocationById($id);
             });
 
-            Log::info('Location retrieved successfully', ['id' => $id]);
+            Log::info('Местоположение успешно получено', ['id' => $id]);
 
             return $this->successResponse($location);
         } catch (Exception $e) {
-            Log::error('Error retrieving location: ' . $e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при получении местоположения: ' . $e->getMessage(), ['id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -69,7 +69,7 @@ class UserLocationController extends Controller
     {
         try {
             $location = $this->locationService->storeLocation($request->all());
-            Log::info('Location stored successfully', [
+            Log::info('Местоположение успешно сохранено', [
                 'location_id' => $location->id,
                 'data' => $request->all(),
                 'timestamp' => now(),
@@ -79,7 +79,7 @@ class UserLocationController extends Controller
 
             return $this->successResponse(['message' => 'Location stored successfully', 'location' => $location], 201);
         } catch (Exception $e) {
-            Log::error('Error storing location: ' . $e->getMessage(), ['data' => $request->all()]);
+            Log::error('Ошибка при сохранении местоположения: ' . $e->getMessage(), ['data' => $request->all()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -96,7 +96,7 @@ class UserLocationController extends Controller
             ]);
 
             $location = $this->locationService->updateLocation($id, $request->all());
-            Log::info('Location updated successfully', ['id' => $id, 'data' => $request->all()]);
+            Log::info('Местоположение успешно обновлено', ['id' => $id, 'data' => $request->all()]);
 
             $this->forgetCache([
                 self::CACHE_KEY_LOCATION . $id,
@@ -105,7 +105,7 @@ class UserLocationController extends Controller
 
             return $this->successResponse(['message' => 'Location updated successfully', 'location' => $location]);
         } catch (Exception $e) {
-            Log::error('Error updating location: ' . $e->getMessage(), ['id' => $id, 'data' => $request->all()]);
+            Log::error('Ошибка при обновлении местоположения: ' . $e->getMessage(), ['id' => $id, 'data' => $request->all()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -117,7 +117,7 @@ class UserLocationController extends Controller
     {
         try {
             $this->locationService->deleteLocation($id);
-            Log::info('Location deleted successfully', ['id' => $id]);
+            Log::info('Местоположение успешно удалено', ['id' => $id]);
 
             $this->forgetCache([
                 self::CACHE_KEY_LOCATION . $id,
@@ -126,7 +126,7 @@ class UserLocationController extends Controller
 
             return $this->successResponse(['message' => 'Location deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Error deleting location: ' . $e->getMessage(), ['id' => $id]);
+            Log::error('Ошибка при удалении местоположения: ' . $e->getMessage(), ['id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

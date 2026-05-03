@@ -21,7 +21,7 @@ class PostReportService
     {
         $userId = Auth::id();
 
-        $this->logInfo('Creating post report', [
+        $this->logInfo('Создание жалобы на пост', [
             'post_id' => $postId,
             'user_id' => $userId,
             'category' => $category
@@ -30,14 +30,14 @@ class PostReportService
         try {
             $report = $this->postReportRepository->createReport($postId, $userId, $category, $reason);
 
-            $this->logInfo('Post report created successfully', [
+            $this->logInfo('Жалоба на пост успешно создана', [
                 'report_id' => $report->id,
                 'post_id' => $postId
             ]);
 
             return $report;
         } catch (\Exception $e) {
-            $this->logError('Failed to create post report', [
+            $this->logError('Не удалось создать жалобу на пост', [
                 'post_id' => $postId,
                 'user_id' => $userId,
                 'error' => $e->getMessage()

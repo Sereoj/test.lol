@@ -18,10 +18,10 @@ class SocialiteController extends Controller
     public function redirectToProvider($provider)
     {
         try {
-            Log::info('Redirecting to social provider', ['provider' => $provider, 'user_id' => Auth::id()]);
+            Log::info('Перенаправление к социальному провайдеру', ['provider' => $provider, 'user_id' => Auth::id()]);
             return Socialite::driver($provider)->redirect();
         } catch (Exception $e) {
-            Log::error('Error redirecting to social provider: ' . $e->getMessage(), [
+            Log::error('Ошибка перенаправления к социальному провайдеру: ' . $e->getMessage(), [
                 'provider' => $provider,
                 'user_id' => Auth::id()
             ]);
@@ -35,25 +35,25 @@ class SocialiteController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->user();
             $authUser = $this->findOrCreateUser($socialUser, $provider);
-            
+
             if (!$authUser) {
-                Log::warning('Failed to find or create user from social provider', [
-                    'provider' => $provider, 
+                Log::warning('Не удалось найти или создать пользователя через социальный провайдер', [
+                    'provider' => $provider,
                     'social_id' => $socialUser->id
                 ]);
                 return $this->errorResponse('Unable to login with ' . $provider . '. Please try again.', 400);
             }
-            
+
             Auth::login($authUser, true);
-            
-            Log::info('User logged in via social provider', [
-                'provider' => $provider, 
+
+            Log::info('Пользователь вошел через социальный провайдер', [
+                'provider' => $provider,
                 'user_id' => $authUser->id
             ]);
-            
+
             return redirect()->intended('dashboard');
         } catch (Exception $e) {
-            Log::error('Error handling social provider callback: ' . $e->getMessage(), [
+            Log::error('Ошибка обработки обратного вызова социального провайдера: ' . $e->getMessage(), [
                 'provider' => $provider
             ]);
             return $this->errorResponse('Unable to login with ' . $provider . '. Please try again.', 500);
@@ -65,7 +65,7 @@ class SocialiteController extends Controller
     {
         try {
             $cacheKey = self::CACHE_KEY_SOCIAL_USER . $provider . '_' . $user->id;
-            
+
             $authUser = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () use ($user) {
                 return User::query()->where('provider_id', $user->id)->first();
             });
@@ -83,11 +83,11 @@ class SocialiteController extends Controller
                 'provider_id' => $user->id,
                 //'password' => Hash::make(str_random(24)),
             ]);*/
-            
+
             return null;
         } catch (Exception $e) {
-            Log::error('Error finding or creating user from social provider: ' . $e->getMessage(), [
-                'provider' => $provider, 
+            Log::error('Ошибка поиска или создания пользователя через социальный провайдер: ' . $e->getMessage(), [
+                'provider' => $provider,
                 'social_id' => $user->id
             ]);
             return null;

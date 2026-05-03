@@ -26,7 +26,7 @@ class UserFollowService
     {
 
         if ($followerId === $followingId) {
-            Log::warning('User cannot follow themselves', ['user_id' => $followerId]);
+            Log::warning('Пользователь не может подписаться на самого себя', ['user_id' => $followerId]);
             return false;
         }
 
@@ -35,7 +35,7 @@ class UserFollowService
             $following = User::find($followingId);
 
             if (!$follower || !$following) {
-                Log::warning('User not found when following', [
+                Log::warning('Пользователь не найден при подписке', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId,
                     'follower_exists' => (bool) $follower,
@@ -45,7 +45,7 @@ class UserFollowService
             }
 
             if ($follower->following()->where('following_id', $followingId)->exists()) {
-                Log::warning('User already follows this user', [
+                Log::warning('Пользователь уже подписан на этого пользователя', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
@@ -56,7 +56,7 @@ class UserFollowService
                 $follower->following()->attach($followingId);
             });
 
-            Log::info('User followed successfully', [
+            Log::info('Пользователь успешно подписан', [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
             ]);
@@ -65,7 +65,7 @@ class UserFollowService
             try {
                 $following->notify(new UserFollowedNotification($follower));
             } catch (Exception $notificationException) {
-                Log::warning('Failed to send follow notification', [
+                Log::warning('Не удалось отправить уведомление о подписке', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId,
                     'error' => $notificationException->getMessage()
@@ -75,7 +75,7 @@ class UserFollowService
             return true;
         }catch (Exception $exception)
         {
-            Log::error('Error user following'. $exception->getMessage(), [
+            Log::error('Ошибка при подписке пользователя'. $exception->getMessage(), [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
             ]);
@@ -94,7 +94,7 @@ class UserFollowService
     public function unfollowUser(int $followerId, int $followingId)
     {
         if ($followerId === $followingId) {
-            Log::warning('User cannot unfollow themselves', ['user_id' => $followerId]);
+            Log::warning('Пользователь не может отписаться от самого себя', ['user_id' => $followerId]);
             return false;
         }
 
@@ -103,7 +103,7 @@ class UserFollowService
             $following = User::find($followingId);
 
             if (!$follower || !$following) {
-                Log::warning('User not found when unfollowing', [
+                Log::warning('Пользователь не найден при отписке', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId,
                     'follower_exists' => (bool) $follower,
@@ -113,7 +113,7 @@ class UserFollowService
             }
 
             if (!$follower->following()->where('following_id', $followingId)->exists()) {
-                Log::warning('User does not follow this user', [
+                Log::warning('Пользователь не подписан на этого пользователя', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
@@ -124,14 +124,14 @@ class UserFollowService
                 $follower->following()->detach($followingId);
             });
 
-            Log::info('User unfollowed successfully', [
+            Log::info('Пользователь успешно отписан', [
                 'follower_id' => $followerId,
                 'following_id' => $followingId
             ]);
 
             return true;
         }catch(Exception $exception){
-            Log::error('Error user unfollowing: ' . $exception->getMessage(), [
+            Log::error('Ошибка при отписке пользователя: ' . $exception->getMessage(), [
                 'follower_id' => $followerId,
                 'following_id' => $followingId,
             ]);
@@ -149,7 +149,7 @@ class UserFollowService
         $user = User::find($userId);
 
         if (!$user) {
-            Log::warning('User not found when getting followers', ['user_id' => $userId]);
+            Log::warning('Пользователь не найден при получении подписчиков', ['user_id' => $userId]);
             return collect();
         }
 
@@ -165,7 +165,7 @@ class UserFollowService
             });
         }
 
-        Log::info('Retrieved user followers', [
+        Log::info('Получены подписчики пользователя', [
             'user_id' => $userId,
             'count' => $followers->count()
         ]);
@@ -181,7 +181,7 @@ class UserFollowService
     {
         $userId = Auth::id();
         if (!$userId) {
-            Log::warning('No authenticated user when getting following');
+            Log::warning('Нет авторизованного пользователя при получении подписок');
             return collect();
         }
 
@@ -198,7 +198,7 @@ class UserFollowService
         $user = User::find($userId);
 
         if (!$user) {
-            Log::warning('User not found when getting following', ['user_id' => $userId]);
+            Log::warning('Пользователь не найден при получении подписок', ['user_id' => $userId]);
             return collect();
         }
 
@@ -214,7 +214,7 @@ class UserFollowService
             });
         }
 
-        Log::info('Retrieved user following', [
+        Log::info('Получены подписки пользователя', [
             'user_id' => $userId,
             'count' => $following->count()
         ]);
@@ -232,12 +232,12 @@ class UserFollowService
     public function isFollowing(int $followerId, int $followingId): bool
     {
         if ($followerId === $followingId) {
-            Log::warning('User cannot follow themselves', ['user_id' => $followerId]);
+            Log::warning('Пользователь не может подписаться на самого себя', ['user_id' => $followerId]);
             return false;
         }
             $follower = User::find($followerId);
             if (!$follower) {
-                Log::warning('Follower not found when checking isFollowing', [
+                Log::warning('Подписчик не найден при проверке подписки', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
@@ -247,7 +247,7 @@ class UserFollowService
             // Проверка существования пользователя, на которого подписываются
             $following = User::find($followingId);
             if (!$following) {
-                Log::warning('Following user not found when checking isFollowing', [
+                Log::warning('Пользователь, на которого подписываются, не найден при проверке подписки', [
                     'follower_id' => $followerId,
                     'following_id' => $followingId
                 ]);
@@ -259,7 +259,7 @@ class UserFollowService
                 ->where('following_id', $followingId)
                 ->exists();
 
-            Log::info('Checked if user is following another user', [
+            Log::info('Проверено, подписан ли пользователь на другого пользователя', [
                 'follower_id' => $followerId,
                 'following_id' => $followingId,
                 'is_following' => $isFollowing

@@ -340,7 +340,16 @@ trait LoggableTrait
         $modelName = class_basename($modelClass);
         $modelId = method_exists($model, 'getKey') ? $model->getKey() : null;
 
-        $message = ucfirst($action) . " {$modelName}" . ($modelId ? " #{$modelId}" : '');
+        $actionTranslations = [
+            'create' => 'Создан',
+            'update' => 'Обновлен',
+            'delete' => 'Удален',
+            'restore' => 'Восстановлен',
+            'force_delete' => 'Окончательно удален',
+        ];
+
+        $actionText = $actionTranslations[$action] ?? ucfirst($action);
+        $message = "{$actionText} {$modelName}" . ($modelId ? " #{$modelId}" : '');
 
         $context = [
             'model' => $modelName,

@@ -25,7 +25,7 @@ class HandleProfileComplected
     {
         $user = $event->user;
 
-        Log::info("Profile complected: $user");
+        Log::info("Профиль завершен: $user");
         $this->userTaskService->processTasks($user, 'publish_posts');
     }
 }

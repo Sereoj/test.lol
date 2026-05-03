@@ -39,7 +39,7 @@ class NotificationController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            Log::error('Error retrieving notifications: ' . $e->getMessage(), [
+            Log::error('Ошибка при получении уведомлений: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
             ]);
@@ -65,7 +65,7 @@ class NotificationController extends Controller
                 ]
             );
         } catch (\Exception $e) {
-            Log::error('Error retrieving unread notifications: ' . $e->getMessage(), [
+            Log::error('Ошибка при получении непрочитанных уведомлений: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
             ]);
@@ -92,7 +92,7 @@ class NotificationController extends Controller
                 ['notification' => $notification]
             );
         } catch (\Exception $e) {
-            Log::error('Error marking notification as read: ' . $e->getMessage(), [
+            Log::error('Ошибка при отметке уведомления как прочитанного: ' . $e->getMessage(), [
                 'notification_id' => $id,
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
@@ -112,7 +112,7 @@ class NotificationController extends Controller
 
             return $this->successResponse('All notifications marked as read successfully');
         } catch (\Exception $e) {
-            Log::error('Error marking all notifications as read: ' . $e->getMessage(), [
+            Log::error('Ошибка при отметке всех уведомлений как прочитанных: ' . $e->getMessage(), [
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
             ]);
@@ -159,7 +159,7 @@ class NotificationController extends Controller
 
             return $this->errorResponse('Error deleting notification');
         } catch (\Exception $e) {
-            Log::error('Error deleting notification: ' . $e->getMessage(), [
+            Log::error('Ошибка при удалении уведомления: ' . $e->getMessage(), [
                 'notification_id' => $id,
                 'user_id' => auth()->id(),
                 'error' => $e->getMessage()
@@ -225,7 +225,7 @@ class NotificationController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->errorResponse('Validation error', 422, $e->errors());
         } catch (\Exception $e) {
-            Log::error('Error sending notification: ' . $e->getMessage(), [
+            Log::error('Ошибка при отправке уведомления: ' . $e->getMessage(), [
                 'request' => $request->all(),
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

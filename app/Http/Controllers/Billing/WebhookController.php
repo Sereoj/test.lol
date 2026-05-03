@@ -28,7 +28,7 @@ class WebhookController extends Controller
             $clientIp = $request->ip();
 
             if (!in_array($clientIp, $allowedIps)) {
-                Log::warning('AnyPay webhook rejected: bad IP', ['ip' => $clientIp]);
+                Log::warning('AnyPay вебхук отклонен: неверный IP', ['ip' => $clientIp]);
                 return response('bad ip', 403);
             }
 
@@ -48,7 +48,7 @@ class WebhookController extends Controller
             $expectedSign = hash('sha256', "{$merchantId}:{$payId}:{$amount}:{$currency}:{$profit}:{$config['secret_key']}");
 
             if ($sign !== $expectedSign) {
-                Log::error('AnyPay webhook: invalid signature', [
+                Log::error('AnyPay вебхук: неверная подпись', [
                     'transaction_id' => $payId,
                     'expected' => $expectedSign,
                     'received' => $sign,
@@ -56,7 +56,7 @@ class WebhookController extends Controller
                 return response('invalid signature', 403);
             }
 
-            Log::info('AnyPay webhook received', [
+            Log::info('AnyPay вебхук получен', [
                 'transaction_id' => $payId,
                 'amount' => $amount,
                 'profit' => $profit,
@@ -67,15 +67,15 @@ class WebhookController extends Controller
             // Обрабатываем в зависимости от статуса
             if ($status === 'paid') {
                 $this->transactionService->debitSuccess((int)$payId, (float)$profit);
-                Log::info('AnyPay payment successful', ['transaction_id' => $payId]);
+                Log::info('AnyPay платеж успешен', ['transaction_id' => $payId]);
             } else {
                 $this->transactionService->debitFail((int)$payId);
-                Log::info('AnyPay payment failed', ['transaction_id' => $payId]);
+                Log::info('AnyPay платеж неуспешен', ['transaction_id' => $payId]);
             }
 
             return response('ok', 200);
         } catch (Exception $e) {
-            Log::error('AnyPay webhook error', [
+            Log::error('AnyPay вебхук ошибка', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'data' => $request->all(),

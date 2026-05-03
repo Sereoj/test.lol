@@ -40,13 +40,13 @@ class AuthController extends Controller
             $userData = $request->validated();
             $user = $this->userService->create($userData);
 
-            Log::info('User registered successfully', ['user_id' => $user->id]);
+            Log::info('Пользователь успешно зарегистрирован', ['user_id' => $user->id]);
 
             $result = $this->authService->register($user, $request->input('remember_me', false));
 
             return $this->successResponse($result, [], 201);
         } catch (Exception $e) {
-            Log::error('User registration failed: ' . $e->getMessage(), ['data' => [
+            Log::error('Регистрация пользователя не удалась: ' . $e->getMessage(), ['data' => [
                 'email' => $userData['email'],
             ]]);
             return $this->errorResponse($e->getMessage(), 500);
@@ -61,11 +61,11 @@ class AuthController extends Controller
 
             $result = $this->authService->login($credentials);
 
-            Log::info('User logged in successfully', ['email' => $credentials['email']]);
+            Log::info('Пользователь успешно вошел', ['email' => $credentials['email']]);
 
             return $this->successResponse($result);
         } catch (Exception $e) {
-            Log::error('An error occurred during login: ' . $e->getMessage(), ['email' => $request->email]);
+            Log::error('Произошла ошибка при входе: ' . $e->getMessage(), ['email' => $request->email]);
             $statusCode = $e->getCode() >= 100 && $e->getCode() < 600 ? $e->getCode() : 500;
             return $this->errorResponse($e->getMessage(), $statusCode);
         }
@@ -78,11 +78,11 @@ class AuthController extends Controller
             $refreshToken = $request->input('refresh_token');
 
             $result = $this->authService->refreshToken($refreshToken);
-            Log::info('Token refreshed successfully');
+            Log::info('Токен успешно обновлен');
 
             return $this->successResponse($result);
         } catch (Exception $e) {
-            Log::error('An error occurred during token refresh: ' . $e->getMessage());
+            Log::error('Произошла ошибка при обновлении токена: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -98,11 +98,11 @@ class AuthController extends Controller
                 return new UserShortWithBalanceResource($this->userService->getById($userId));
             });
 
-            Log::info('User info retrieved successfully', ['user_id' => $userId]);
+            Log::info('Информация о пользователе успешно получена', ['user_id' => $userId]);
 
             return $this->successResponse($user);
         } catch (Exception $e) {
-            Log::error('Error retrieving user info: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
+            Log::error('Ошибка при получении информации о пользователе: ' . $e->getMessage(), ['user_id' => $request->user()->id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -117,14 +117,14 @@ class AuthController extends Controller
             $cacheKey = self::CACHE_KEY_USER . $userId;
             $this->forgetCache($cacheKey);
 
-            Log::info('User logged out successfully', ['user_id' => $userId]);
+            Log::info('Пользователь успешно вышел', ['user_id' => $userId]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Выход выполнен успешно'
             ]);
         } catch (Exception $e) {
-            Log::error('An error occurred during logout: ' . $e->getMessage(), ['user_id' => $request->user()->id ?? null]);
+            Log::error('Произошла ошибка при выходе: ' . $e->getMessage(), ['user_id' => $request->user()->id ?? null]);
             return response()->json([
                 'success' => false,
                 'message' => 'An error occurred during logout: ' . $e->getMessage()

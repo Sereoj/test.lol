@@ -34,19 +34,19 @@ class UserProfileController extends Controller
             $user = $this->userService->getBySlug($slug);
 
             if (!$user) {
-                $this->logError('User not found', ['slug' => $slug]);
+                $this->logError('Пользователь не найден', ['slug' => $slug]);
                 return $this->errorResponse('Пользователь не найден', 404);
             }
 
             $cacheKey = self::CACHE_KEY_USER_PROFILE . $user->id;
             $profile = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES_SHOW, function () use ($user) {
-                $this->logInfo('User profile retrieved successfully', ['user_id' => $user->id]);
+                $this->logInfo('Профиль пользователя успешно получен', ['user_id' => $user->id]);
                 return new UserProfileResource($this->userProfileService->getUserProfile($user));
             });
 
             return $this->successResponse($profile);
         } catch (Exception $e) {
-            $this->logError('Error retrieving user profile', [
+            $this->logError('Ошибка при получении профиля пользователя', [
                 'slug' => $slug,
                 'error' => $e->getMessage(),
                 'auth_user_id' => Auth::id()

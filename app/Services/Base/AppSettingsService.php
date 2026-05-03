@@ -55,7 +55,7 @@ class AppSettingsService
         try {
             File::put($filePath, json_encode($this->settings, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
         } catch (\JsonException $e) {
-            Log::error('Failed to save settings file: ',
+            Log::error('Не удалось сохранить файл настроек: ',
             [
                 'file' => $filePath,
                 'line' => $e->getLine(),

@@ -16,7 +16,7 @@ use Exception;
 class SubscriptionController extends Controller
 {
     protected SubscriptionService $subscriptionService;
-    
+
     private const CACHE_MINUTES = 10;
     private const CACHE_KEY_ACTIVE_SUBSCRIPTION = 'active_subscription_user_';
 
@@ -31,18 +31,18 @@ class SubscriptionController extends Controller
         try {
             $userId = Auth::id();
             $cacheKey = self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId;
-            
+
             $this->subscriptionService->checkAndUpdateSubscriptionStatus();
-            
+
             $subscription = $this->getFromCacheOrStore($cacheKey, self::CACHE_MINUTES, function () {
                 return $this->subscriptionService->getActiveSubscription();
             });
-            
-            Log::info('Active subscription retrieved successfully', ['user_id' => $userId]);
-            
+
+            Log::info('Активная подписка успешно получена', ['user_id' => $userId]);
+
             return $this->successResponse($subscription);
         } catch (Exception $e) {
-            Log::error('Error retrieving active subscription: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении активной подписки: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('Error retrieving active subscription: ' . $e->getMessage(), 500);
         }
     }
@@ -57,30 +57,30 @@ class SubscriptionController extends Controller
                 'currency' => 'required|string|max:3',
                 'duration' => 'required|integer',
             ]);
-            
+
             $userId = Auth::id();
-            
+
             $subscription = $this->subscriptionService->createSubscription(
                 $validated['plan'],
                 $validated['amount'],
                 $validated['currency'],
                 $validated['duration']
             );
-            
+
             $this->forgetCache(self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId);
-            
-            Log::info('Subscription created successfully', [
+
+            Log::info('Подписка успешно создана', [
                 'user_id' => $userId,
                 'plan' => $validated['plan'],
                 'duration' => $validated['duration']
             ]);
-            
+
             return $this->successResponse($subscription, 201);
         } catch (ValidationException $e) {
-            Log::warning('Validation error during subscription creation', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
+            Log::warning('Ошибка валидации при создании подписки', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
             return $this->errorResponse($e->errors(), 422);
         } catch (Exception $e) {
-            Log::error('Error creating subscription: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при создании подписки: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('Error creating subscription: ' . $e->getMessage(), 500);
         }
     }
@@ -99,7 +99,7 @@ class SubscriptionController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_ACTIVE_SUBSCRIPTION . $userId);
 
-            Log::info('Subscription extended successfully', [
+            Log::info('Подписка успешно продлена', [
                 'user_id' => $userId,
                 'subscription_id' => $subscriptionId,
                 'added_duration' => $validated['duration']
@@ -107,10 +107,10 @@ class SubscriptionController extends Controller
 
             return $this->successResponse(['message' => 'Subscription extended successfully']);
         } catch (ValidationException $e) {
-            Log::warning('Validation error during subscription extension', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
+            Log::warning('Ошибка валидации при продлении подписки', ['errors' => $e->errors(), 'user_id' => Auth::id()]);
             return $this->errorResponse($e->errors(), 422);
         } catch (Exception $e) {
-            Log::error('Error extending subscription: ' . $e->getMessage(), [
+            Log::error('Ошибка при продлении подписки: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'subscription_id' => $subscriptionId
             ]);
@@ -152,7 +152,7 @@ class SubscriptionController extends Controller
                 $transaction->save();
             }
 
-            $this->logInfo('Payment link created for subscription', [
+            $this->logInfo('Ссылка на оплату создана для подписки', [
                 'user_id' => $userId,
                 'plan_id' => $validated['plan_id'],
                 'amount' => $validated['amount'],
@@ -161,10 +161,10 @@ class SubscriptionController extends Controller
 
             return $this->successResponse($paymentData);
         } catch (ValidationException $e) {
-            $this->logWarning('Validation error creating payment link', ['errors' => $e->errors()]);
+            $this->logWarning('Ошибка валидации при создании ссылки на оплату', ['errors' => $e->errors()]);
             return $this->errorResponse($e->errors(), 422);
         } catch (Exception $e) {
-            $this->logError('Error creating payment link for subscription', [
+            $this->logError('Ошибка при создании ссылки на оплату для подписки', [
                 'error' => $e->getMessage(),
             ], $e);
             return $this->errorResponse($e->getMessage(), 500);

@@ -26,14 +26,14 @@ class EmailVerificationController extends Controller
             $result = $this->emailVerificationService->sendVerificationCode($email);
 
             if ($result['status']) {
-                Log::info('Verification code sent successfully', ['email' => $email]);
+                Log::info('Код подтверждения успешно отправлен', ['email' => $email]);
                 return $this->successResponse(['message' => $result['message']]);
             } else {
-                Log::warning('Failed to send verification code', ['email' => $email, 'error' => $result['error'] ?? '']);
+                Log::warning('Не удалось отправить код подтверждения', ['email' => $email, 'error' => $result['error'] ?? '']);
                 return $this->errorResponse($result['message'], 500);
             }
         } catch (Exception $e) {
-            Log::error('Error sending verification code: ' . $e->getMessage(), ['email' => $request->input('email')]);
+            Log::error('Ошибка при отправке кода подтверждения: ' . $e->getMessage(), ['email' => $request->input('email')]);
             return $this->errorResponse('Error sending verification code: ' . $e->getMessage(), 500);
         }
     }
@@ -47,14 +47,14 @@ class EmailVerificationController extends Controller
             $result = $this->emailVerificationService->verifyEmail($email, $code);
 
             if ($result['status']) {
-                Log::info('Email verified successfully', ['email' => $email]);
+                Log::info('Email успешно подтвержден', ['email' => $email]);
                 return $this->successResponse(['message' => $result['message']]);
             } else {
-                Log::warning('Failed to verify email', ['email' => $email, 'error' => $result['error'] ?? '']);
+                Log::warning('Не удалось подтвердить email', ['email' => $email, 'error' => $result['error'] ?? '']);
                 return $this->errorResponse($result['message'], 400);
             }
         } catch (Exception $e) {
-            Log::error('Error verifying email: ' . $e->getMessage(), [
+            Log::error('Ошибка при подтверждении email: ' . $e->getMessage(), [
                 'email' => $request->input('email'),
                 'code' => $request->input('code')
             ]);

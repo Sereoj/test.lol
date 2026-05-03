@@ -24,7 +24,7 @@ class ActivatePremiumFeatures
         $subscription = $event->subscription;
         $user = $subscription->user;
 
-        Log::info('ActivatePremiumFeatures: Activating premium features', [
+        Log::info('АктивацияПремиумФункций: Активация Premium функций', [
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
         ]);
@@ -43,7 +43,7 @@ class ActivatePremiumFeatures
         // Активируем Premium функции
         $premiumFeatures->activatePremium();
 
-        Log::info('ActivatePremiumFeatures: Premium features activated', [
+        Log::info('АктивацияПремиумФункций: Premium функции активированы', [
             'user_id' => $user->id,
             'premium_features' => $premiumFeatures->toArray(),
         ]);

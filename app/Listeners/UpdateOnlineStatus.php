@@ -25,6 +25,6 @@ class UpdateOnlineStatus implements ShouldQueue
             broadcast(new UserWentOnline($event->user));
         }
 
-        Log::info("User {$event->user->id} is active.");
+        Log::info("Пользователь {$event->user->id} активен.");
     }
 }

@@ -24,7 +24,7 @@ class DeactivatePremiumFeatures
         $subscription = $event->subscription;
         $user = $subscription->user;
 
-        Log::info('DeactivatePremiumFeatures: Deactivating premium features', [
+        Log::info('ДеактивацияПремиумФункций: Деактивация Premium функций', [
             'user_id' => $user->id,
             'subscription_id' => $subscription->id,
         ]);
@@ -36,12 +36,12 @@ class DeactivatePremiumFeatures
             // Деактивируем Premium функции
             $premiumFeatures->deactivatePremium();
 
-            Log::info('DeactivatePremiumFeatures: Premium features deactivated', [
+            Log::info('ДеактивацияПремиумФункций: Premium функции деактивированы', [
                 'user_id' => $user->id,
                 'premium_features' => $premiumFeatures->toArray(),
             ]);
         } else {
-            Log::warning('DeactivatePremiumFeatures: Premium features not found', [
+            Log::warning('ДеактивацияПремиумФункций: Premium функции не найдены', [
                 'user_id' => $user->id,
             ]);
         }

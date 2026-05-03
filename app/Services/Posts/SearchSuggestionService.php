@@ -29,7 +29,7 @@ class SearchSuggestionService
             $suggestions = collect();
 
             $translatedQuery = $this->translateQuery($query);
-            \Log::info('Test: '.$translatedQuery);
+            \Log::info('Тест: '.$translatedQuery);
             $queries[] = $translatedQuery;
 
             foreach ($queries as $preparedQuery) {
@@ -100,7 +100,7 @@ class SearchSuggestionService
             if ($translatedQuery) {
                 Cache::put($cacheKey, $translatedQuery, 60);
             } else {
-                \Log::warning("Translation failed for query: {$query}");
+                \Log::warning("Перевод не удался для запроса: {$query}");
 
                 return $query;
             }

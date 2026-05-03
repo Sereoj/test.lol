@@ -38,11 +38,11 @@ class UserBadgeController extends Controller
                 return $this->userBadgeService->getAllUserBadges(Auth::id());
             });
 
-            Log::info('All user badges retrieved successfully');
+            Log::info('Все значки пользователя успешно получены');
 
             return $this->successResponse($badges);
         } catch (Exception $e) {
-            Log::error('Error retrieving all user badges: ' . $e->getMessage());
+            Log::error('Ошибка при получении всех значков пользователя: ' . $e->getMessage());
             return $this->errorResponse('Failed to retrieve user badges', 500);
         }
     }
@@ -61,14 +61,14 @@ class UserBadgeController extends Controller
             // Очищаем кеш, так как награды могли измениться
             $this->forgetCache(self::CACHE_KEY_USER_BADGES_ALL);
 
-            Log::info('User badge created successfully', [
+            Log::info('Значок пользователя успешно создан', [
                 'user_id' => $userId,
                 'badge_id' => $badge->id
             ]);
 
             return $this->successResponse($badge,[], 201);
         } catch (Exception $e) {
-            Log::error('Error creating user badge: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при создании значка пользователя: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('Failed to create user badge', 500);
         }
     }
@@ -86,11 +86,11 @@ class UserBadgeController extends Controller
                 return $this->userBadgeService->getUserBadgeById($id);
             });
 
-            Log::info('User badge retrieved successfully', ['badge_id' => $id]);
+            Log::info('Значок пользователя успешно получен', ['badge_id' => $id]);
 
             return $this->successResponse($badge);
         } catch (Exception $e) {
-            Log::error('Error retrieving user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
+            Log::error('Ошибка при получении значка пользователя: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
             return $this->errorResponse('Failed to retrieve user badge', 500);
         }
     }
@@ -108,11 +108,11 @@ class UserBadgeController extends Controller
                 self::CACHE_KEY_USER_BADGES_ALL
             ]);
 
-            Log::info('User badge updated successfully', ['badge_id' => $id, 'user_id' => Auth::id()]);
+            Log::info('Значок пользователя успешно обновлен', ['badge_id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse($badge);
         } catch (Exception $e) {
-            Log::error('Error updating user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
+            Log::error('Ошибка при обновлении значка пользователя: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
             return $this->errorResponse('Failed to update user badge: ' . $e->getMessage(), 500);
         }
     }
@@ -127,11 +127,11 @@ class UserBadgeController extends Controller
 
             $this->forgetCache(self::CACHE_KEY_ACTIVE_BADGE . $userId);
 
-            Log::info('Badge set as active successfully', ['badge_id' => $badgeId, 'user_id' => $userId]);
+            Log::info('Значок установлен как активный успешно', ['badge_id' => $badgeId, 'user_id' => $userId]);
 
             return $this->successResponse(['message' => 'Badge set as active successfully']);
         } catch (Exception $e) {
-            Log::error('Error setting active badge: ' . $e->getMessage(), [
+            Log::error('Ошибка при установке активного значка: ' . $e->getMessage(), [
                 'badge_id' => $request->input('badge_id'),
                 'user_id' => Auth::id()
             ]);
@@ -149,11 +149,11 @@ class UserBadgeController extends Controller
                 return $this->userBadgeService->getActiveBadgeForUser($userId);
             });
 
-            Log::info('Active badge retrieved successfully', ['user_id' => $userId]);
+            Log::info('Активный значок успешно получен', ['user_id' => $userId]);
 
             return $this->successResponse($activeBadge);
         } catch (Exception $e) {
-            Log::error('Error retrieving active badge: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при получении активного значка: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse($e->getMessage(), 400);
         }
     }
@@ -173,11 +173,11 @@ class UserBadgeController extends Controller
                 self::CACHE_KEY_USER_BADGES_ALL
             ]);
 
-            Log::info('User badge deleted successfully', ['badge_id' => $id, 'user_id' => Auth::id()]);
+            Log::info('Значок пользователя успешно удален', ['badge_id' => $id, 'user_id' => Auth::id()]);
 
             return $this->successResponse(['message' => 'Badge deleted successfully']);
         } catch (Exception $e) {
-            Log::error('Error deleting user badge: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
+            Log::error('Ошибка при удалении значка пользователя: ' . $e->getMessage(), ['badge_id' => $id, 'user_id' => Auth::id()]);
             return $this->errorResponse('Failed to delete user badge', 500);
         }
     }

@@ -174,7 +174,7 @@ class PostController extends Controller
             );
             return $this->successResponse($report);
         } catch (\Exception $e) {
-            $this->logError('Failed to report post', ['error' => $e->getMessage()], $e);
+            $this->logError('Не удалось отправить жалобу на пост', ['error' => $e->getMessage()], $e);
             return $this->errorResponse($e->getMessage(), $e->getCode() != 0 ? $e->getCode() : 400);
         }
     }

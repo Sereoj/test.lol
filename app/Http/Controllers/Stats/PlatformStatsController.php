@@ -29,11 +29,11 @@ class PlatformStatsController extends Controller
                 ];
             });
 
-            Log::info('Platform stats retrieved successfully');
+            Log::info('Статистика платформы успешно получена');
 
             return $this->successResponse($stats);
         } catch (Exception $e) {
-            Log::error('Error retrieving platform stats: ' . $e->getMessage());
+            Log::error('Ошибка при получении статистики платформы: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

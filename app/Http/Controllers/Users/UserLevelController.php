@@ -31,11 +31,11 @@ class UserLevelController extends Controller
                 return $this->levelService->getAll();
             });
 
-            Log::info('Levels retrieved successfully');
+            Log::info('Уровни успешно получены');
 
             return $this->successResponse($levels);
         } catch (Exception $e) {
-            Log::error('Error retrieving levels: ' . $e->getMessage());
+            Log::error('Ошибка при получении уровней: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -48,13 +48,13 @@ class UserLevelController extends Controller
         try {
             $level = $this->levelService->createLevel($request->name, $request->experience_required);
 
-            Log::info('Level created successfully', ['level_id' => $level->id]);
+            Log::info('Уровень успешно создан', ['level_id' => $level->id]);
 
             $this->forgetCache(self::CACHE_KEY_LEVELS_LIST);
 
             return $this->successResponse($level, 201);
         } catch (Exception $e) {
-            Log::error('Error creating level: ' . $e->getMessage(), ['data' => $request->all()]);
+            Log::error('Ошибка при создании уровня: ' . $e->getMessage(), ['data' => $request->all()]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

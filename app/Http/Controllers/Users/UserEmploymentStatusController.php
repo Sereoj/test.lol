@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-// Контроллер для работы с трудовым статусом пользователя
 class UserEmploymentStatusController extends Controller
 {
     protected UserEmploymentStatusService $userEmploymentStatusService;
@@ -46,7 +45,7 @@ class UserEmploymentStatusController extends Controller
             if ($user) {
                 $this->forgetCache(self::CACHE_KEY_USER_EMPLOYMENT_STATUS . $user->id);
 
-                Log::info('Employment status assigned successfully', [
+                Log::info('Трудовой статус успешно назначен', [
                     'user_id' => $user->id,
                     'employment_status_id' => $employmentStatusId
                 ]);
@@ -54,14 +53,14 @@ class UserEmploymentStatusController extends Controller
                 return $this->successResponse('Employment status assigned successfully');
             }
 
-            Log::warning('User or EmploymentStatus not found', [
+            Log::warning('Пользователь или трудовой статус не найден', [
                 'user_id' => Auth::id(),
                 'employment_status_id' => $employmentStatusId
             ]);
 
             return $this->errorResponse('User or EmploymentStatus not found', 404);
         } catch (Exception $e) {
-            Log::error('Error assigning employment status: ' . $e->getMessage(), [
+            Log::error('Ошибка при назначении трудового статуса: ' . $e->getMessage(), [
                 'user_id' => Auth::id(),
                 'employment_status_id' => $request->input('employment_status_id')
             ]);
@@ -82,16 +81,16 @@ class UserEmploymentStatusController extends Controller
             if ($user) {
                 $this->forgetCache(self::CACHE_KEY_USER_EMPLOYMENT_STATUS . $user->id);
 
-                Log::info('Employment status removed successfully', ['user_id' => $user->id]);
+                Log::info('Трудовой статус успешно удален', ['user_id' => $user->id]);
 
                 return $this->successResponse('Employment status removed successfully');
             }
 
-            Log::warning('User not found', ['user_id' => Auth::id()]);
+            Log::warning('Пользователь не найден', ['user_id' => Auth::id()]);
 
             return $this->errorResponse('User not found', 404);
         } catch (Exception $e) {
-            Log::error('Error removing employment status: ' . $e->getMessage(), ['user_id' => Auth::id()]);
+            Log::error('Ошибка при удалении трудового статуса: ' . $e->getMessage(), ['user_id' => Auth::id()]);
             return $this->errorResponse('An error occurred while removing employment status: ' . $e->getMessage(), 500);
         }
     }

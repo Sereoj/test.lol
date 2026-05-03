@@ -26,7 +26,7 @@ class HandleFileDownloaded
         $media = $event->media;
         $user = $media->user;
 
-        Log::info("File downloaded: $media");
+        Log::info("Файл скачан: $media");
         $this->taskService->processTasks($user, 'download_files');
     }
 }

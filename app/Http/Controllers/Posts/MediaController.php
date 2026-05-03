@@ -32,7 +32,7 @@ class MediaController extends Controller
 
             $media = $this->mediaService->upload($files, $sourceFiles, $sourcePrices);
 
-            Log::info('Media', [
+            Log::info('Медиа', [
                 'data' => $media
             ]);
 
@@ -43,7 +43,7 @@ class MediaController extends Controller
 
             return $this->successResponse($mediaResources, [], 201);
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            Log::error('Ошибка: ' . $e->getMessage());
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -58,11 +58,11 @@ class MediaController extends Controller
                 return $this->mediaService->getMediaById($id);
             });
 
-            Log::info('Media retrieved successfully', ['media_id' => $id]);
+            Log::info('Медиа успешно получено', ['media_id' => $id]);
 
             return $this->successResponse($media);
         } catch (Exception $e) {
-            Log::error('Error retrieving media: ' . $e->getMessage(), ['media_id' => $id]);
+            Log::error('Ошибка при получении медиа: ' . $e->getMessage(), ['media_id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -76,11 +76,11 @@ class MediaController extends Controller
             $cacheKey = self::CACHE_KEY_MEDIA . $id;
             $this->forgetCache($cacheKey);
 
-            Log::info('Media updated successfully', ['media_id' => $id]);
+            Log::info('Медиа успешно обновлено', ['media_id' => $id]);
 
             return $this->successResponse($media);
         } catch (Exception $e) {
-            Log::error('Error updating media: ' . $e->getMessage(), ['media_id' => $id]);
+            Log::error('Ошибка при обновлении медиа: ' . $e->getMessage(), ['media_id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }
@@ -94,11 +94,11 @@ class MediaController extends Controller
             $cacheKey = self::CACHE_KEY_MEDIA . $id;
             $this->forgetCache($cacheKey);
 
-            Log::info('Media deleted successfully', ['media_id' => $id]);
+            Log::info('Медиа успешно удалено', ['media_id' => $id]);
 
             return $this->successResponse(null, [], 204);
         } catch (Exception $e) {
-            Log::error('Error deleting media: ' . $e->getMessage(), ['media_id' => $id]);
+            Log::error('Ошибка при удалении медиа: ' . $e->getMessage(), ['media_id' => $id]);
             return $this->errorResponse($e->getMessage(), 500);
         }
     }

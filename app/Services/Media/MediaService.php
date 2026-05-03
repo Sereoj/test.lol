@@ -36,8 +36,8 @@ class MediaService
         $allCreatedFiles = [];
 
         if (empty($files) || ! is_array($files)) {
-            Log::error('No files provided or invalid input format.');
-            throw new Exception('No files provided or invalid input format.');
+            Log::error('Файлы не предоставлены или недопустимый формат ввода.');
+            throw new Exception('Файлы не предоставлены или недопустимый формат ввода.');
         }
 
         // Проверяем лимиты загрузки
@@ -57,7 +57,7 @@ class MediaService
                 // Проверяем размер файла
                 $this->checkFileSize($fileSize);
 
-                Log::info('MediaService: Processing file', [
+                Log::info('МедиаСервис: Обработка файла', [
                     'file_name' => $originalName,
                     'mime_type' => $mimeType,
                     'size' => $fileSize,
@@ -69,7 +69,7 @@ class MediaService
                 if (Cache::has($cacheKey)) {
                     $cachedData = Cache::get($cacheKey);
                     $allCreatedFiles = array_merge($allCreatedFiles, $cachedData);
-                    Log::info('MediaService: Using cached file', [
+                    Log::info('МедиаСервис: Использование кэшированного файла', [
                         'cache_key' => $cacheKey,
                         'file_name' => $originalName,
                     ]);
@@ -78,14 +78,14 @@ class MediaService
 
                 $type = FileHelper::determineFileType($mimeType);
                 if (! $type) {
-                    Log::error("MediaService: Unsupported file type", [
+                    Log::error("МедиаСервис: Неподдерживаемый тип файла", [
                         'file_name' => $originalName,
                         'mime_type' => $mimeType,
                     ]);
                     continue;
                 }
 
-                Log::info('MediaService: Uploading file to storage', [
+                Log::info('МедиаСервис: Загрузка файла в хранилище', [
                     'file_name' => $originalName,
                     'type' => $type,
                     'disk' => StorageService::get(),
@@ -94,13 +94,13 @@ class MediaService
                 $results = $this->mediaHandler->handleFile($type, $file, $originalPath, $processedPath);
 
                 if (empty($results)) {
-                    Log::error("MediaService: Failed to process file", [
+                    Log::error("МедиаСервис: Не удалось обработать файл", [
                         'file_name' => $originalName,
                     ]);
                     continue;
                 }
 
-                Log::info('MediaService: File uploaded, creating media records', [
+                Log::info('МедиаСервис: Файл загружен, создание записей медиа', [
                     'file_name' => $originalName,
                     'results' => $results,
                 ]);
@@ -146,7 +146,7 @@ class MediaService
 
                     $mediaData[] = $media;
 
-                    Log::info('MediaService: Media record created', [
+                    Log::info('МедиаСервис: Запись медиа создана', [
                         'media_id' => $media->id,
                         'file_name' => $originalName,
                         'type' => $resultType,
@@ -163,7 +163,7 @@ class MediaService
 
                     if ($sourceFile->isValid() && $sourcePrice !== null && $sourcePrice > 0) {
                         try {
-                            Log::info('MediaService: Processing source file', [
+                            Log::info('МедиаСервис: Обработка исходного файла', [
                                 'media_id' => $originalMedia->id,
                                 'source_file_name' => $sourceFile->getClientOriginalName(),
                                 'source_price' => $sourcePrice,
@@ -183,13 +183,13 @@ class MediaService
                                 'has_source' => true,
                             ]);
 
-                            Log::info('MediaService: Source file uploaded successfully', [
+                            Log::info('МедиаСервис: Исходный файл успешно загружен', [
                                 'media_id' => $originalMedia->id,
                                 'source_path' => $uploadedSourcePath,
                                 'source_price' => $sourcePrice,
                             ]);
                         } catch (Exception $e) {
-                            Log::error('MediaService: Error processing source file', [
+                            Log::error('МедиаСервис: Ошибка при обработке исходного файла', [
                                 'media_id' => $originalMedia->id,
                                 'error' => $e->getMessage(),
                             ]);
@@ -203,14 +203,14 @@ class MediaService
                 // Инкрементируем счетчик загрузок
                 $this->incrementUploadCounter();
 
-                Log::info('MediaService: File processing completed', [
+                Log::info('МедиаСервис: Обработка файла завершена', [
                     'file_name' => $originalName,
                     'media_count' => count($mediaData),
                 ]);
 
                 $fileIndex++;
             } catch (Exception $e) {
-                Log::error("MediaService: Error processing file", [
+                Log::error("МедиаСервис: Ошибка при обработке файла", [
                     'file_name' => $file->getClientOriginalName(),
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString(),
@@ -247,14 +247,14 @@ class MediaService
         $premiumFeatures = UserPremiumFeature::where('user_id', $userId)->first();
 
         if (!$premiumFeatures) {
-            throw new Exception('Premium features not found for user.');
+            throw new Exception('Premium функции не найдены для пользователя.');
         }
 
         $uploadLimit = $premiumFeatures->upload_limit;
         $monthlyStat = UserMonthlyStat::getOrCreateForCurrentMonth($userId);
 
         if ($monthlyStat->isLimitExceeded($uploadLimit)) {
-            Log::warning('MediaService: Upload limit exceeded', [
+            Log::warning('МедиаСервис: Лимит загрузок превышен', [
                 'user_id' => $userId,
                 'current_uploads' => $monthlyStat->uploads_count,
                 'limit' => $uploadLimit,
@@ -273,14 +273,14 @@ class MediaService
         $premiumFeatures = UserPremiumFeature::where('user_id', $userId)->first();
 
         if (!$premiumFeatures) {
-            throw new Exception('Premium features not found for user.');
+            throw new Exception('Premium функции не найдены для пользователя.');
         }
 
         $maxFileSizeMB = $premiumFeatures->max_file_size;
         $maxFileSizeBytes = $maxFileSizeMB * 1024 * 1024;
 
         if ($fileSize > $maxFileSizeBytes) {
-            Log::warning('MediaService: File size exceeded', [
+            Log::warning('МедиаСервис: Размер файла превышен', [
                 'user_id' => $userId,
                 'file_size' => $fileSize,
                 'max_size' => $maxFileSizeBytes,
@@ -298,7 +298,7 @@ class MediaService
         $monthlyStat = UserMonthlyStat::getOrCreateForCurrentMonth($userId);
         $monthlyStat->incrementUploads();
 
-        Log::info('MediaService: Upload counter incremented', [
+        Log::info('МедиаСервис: Счетчик загрузок увеличен', [
             'user_id' => $userId,
             'uploads_count' => $monthlyStat->uploads_count,
         ]);
