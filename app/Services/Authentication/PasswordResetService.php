@@ -92,12 +92,12 @@ class PasswordResetService
             throw new Exception('Invalid or expired reset token', 400);
         }
 
-        DB::beginTransaction();
         try {
-            $user->password = PasswordUtil::hash($newPassword);
-            $user->save();
-            PasswordReset::query()->where('email', $user->email)->delete();
-            DB::commit();
+            DB::transaction(function () use ($user, $newPassword) {
+                $user->password = PasswordUtil::hash($newPassword);
+                $user->save();
+                PasswordReset::query()->where('email', $user->email)->delete();
+            });
 
             $this->logInfo('Password reset successful', [
                 'email' => $user->email,
@@ -109,7 +109,6 @@ class PasswordResetService
                 'email' => $email,
                 'user_id' => $user->id
             ], $e);
-            DB::rollBack();
             throw $e;
         }
     }
