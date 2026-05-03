@@ -217,6 +217,7 @@ JavaScript (Laravel Echo) в браузере получает событие
 - **Clean Code** — именование, комментарии, типизация
 - **Strict Typing** — `declare(strict_types=1)` для всех файлов
 - **Modular Structure** — разделение на модули (Users, Posts, Billing, Media, Authentication, Challenge)
+- **Layered Architecture** — Controller → Service → Repository → Model (подтверждено кодом)
 
 **Business Logic Domains:**
 - **Billing System** — полный цикл платежей (пополнения, списания, переводы, подписки, комиссии)
@@ -265,11 +266,11 @@ JavaScript (Laravel Echo) в браузере получает событие
 - **API Documentation** — Swagger/OpenAPI документация
 
 **API Features:**
-- **Pagination** — пагинация больших списков данных
-- **Filtering** — сложная фильтрация по множеству параметров
-- **Sorting** — вариативная сортировка результатов
-- **Search** — полнотекстовый поиск с релевантностью
-- **Versioning** — подготовка к версионированию API
+- **Pagination** — пагинация больших списков данных ([PostRepository](app/Repositories/PostRepository.php), [ChallengeRepository](app/Repositories/ChallengeRepository.php))
+- **Filtering** — сложная фильтрация по множеству параметров ([PostFilteringService](app/Services/Posts/Assistants/PostFilteringService.php), [TimeFrameFilterService](app/Services/Posts/Assistants/TimeFrameFilterService.php), [MediaTypeFilterService](app/Services/Posts/Assistants/MediaTypeFilterService.php))
+- **Sorting** — вариативная сортировка результатов ([SortingService](app/Services/Posts/Assistants/SortingService.php), [Sorting Strategies](app/Strategies/Posts/))
+- **Search** — полнотекстовый поиск с релевантностью ([PostSearchService](app/Services/Posts/PostSearchService.php), [SearchSuggestionService](app/Services/Posts/SearchSuggestionService.php))
+- **Versioning** — подготовка к версионированию API ([RouteServiceProvider](app/Providers/RouteServiceProvider.php))
 
 ### Code Quality
 
@@ -287,35 +288,6 @@ JavaScript (Laravel Echo) в браузере получает событие
 - **Traits** — 2 трейта для переиспользуемого функционала
 - **Processors** — 6 процессоров для обработки медиа и данных
 - **Logging** — структурированное логирование с контекстом
-
-### Что это говорит о кандидате
-
-**Для Junior/Middle позиций:**
-- Понимает и применяет паттерны проектирования (Service Layer, Repository, Strategy, Events)
-- Знает про race conditions в многопользовательских системах и умеет их предотвращать
-- Понимает SQL injection и умеет защищаться на уровне архитектуры
-- Работал с реальными проектами сложной структуры (67 сервисов, 53 модели, 58 контроллеров)
-- Умеет писать чистый и поддерживаемый код с комментариями
-- Знает DevOps инструменты (Docker, Caddy, Redis) для деплоя
-- Понимает REST API дизайн (Resources, Validation, Middleware)
-- Работал с реал-тайм системами (WebSocket, Broadcasting)
-
-**Для Senior позиций:**
-- Понимает архитектуру системы в целом и связи между компонентами
-- Умеет обосновывать выбор технологий (Caddy vs Nginx, Redis vs MySQL кеш)
-- Заботится о безопасности на уровне архитектуры (idempotency, locks, unique indexes)
-- Пишет документацию и комментарии для команды (примеры в миграциях)
-- Понимает производительность и оптимизацию (кеширование, очереди, индексы)
-- Умеет организовать код в крупных проектах (модули, сервисы, репозитории)
-- Понимает бизнес-логику сложных доменов (billing, challenges, messaging)
-- Умеет работать с асинхронными системами (events, listeners, queues, WebSocket)
-
-**Ключевые отличия от типичных учебных проектов:**
-- Реальная платежная система с защитой от race conditions и idempotency
-- Сложная бизнес-логика (биллинг, конкурсы, социальные функции)
-- Масштабируемая архитектура (Docker, Redis, WebSocket)
-- Качество кода (PHPStan, PHP CS Fixer, Git Hooks)
-- Документация и комментарии для будущей поддержки
 
 ## Требования
 
