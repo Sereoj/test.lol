@@ -162,9 +162,10 @@ class BalanceService
         return DB::transaction(function () use ($amount, $currency) {
             $user = Auth::user();
 
-            // Получаем баланс пользователя
+            // Получаем баланс пользователя с блокировкой для защиты от race conditions
             $userBalance = UserBalance::where('user_id', $user->id)
                 ->where('currency', $currency)
+                ->lockForUpdate()
                 ->first();
             if (! $userBalance) {
                 throw new \Exception('Баланс пользователя не найден для указанной валюты.');
@@ -220,8 +221,10 @@ class BalanceService
         Log::info("Начало выплаты продавцу", ['user_id' => $userId]);
 
         return DB::transaction(function () use ($userId) {
-            // Получаем баланс пользователя
-            $userBalance = UserBalance::where('user_id', $userId)->first();
+            // Получаем баланс пользователя с блокировкой для защиты от race conditions
+            $userBalance = UserBalance::where('user_id', $userId)
+                ->lockForUpdate()
+                ->first();
 
             if (!$userBalance) {
                 Log::warning("Баланс продавца не найден", ['user_id' => $userId]);
