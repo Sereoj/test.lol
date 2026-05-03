@@ -16,6 +16,9 @@ return new class () extends Migration {
             $table->foreignId('post_id')->constrained('posts')->cascadeOnDelete();
             $table->enum('interaction_type', ['view', 'like', 'download'])->index();
             $table->timestamps();
+
+            // Композитный индекс для оптимизации проверок взаимодействий
+            $table->index(['user_id', 'post_id', 'interaction_type']); // WHERE user_id = ? AND post_id = ? AND interaction_type = ?
         });
     }
 

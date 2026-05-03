@@ -24,6 +24,10 @@ return new class () extends Migration {
             $table->string('status', 20)->default('pending')->index(); // 'pending', 'completed', 'failed'
             $table->json('metadata')->nullable(); // JSON с доп. инфо (ID поста, способ оплаты и т. д.)
             $table->timestamps();
+
+            // Композитные индексы для оптимизации частых запросов
+            $table->index(['user_id', 'type', 'status']); // WHERE user_id = ? AND type = ? AND status = ?
+            $table->index(['user_id', 'created_at']); // Для пагинации транзакций пользователя
         });
     }
 

@@ -121,101 +121,131 @@ class PostStatisticsService
 
     public function incrementLikes($userId,$postId)
     {
-        $interaction = $this->isUserLiked($userId, $postId);
+        return DB::transaction(function () use ($userId, $postId) {
+            $interaction = $this->isUserLiked($userId, $postId);
 
-        if (! $interaction) {
-            // Нет лайка, увеличиваем количество лайков
-            $stat = PostStatistic::query()->where('post_id', $postId)->first();
-            $stat->increment('likes_count');
-            $stat->save();
+            if (! $interaction) {
+                // Нет лайка, увеличиваем количество лайков
+                $stat = PostStatistic::query()
+                    ->where('post_id', $postId)
+                    ->lockForUpdate()
+                    ->first();
+                $stat->increment('likes_count');
+                $stat->save();
 
-            // Создаем запись о лайке
-            Interaction::create([
-                'user_id' => $userId,
-                'post_id' => $postId,
-                'interaction_type' => 'like',
-            ]);
+                // Создаем запись о лайке
+                Interaction::create([
+                    'user_id' => $userId,
+                    'post_id' => $postId,
+                    'interaction_type' => 'like',
+                ]);
 
-            return [
-                'stat' => $stat,
-                'isUserLiked' => true
-            ];
-        }
+                return [
+                    'stat' => $stat,
+                    'isUserLiked' => true
+                ];
+            }
 
-        throw new Exception('You have already liked this post.');
+            throw new Exception('Вы уже лайкнули этот пост.');
+        });
     }
 
     public function decrementLikes($userId,$postId)
     {
-        $interaction = $this->isUserLiked($userId, $postId);
+        return DB::transaction(function () use ($userId, $postId) {
+            $interaction = $this->isUserLiked($userId, $postId);
 
-        if ($interaction) {
-            $stat = PostStatistic::query()->where('post_id', $postId)->first();
-            if ($stat->likes_count > 0) {
-                $stat->decrement('likes_count');
-                $stat->save();
+            if ($interaction) {
+                $stat = PostStatistic::query()
+                    ->where('post_id', $postId)
+                    ->lockForUpdate()
+                    ->first();
+                if ($stat->likes_count > 0) {
+                    $stat->decrement('likes_count');
+                    $stat->save();
+                }
+
+                $interaction->delete();
+
+                return [
+                    'stat' => $stat,
+                    'isUserLiked' => false
+                ];
             }
-
-            $interaction->delete();
-
-            return [
-                'stat' => $stat,
-                'isUserLiked' => false
-            ];
-        }
-        throw new Exception('You have not liked this post yet.');
+            throw new Exception('Вы еще не лайкали этот пост.');
+        });
     }
 
     public function incrementComments(int $postId)
     {
-        $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
-        $stat->increment('comments_count');
-        $stat->save();
+        return DB::transaction(function () use ($postId) {
+            $stat = PostStatistic::query()
+                ->where(['post_id' => $postId])
+                ->lockForUpdate()
+                ->first();
+            $stat->increment('comments_count');
+            $stat->save();
+        });
     }
 
     public function decrementComments(int $postId)
     {
-        $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
-        $stat->decrement('comments_count');
-        $stat->save();
+        return DB::transaction(function () use ($postId) {
+            $stat = PostStatistic::query()
+                ->where(['post_id' => $postId])
+                ->lockForUpdate()
+                ->first();
+            $stat->decrement('comments_count');
+            $stat->save();
+        });
     }
 
     public function incrementDownloads(int $postId)
     {
         $userId = Auth::guard('api')->id();
 
-        if (! $this->hasInteraction($postId, $userId, 'view')) {
-            $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
-            $stat->increment('downloads_count');
-            $stat->save();
+        return DB::transaction(function () use ($postId, $userId) {
+            if (! $this->hasInteraction($postId, $userId, 'view')) {
+                $stat = PostStatistic::query()
+                    ->where(['post_id' => $postId])
+                    ->lockForUpdate()
+                    ->first();
+                $stat->increment('downloads_count');
+                $stat->save();
 
-            Interaction::create([
-                'user_id' => $userId,
-                'post_id' => $postId,
-                'interaction_type' => 'download',
-            ]);
+                Interaction::create([
+                    'user_id' => $userId,
+                    'post_id' => $postId,
+                    'interaction_type' => 'download',
+                ]);
 
-            return $stat;
-        }
+                return $stat;
+            }
 
-        return false;
+            return false;
+        });
     }
 
     public function incrementViews(int $postId)
     {
         $userId = Auth::guard('api')->id();
 
-        $stat = PostStatistic::query()->where(['post_id' => $postId])->first();
-        $stat->increment('views_count');
-        $stat->save();
+        return DB::transaction(function () use ($postId, $userId) {
+            $stat = PostStatistic::query()
+                ->where(['post_id' => $postId])
+                ->lockForUpdate()
+                ->first();
+            $stat->increment('views_count');
+            $stat->save();
 
-        Interaction::create([
-            'user_id' => $userId,
-            'post_id' => $postId,
-            'interaction_type' => 'view',
-        ]);
+            Interaction::create([
+                'user_id' => $userId,
+                'post_id' => $postId,
+                'interaction_type' => 'view',
+            ]);
 
-        return $stat;
+            return $stat;
+        });
     }
 
     public function hasInteraction(int $postId, int $userId, string $type): bool

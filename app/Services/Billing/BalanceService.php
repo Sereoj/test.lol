@@ -2,6 +2,7 @@
 
 namespace App\Services\Billing;
 
+use App\Jobs\SendNotificationJob;
 use App\Models\Billing\Fee;
 use App\Models\Billing\Topup;
 use App\Models\Billing\Transaction;
@@ -84,7 +85,7 @@ class BalanceService
                 'metadata' => ['topup_id' => $topup->id],
             ]);
 
-            $user->notify(new TransactionNotification($transaction));
+            SendNotificationJob::dispatch($user, $transaction);
 
             return $topup;
         });
@@ -93,9 +94,10 @@ class BalanceService
     public function transferBalance(int $senderId, int $recipientId, float $amount, string $currency)
     {
         return DB::transaction(function () use ($senderId, $recipientId, $amount, $currency) {
-            // Проверяем баланс отправителя в указанной валюте
+            // Проверяем баланс отправителя в указанной валюте с блокировкой
             $senderBalance = UserBalance::where('user_id', $senderId)
                 ->where('currency', $currency)
+                ->lockForUpdate()
                 ->first();
             if (! $senderBalance) {
                 throw new \Exception('Sender balance not found for specified currency.');
@@ -103,6 +105,7 @@ class BalanceService
 
             $recipientBalance = UserBalance::where('user_id', $recipientId)
                 ->where('currency', $currency)
+                ->lockForUpdate()
                 ->first();
             if (! $recipientBalance) {
                 throw new \Exception('Recipient balance not found for specified currency.');
@@ -128,7 +131,7 @@ class BalanceService
                 'status' => 'completed',
                 'metadata' => ['recipient_user_id' => $recipientId],
             ]);
-            User::find($senderId)->notify(new TransactionNotification($senderTransaction));
+            SendNotificationJob::dispatch(User::find($senderId), $senderTransaction);
 
             $recipientTransaction = Transaction::create([
                 'user_id' => $recipientId,
@@ -138,7 +141,7 @@ class BalanceService
                 'status' => 'completed',
                 'metadata' => ['sender_user_id' => $senderId],
             ]);
-            User::find($recipientId)->notify(new TransactionNotification($recipientTransaction));
+            SendNotificationJob::dispatch(User::find($recipientId), $recipientTransaction);
 
             return [
                 'sender_balance' => $senderBalance->balance,
@@ -199,8 +202,8 @@ class BalanceService
                 'metadata' => ['withdrawal_id' => $withdrawal->id],
             ]);
 
-            // Уведомляем пользователя
-            $user->notify(new TransactionNotification($transaction));
+            // Уведомляем пользователя через очередь
+            SendNotificationJob::dispatch($user, $transaction);
 
             return $withdrawal;
         });
@@ -248,10 +251,10 @@ class BalanceService
                 'metadata' => ['payout_date' => now()],
             ]);
 
-            // Отправляем уведомление
-            User::find($userId)->notify(new TransactionNotification($transaction));
+            // Отправляем уведомление через очередь
+            SendNotificationJob::dispatch(User::find($userId), $transaction);
 
-            Log ("Выплата продавцу успешно выполнена", [
+            Log::info("Выплата продавцу успешно выполнена", [
                 'user_id' => $userId,
                 'amount' => $amount,
                 'transaction_id' => $transaction->id

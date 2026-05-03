@@ -2,6 +2,7 @@
 
 namespace App\Services\Billing;
 
+use App\Jobs\SendNotificationJob;
 use App\Models\Billing\Topup;
 use App\Models\Billing\Transaction;
 use App\Models\Users\User;
@@ -40,8 +41,7 @@ class TransactionService
             'status' => 'pending',
             'metadata' => $metadata,
         ]);
-        $user = User::find($userId);
-        $user->notify(new TransactionNotification($transaction));
+        SendNotificationJob::dispatch(User::find($userId), $transaction);
 
         return $transaction;
     }
@@ -88,9 +88,8 @@ class TransactionService
                 'status' => 'succeeded',
             ]);
 
-            // Уведомляем пользователя
-            $user = User::find($transaction->user_id);
-            $user->notify(new TransactionNotification($transaction));
+            // Уведомляем пользователя через очередь
+            SendNotificationJob::dispatch(User::find($transaction->user_id), $transaction);
 
             Log::info("Пополнение успешно завершено", [
                 'transaction_id' => $transactionId,
@@ -165,7 +164,7 @@ class TransactionService
     // Логирование подозрительных операций
     private function logSuspiciousActivity(Transaction $transaction)
     {
-        Log::warning('Suspicious transaction detected', [
+        Log::warning('Обнаружена подозрительная транзакция', [
             'user_id' => $transaction->user_id,
             'amount' => $transaction->amount,
             'currency' => $transaction->currency,
@@ -178,7 +177,7 @@ class TransactionService
         $transaction = $this->createTransaction($userId, $type, $amount, $currency, $metadata);
 
         if (! $this->checkFraud($transaction)) {
-            throw new \Exception('Transaction flagged as suspicious.');
+            throw new \Exception('Транзакция помечена как подозрительная.');
         }
 
         return $transaction;
