@@ -1,8 +1,8 @@
-# Caddyfile for web.wallone.app production
+# Caddyfile for web.testapp.local production
 
 {
     # Глобальные настройки
-    email admin@wallone.app
+    email admin@testapp.local
 
     # Логирование только ошибок
     log {
@@ -19,7 +19,7 @@
 }
 
 # Основной сайт
-web.wallone.app {
+web.testapp.local {
     # Корневая директория
     root * /var/www/public
 
@@ -70,7 +70,7 @@ web.wallone.app {
 
     # Логирование только ошибок для этого сайта
     log {
-        output file /var/log/caddy/web.wallone.app-error.log {
+        output file /var/log/caddy/web.testapp.local-error.log {
             roll_size 50mb
             roll_keep 3
             roll_keep_for 168h
@@ -80,7 +80,7 @@ web.wallone.app {
 }
 
 # WebSocket для Laravel Reverb
-ws.wallone.app {
+ws.testapp.local {
     reverse_proxy reverb:8080 {
         header_up Host {host}
         header_up X-Real-IP {remote}
@@ -90,7 +90,7 @@ ws.wallone.app {
 
     # Логирование только ошибок для WebSocket
     log {
-        output file /var/log/caddy/ws.wallone.app-error.log {
+        output file /var/log/caddy/ws.testapp.local-error.log {
             roll_size 25mb
             roll_keep 2
             roll_keep_for 72h

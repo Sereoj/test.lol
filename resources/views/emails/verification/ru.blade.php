@@ -46,13 +46,13 @@
                 <!-- Логотип -->
                 <tr class="block">
                     <td align="center" style="padding: 20px; background-color: #ffffff">
-                        <img src="https://wallone.app/static/img/logo-small.png" alt="Wallone" width="120" />
+                        <img src="{{ asset('favicon.ico') }}" alt="TestApp" width="120" />
                     </td>
                 </tr>
                 <!-- Основное изображение -->
                 <tr class="block">
                     <td align="center" style="padding: 20px; background-color: #f0f4ff;">
-                        <img src="https://www.pngall.com/wp-content/uploads/15/Example-PNG.png" alt="Wallone Welcome" width="100%" style="max-width: 600px; height: auto; border-radius: 20px;" />
+                        <img src="https://www.pngall.com/wp-content/uploads/15/Example-PNG.png" alt="TestApp Welcome" width="100%" style="max-width: 600px; height: auto; border-radius: 20px;" />
                     </td>
                 </tr>
                 <!-- Заголовок -->
@@ -78,8 +78,8 @@
                 <!-- Футер -->
                 <tr class="block">
                     <td align="center" style="padding: 20px; font-size: 12px; color: #777777; background-color: #f8f8f8;">
-                        Если у вас есть вопросы, напишите нам: <a href="mailto:helper@wallone.app" style="color: #007AFF; text-decoration: none;">helper@wallone.app</a><br />
-                        Вы можете изменить настройки уведомлений в <a href="https://wallone.app/profile#settings" style="color: #007AFF; text-decoration: none;">настройках профиля</a>.
+                        Если у вас есть вопросы, напишите нам: <a href="mailto:helper@example.com" style="color: #007AFF; text-decoration: none;">helper@example.com</a><br />
+                        Вы можете изменить настройки уведомлений в <a href="{{ config('app.url') }}/profile#settings" style="color: #007AFF; text-decoration: none;">настройках профиля</a>.
                     </td>
                 </tr>
             </table>

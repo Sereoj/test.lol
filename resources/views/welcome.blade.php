@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wallone</title>
+    <title>TestApp</title>
 </head>
 <body>
 <style>
@@ -48,10 +48,10 @@
 </style>
 <header>
     <div class="container">
-        <div class="logo">Wallone Beta</div>
+        <div class="logo">TestApp Beta</div>
         <nav>
             <ul>
-                <li><a href="#">О Wallone</a></li>
+                <li><a href="#">О TestApp</a></li>
                 <li><a href="#">Войти</a></li>
             </ul>
         </nav>
@@ -59,7 +59,7 @@
 </header>
 <main>
     <div class="container">
-        <p>© Wallone.</p>
+        <p>© TestApp.</p>
     </div>
 </main>
 </body>

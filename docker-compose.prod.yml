@@ -6,8 +6,8 @@ services:
       target: production
       args:
         - PHP_VERSION=8.2
-    image: wallone-app:production
-    container_name: wallone-app
+    image: testapp-app:production
+    container_name: testapp-app
     restart: unless-stopped
     volumes:
       - ./.env:/var/www/.env
@@ -34,8 +34,8 @@ services:
       retries: 3
 
   reverb:
-    image: wallone-app:production
-    container_name: wallone-reverb
+    image: testapp-app:production
+    container_name: testapp-reverb
     restart: unless-stopped
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     volumes:
@@ -62,7 +62,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: wallone-redis
+    container_name: testapp-redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -89,7 +89,7 @@ services:
 
   caddy:
     image: caddy:2-alpine
-    container_name: wallone-caddy
+    container_name: testapp-caddy
     restart: unless-stopped
     ports:
       - "80:80"
@@ -111,12 +111,12 @@ services:
       - app
       - reverb
     environment:
-      - DOMAIN=web.wallone.app
+      - DOMAIN=web.testapp.local
       - ACME_AGREE=true
 
   queue:
-    image: wallone-app:production
-    container_name: wallone-queue
+    image: testapp-app:production
+    container_name: testapp-queue
     restart: unless-stopped
     command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
     volumes:
@@ -139,8 +139,8 @@ services:
       - PHP_MEMORY_LIMIT=-1
 
   scheduler:
-    image: wallone-app:production
-    container_name: wallone-scheduler
+    image: testapp-app:production
+    container_name: testapp-scheduler
     restart: unless-stopped
     command: /bin/sh -c "while true; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
     volumes:

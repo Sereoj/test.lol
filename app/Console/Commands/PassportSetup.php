@@ -107,7 +107,7 @@ class PassportSetup extends Command
             $clientRepository = new ClientRepository();
             $client = $clientRepository->createPasswordGrantClient(
                 null,
-                'Wallone Password Grant Client',
+                'TestApp Password Grant Client',
                 config('app.url')
             );
 

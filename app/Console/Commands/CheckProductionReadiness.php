@@ -18,7 +18,7 @@ class CheckProductionReadiness extends Command
     public function handle(): int
     {
         $this->info('=================================================');
-        $this->info('   Production Readiness Check for Wallone');
+        $this->info('   Production Readiness Check for TestApp');
         $this->info('=================================================');
         $this->newLine();
 

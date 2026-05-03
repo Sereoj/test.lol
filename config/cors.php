@@ -20,13 +20,11 @@ return [
     'allowed_methods' => ['*'],
 
     'allowed_origins' => [
-        'https://wallone.app',
-        'https://web.wallone.app',
-        'https://ws.wallone.app',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000',
     ],
 
     'allowed_origins_patterns' => [
-        '/^https:\/\/[\w-]+\.wallone\.app$/',  // Все поддомены wallone.app
         '/^http:\/\/localhost(:\d+)?$/',        // localhost с любым портом
         '/^http:\/\/127\.0\.0\.1(:\d+)?$/',     // 127.0.0.1 с любым портом
     ],

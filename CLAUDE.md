@@ -51,7 +51,7 @@ git commit -m "Добавлен Stylelint в проект"
 
 ## Project Overview
 
-**Wallone (wallone.app)** — Laravel-based social platform for artists.
+**TestApp** — Laravel-based social platform for artists.
 
 ### Features
 

@@ -19,7 +19,7 @@ class WatermarkFilter implements ImageFilter
 
     public function apply($image, array $options = [])
     {
-        $text = $options['text'] ?? 'Wallone';
+        $text = $options['text'] ?? 'TestApp';
         $image->text($text, $image->width() / 2, $image->height() / 2, function ($font) {
             $font->file(self::$fontPath);
             $font->size(28);

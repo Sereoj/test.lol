@@ -8,8 +8,8 @@ services:
       target: development
       args:
         - PHP_VERSION=8.2
-    image: wallone-app:dev
-    container_name: wallone-app-dev
+    image: testapp-app:dev
+    container_name: testapp-app-dev
     restart: unless-stopped
     ports:
       - "9000:9000"
@@ -28,8 +28,8 @@ services:
       - .env
 
   reverb:
-    image: wallone-app:dev
-    container_name: wallone-reverb-dev
+    image: testapp-app:dev
+    container_name: testapp-reverb-dev
     restart: unless-stopped
     command: php artisan reverb:start --host=0.0.0.0 --port=8080
     ports:
@@ -50,7 +50,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: wallone-redis-dev
+    container_name: testapp-redis-dev
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -68,8 +68,8 @@ services:
     command: redis-server --appendonly yes
 
   queue:
-    image: wallone-app:dev
-    container_name: wallone-queue-dev
+    image: testapp-app:dev
+    container_name: testapp-queue-dev
     restart: unless-stopped
     command: php artisan queue:work --sleep=3 --tries=3
     volumes:

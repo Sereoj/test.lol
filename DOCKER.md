@@ -178,7 +178,7 @@ docker compose -f docker-compose.prod.yml logs app | grep -i "error\|exception\|
 docker compose -f docker-compose.prod.yml exec app php-fpm -t
 
 # Проверка healthcheck
-docker inspect wallone-app | grep -A 10 Health
+docker inspect testapp-app | grep -A 10 Health
 ```
 
 **2. Caddy ошибки (веб-сервер):**
@@ -214,7 +214,7 @@ docker compose -f docker-compose.prod.yml logs reverb | grep -i "error\|exceptio
 curl http://localhost:8080
 
 # Healthcheck статус
-docker inspect wallone-reverb | grep -A 10 Health
+docker inspect testapp-reverb | grep -A 10 Health
 ```
 
 **5. Scheduler ошибки (cron задачи):**
