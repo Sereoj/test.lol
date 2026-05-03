@@ -28,8 +28,6 @@ class FtpToS3MigrationService
     {
         $this->logInfo('Начало миграции с FTP на S3', ['dry_run' => $dryRun]);
 
-        DB::beginTransaction();
-
         try {
             // Migrate media files
             $this->migrateMediaFiles($dryRun);
@@ -40,17 +38,9 @@ class FtpToS3MigrationService
             // Migrate user cover images
             $this->migrateUserCoverFiles($dryRun);
 
-            if ($dryRun) {
-                DB::rollBack();
-                $this->logInfo('Тестовый запуск завершен - изменения не применены');
-            } else {
-                DB::commit();
-                $this->logInfo('Миграция успешно завершена');
-            }
-
+            $this->logInfo('Миграция успешно завершена');
             return $this->getStatistics();
         } catch (\Exception $e) {
-            DB::rollBack();
             $this->logError('Ошибка миграции', ['error' => $e->getMessage()], $e);
             throw $e;
         }
@@ -64,6 +54,7 @@ class FtpToS3MigrationService
         $mediaFiles = Media::where('disk', 'ftp')
             ->whereNotNull('file_path')
             ->where('file_path', '!=', '')
+            ->lockForUpdate()
             ->get();
 
         $this->logInfo("Найдено {$mediaFiles->count()} медиафайлов для миграции");
@@ -84,8 +75,10 @@ class FtpToS3MigrationService
                 's3',
                 function () use ($media, $dryRun) {
                     if (!$dryRun) {
-                        $media->disk = 's3';
-                        $media->save();
+                        DB::transaction(function () use ($media) {
+                            $media->disk = 's3';
+                            $media->save();
+                        });
                     }
                 },
                 "media ID {$media->id}"
@@ -101,6 +94,7 @@ class FtpToS3MigrationService
         $avatars = Avatar::where('disk', 'ftp')
             ->whereNotNull('path')
             ->where('path', '!=', '')
+            ->lockForUpdate()
             ->get();
 
         $this->logInfo("Найдено {$avatars->count()} аватаров для миграции");
@@ -121,8 +115,10 @@ class FtpToS3MigrationService
                 's3',
                 function () use ($avatar, $dryRun) {
                     if (!$dryRun) {
-                        $avatar->disk = 's3';
-                        $avatar->save();
+                        DB::transaction(function () use ($avatar) {
+                            $avatar->disk = 's3';
+                            $avatar->save();
+                        });
                     }
                 },
                 "avatar ID {$avatar->id}"
@@ -138,6 +134,7 @@ class FtpToS3MigrationService
         $users = User::whereNotNull('cover')
             ->where('cover', '!=', '')
             ->where('disk', 'ftp')
+            ->lockForUpdate()
             ->get();
 
         $this->logInfo("Найдено {$users->count()} обложек пользователей для миграции");
@@ -158,8 +155,10 @@ class FtpToS3MigrationService
                 's3',
                 function () use ($user, $dryRun) {
                     if (!$dryRun) {
-                        $user->disk = 's3';
-                        $user->save();
+                        DB::transaction(function () use ($user) {
+                            $user->disk = 's3';
+                            $user->save();
+                        });
                     }
                 },
                 "user ID {$user->id} cover"
