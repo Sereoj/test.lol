@@ -35,83 +35,89 @@ class MediaPurchaseService
     /**
      * Покупка исходного файла медиа
      */
-    public function purchaseMediaSource(int $mediaId, string $currency)
+    public function purchaseMediaSource(int $mediaId, string $currency, ?string $idempotencyKey = null)
     {
-        return DB::transaction(function () use ($mediaId, $currency) {
-            $user = Auth::user();
+        $user = Auth::user();
 
-            // Получаем медиа
-            $media = $this->mediaRepository->getById($mediaId);
-
-            // Проверяем, что у медиа есть исходник
-            if (!$media->has_source || !$media->source_price) {
-                $this->logError('Попытка покупки медиа без исходника', [
-                    'media_id' => $mediaId,
-                    'user_id' => $user->id,
+        // Проверяем idempotency key для защиты от дубликатов
+        if ($idempotencyKey) {
+            $existingPurchase = $this->mediaPurchaseRepository->findByIdempotencyKey($idempotencyKey);
+            if ($existingPurchase) {
+                $this->logInfo('Покупка с idempotency key уже существует', [
+                    'idempotency_key' => $idempotencyKey,
+                    'purchase_id' => $existingPurchase->id
                 ]);
-                throw new Exception('У этого медиа нет исходного файла для продажи.');
+                return $existingPurchase;
             }
+        }
 
-            // Проверяем, не был ли исходник уже куплен этим пользователем
-            $existingPurchase = $this->mediaPurchaseRepository->findByMediaIdAndUserId($mediaId, $user->id);
-            if ($existingPurchase && $existingPurchase->status === 'completed') {
-                $this->logWarning('Попытка повторной покупки медиа', [
-                    'media_id' => $mediaId,
-                    'user_id' => $user->id,
-                    'existing_purchase_id' => $existingPurchase->id,
-                ]);
-                throw new Exception('Исходник этого медиа уже был куплен.');
-            }
+        // Получаем медиа
+        $media = $this->mediaRepository->getById($mediaId);
 
-            // Проверяем, что пользователь не покупает свой собственный файл
-            if ($media->user_id === $user->id) {
-                $this->logWarning('Попытка покупки собственного медиа', [
-                    'media_id' => $mediaId,
-                    'user_id' => $user->id,
-                ]);
-                throw new Exception('Нельзя купить исходник собственного медиа.');
-            }
+        // Проверяем, что у медиа есть исходник
+        if (!$media->has_source || !$media->source_price) {
+            $this->logError('Попытка покупки медиа без исходника', [
+                'media_id' => $mediaId,
+                'user_id' => $user->id,
+            ]);
+            throw new Exception('У этого медиа нет исходного файла для продажи.');
+        }
 
-            // Получаем баланс пользователя
-            $userBalance = UserBalance::where('user_id', $user->id)->first();
-            if (!$userBalance) {
-                $this->logError('Баланс пользователя не найден', [
-                    'user_id' => $user->id,
-                ]);
-                throw new Exception('Баланс пользователя не найден.');
-            }
+        // Проверяем, не был ли исходник уже куплен этим пользователем
+        $existingPurchase = $this->mediaPurchaseRepository->findByMediaIdAndUserId($mediaId, $user->id);
+        if ($existingPurchase && $existingPurchase->status === 'completed') {
+            $this->logWarning('Попытка повторной покупки медиа', [
+                'media_id' => $mediaId,
+                'user_id' => $user->id,
+                'existing_purchase_id' => $existingPurchase->id,
+            ]);
+            throw new Exception('Исходник этого медиа уже был куплен.');
+        }
 
-            // Получаем комиссию платформы
-            $platformFee = Fee::where('type', 'platform')->first();
-            if (!$platformFee) {
-                $this->logError('Комиссия платформы не настроена');
-                throw new Exception('Комиссия платформы не настроена.');
-            }
+        // Проверяем, что пользователь не покупает свой собственный файл
+        if ($media->user_id === $user->id) {
+            $this->logWarning('Попытка покупки собственного медиа', [
+                'media_id' => $mediaId,
+                'user_id' => $user->id,
+            ]);
+            throw new Exception('Нельзя купить исходник собственного медиа.');
+        }
 
-            $amount = $media->source_price;
-            $totalAmount = $amount + $platformFee->fixed_amount;
+        // Получаем баланс пользователя
+        $userBalance = UserBalance::where('user_id', $user->id)->first();
+        if (!$userBalance) {
+            $this->logError('Баланс пользователя не найден', [
+                'user_id' => $user->id,
+            ]);
+            throw new Exception('Баланс пользователя не найден.');
+        }
 
-            // Проверяем, достаточно ли средств на балансе
-            if ($userBalance->balance < $totalAmount) {
-                $this->logWarning('Недостаточно средств для покупки медиа', [
-                    'user_id' => $user->id,
-                    'balance' => $userBalance->balance,
-                    'required' => $totalAmount,
-                    'media_id' => $mediaId,
-                ]);
-                throw new Exception('Недостаточно средств для покрытия суммы покупки и комиссии.');
-            }
+        // Получаем комиссию платформы
+        $platformFee = Fee::where('type', 'platform')->first();
+        if (!$platformFee) {
+            $this->logError('Комиссия платформы не настроена');
+            throw new Exception('Комиссия платформы не настроена.');
+        }
 
-            try {
-                $paymentGatewayService = new PaymentGatewayService();
-                $paymentGatewayService->processPayment($user->id, $totalAmount, $currency, 'anypay', $platformFee->fixed_amount);
-            } catch (Exception $e) {
-                $this->logError('Ошибка при обработке платежа', [
-                    'user_id' => $user->id,
-                    'media_id' => $mediaId,
-                    'amount' => $totalAmount,
-                ], $e);
-                throw new Exception('Ошибка при обработке платежа: ' . $e->getMessage());
+        $amount = $media->source_price;
+        $totalAmount = $amount + $platformFee->fixed_amount;
+
+        // Проверяем, достаточно ли средств на балансе
+        if ($userBalance->balance < $totalAmount) {
+            $this->logWarning('Недостаточно средств для покупки медиа', [
+                'user_id' => $user->id,
+                'balance' => $userBalance->balance,
+                'required' => $totalAmount,
+                'media_id' => $mediaId,
+            ]);
+            throw new Exception('Недостаточно средств для покрытия суммы покупки и комиссии.');
+        }
+
+        return DB::transaction(function () use ($user, $mediaId, $amount, $totalAmount, $currency, $platformFee, $idempotencyKey) {
+            // Проверяем баланс снова внутри транзакции (double-check)
+            $userBalance = UserBalance::where('user_id', $user->id)->lockForUpdate()->first();
+            if (!$userBalance || $userBalance->balance < $totalAmount) {
+                throw new Exception('Недостаточно средств.');
             }
 
             // Списываем средства с баланса
@@ -124,6 +130,7 @@ class MediaPurchaseService
                 'media_id' => $mediaId,
                 'amount' => $amount,
                 'status' => 'completed',
+                'idempotency_key' => $idempotencyKey,
             ]);
 
             // Создаём запись транзакции

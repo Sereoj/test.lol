@@ -6,6 +6,7 @@ use App\Events\SubscriptionActivated;
 use App\Events\SubscriptionCancelled;
 use App\Models\Billing\Subscription;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class SubscriptionService
 {
@@ -19,22 +20,72 @@ class SubscriptionService
     }
 
     // Создание новой подписки
-    public function createSubscription($plan, $amount, $currency, $duration)
+    public function createSubscription($plan, $amount, $currency, $duration, ?string $idempotencyKey = null)
     {
-        $subscription = Subscription::create([
-            'user_id' => Auth::id(),
-            'plan' => $plan,
-            'status' => 'active',
-            'amount' => $amount,
-            'currency' => $currency,
-            'started_at' => now(),
-            'expires_at' => now()->add($duration),
-        ]);
+        $userId = Auth::id();
 
-        // Диспатчим событие активации подписки
-        event(new SubscriptionActivated($subscription));
+        // Проверяем idempotency key для защиты от дубликатов
+        if ($idempotencyKey) {
+            $existingSubscription = Subscription::where('user_id', $userId)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+            if ($existingSubscription) {
+                return $existingSubscription;
+            }
+        }
 
-        return $subscription;
+        // Проверяем, нет ли уже активной подписки
+        $activeSubscription = $this->getActiveSubscription();
+        if ($activeSubscription) {
+            throw new \Exception('У пользователя уже есть активная подписка.');
+        }
+
+        return DB::transaction(function () use ($userId, $plan, $amount, $currency, $duration, $idempotencyKey) {
+            // Проверяем и списываем баланс пользователя
+            $userBalance = \App\Models\Users\UserBalance::where('user_id', $userId)
+                ->where('currency', $currency)
+                ->lockForUpdate()
+                ->first();
+
+            if (!$userBalance) {
+                throw new \Exception('Баланс пользователя не найден.');
+            }
+
+            if ($userBalance->balance < $amount) {
+                throw new \Exception('Недостаточно средств для подписки.');
+            }
+
+            // Списываем средства
+            $userBalance->balance -= $amount;
+            $userBalance->save();
+
+            // Создаем подписку
+            $subscription = Subscription::create([
+                'user_id' => $userId,
+                'plan' => $plan,
+                'status' => 'active',
+                'amount' => $amount,
+                'currency' => $currency,
+                'started_at' => now(),
+                'expires_at' => now()->add($duration),
+                'idempotency_key' => $idempotencyKey,
+            ]);
+
+            // Создаем транзакцию
+            \App\Models\Billing\Transaction::create([
+                'user_id' => $userId,
+                'type' => 'subscription',
+                'amount' => -$amount,
+                'currency' => $currency,
+                'status' => 'completed',
+                'metadata' => ['subscription_id' => $subscription->id],
+            ]);
+
+            // Диспатчим событие активации подписки
+            event(new SubscriptionActivated($subscription));
+
+            return $subscription;
+        });
     }
 
     // Обновить статус подписки

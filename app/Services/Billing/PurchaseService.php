@@ -25,41 +25,52 @@ class PurchaseService
         $this->transactionRepository = $transactionRepository;
     }
 
-    public function purchasePost(int $postId, float $amount, string $currency)
+    public function purchasePost(int $postId, float $amount, string $currency, ?string $idempotencyKey = null)
     {
-        return DB::transaction(function () use ($postId, $amount, $currency) {
-            $user = Auth::user();
+        $user = Auth::user();
 
-            // Проверяем, не был ли пост уже куплен этим пользователем
-            $existingPurchase = $this->purchaseRepository->findByPostIdAndUserId($postId, $user->id);
-            if ($existingPurchase && $existingPurchase->status === 'completed') {
-                throw new Exception('Этот пост уже был куплен.');
+        // Проверяем idempotency key для защиты от дубликатов
+        if ($idempotencyKey) {
+            $existingPurchase = $this->purchaseRepository->findByIdempotencyKey($idempotencyKey);
+            if ($existingPurchase) {
+                Log::info("Покупка с idempotency key уже существует", [
+                    'idempotency_key' => $idempotencyKey,
+                    'purchase_id' => $existingPurchase->id
+                ]);
+                return $existingPurchase;
             }
+        }
 
-            // Получаем баланс пользователя
-            $userBalance = UserBalance::where('user_id', $user->id)->first();
-            if (! $userBalance) {
-                throw new Exception('Баланс пользователя не найден.');
-            }
+        // Проверяем, не был ли пост уже куплен этим пользователем
+        $existingPurchase = $this->purchaseRepository->findByPostIdAndUserId($postId, $user->id);
+        if ($existingPurchase && $existingPurchase->status === 'completed') {
+            throw new Exception('Этот пост уже был куплен.');
+        }
 
-            // Получаем комиссию платформы
-            $platformFee = Fee::where('type', 'platform')->first();
-            if (! $platformFee) {
-                throw new Exception('Комиссия платформы не настроена.');
-            }
+        // Получаем баланс пользователя
+        $userBalance = UserBalance::where('user_id', $user->id)->first();
+        if (! $userBalance) {
+            throw new Exception('Баланс пользователя не найден.');
+        }
 
-            $totalAmount = $amount + $platformFee->fixed_amount;
+        // Получаем комиссию платформы
+        $platformFee = Fee::where('type', 'platform')->first();
+        if (! $platformFee) {
+            throw new Exception('Комиссия платформы не настроена.');
+        }
 
-            // Проверяем, достаточно ли средств на балансе
-            if ($userBalance->balance < $totalAmount) {
-                throw new Exception('Недостаточно средств для покрытия суммы покупки и комиссии.');
-            }
+        $totalAmount = $amount + $platformFee->fixed_amount;
 
-            try {
-                $paymentGatewayService = new PaymentGatewayService();
-                $paymentGatewayService->processPayment($user->id, $totalAmount, $currency, 'anypay', $platformFee->fixed_amount);
-            } catch (Exception $e) {
-                throw new Exception('Ошибка при обработке платежа: '.$e->getMessage());
+        // Проверяем, достаточно ли средств на балансе
+        if ($userBalance->balance < $totalAmount) {
+            throw new Exception('Недостаточно средств для покрытия суммы покупки и комиссии.');
+        }
+
+        return DB::transaction(function () use ($user, $postId, $amount, $totalAmount, $currency, $platformFee, $idempotencyKey) {
+            // Проверяем баланс снова внутри транзакции (double-check)
+            $userBalance = UserBalance::where('user_id', $user->id)->lockForUpdate()->first();
+            if (! $userBalance || $userBalance->balance < $totalAmount) {
+                throw new Exception('Недостаточно средств.');
             }
 
             // Списываем средства с баланса
@@ -72,6 +83,7 @@ class PurchaseService
                 'post_id' => $postId,
                 'amount' => $amount,
                 'status' => 'completed',
+                'idempotency_key' => $idempotencyKey,
             ]);
 
             // Создаём запись транзакции

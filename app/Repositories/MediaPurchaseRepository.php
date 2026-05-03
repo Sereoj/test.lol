@@ -33,6 +33,14 @@ class MediaPurchaseRepository
     }
 
     /**
+     * Поиск покупки по idempotency key
+     */
+    public function findByIdempotencyKey(string $idempotencyKey): ?MediaPurchase
+    {
+        return MediaPurchase::where('idempotency_key', $idempotencyKey)->first();
+    }
+
+    /**
      * Получение покупок медиа пользователя с пагинацией
      */
     public function findByUserIdWithPagination(int $userId, int $limit = 10, int $offset = 0)

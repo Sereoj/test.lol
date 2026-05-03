@@ -107,25 +107,27 @@ class TransactionService
      */
     public function debitFail(int $transactionId): bool
     {
-        $transaction = $this->transactionRepository->findById($transactionId);
+        return DB::transaction(function () use ($transactionId) {
+            $transaction = $this->transactionRepository->findById($transactionId);
 
-        if (!$transaction) {
-            throw new Exception("Транзакция с ID {$transactionId} не найдена");
-        }
+            if (!$transaction) {
+                throw new Exception("Транзакция с ID {$transactionId} не найдена");
+            }
 
-        if ($transaction->status === 'failed') {
-            Log::warning("Транзакция {$transactionId} уже помечена как неудачная");
-            return false;
-        }
+            if ($transaction->status === 'failed') {
+                Log::warning("Транзакция {$transactionId} уже помечена как неудачная");
+                return false;
+            }
 
-        $this->transactionRepository->updateStatus($transactionId, 'failed');
+            $this->transactionRepository->updateStatus($transactionId, 'failed');
 
-        Log::info("Пополнение завершено с ошибкой", [
-            'transaction_id' => $transactionId,
-            'user_id' => $transaction->user_id,
-        ]);
+            Log::info("Пополнение завершено с ошибкой", [
+                'transaction_id' => $transactionId,
+                'user_id' => $transaction->user_id,
+            ]);
 
-        return true;
+            return true;
+        });
     }
 
     // Метод для проверки фрод-мониторинга

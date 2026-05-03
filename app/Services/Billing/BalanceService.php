@@ -31,15 +31,31 @@ class BalanceService
         ];
     }
 
-    public function topUpBalance(float $amount, string $currency, string $gateway)
+    public function topUpBalance(float $amount, string $currency, string $gateway, ?string $idempotencyKey = null)
     {
-        return DB::transaction(function () use ($amount, $currency, $gateway) {
-            $user = Auth::user();
+        $user = Auth::user();
+
+        // Проверяем idempotency key для защиты от дубликатов
+        if ($idempotencyKey) {
+            $existingTopup = Topup::where('user_id', $user->id)
+                ->where('idempotency_key', $idempotencyKey)
+                ->first();
+            if ($existingTopup) {
+                Log::warning('Попытка дубликата пополнения с тем же idempotency key', [
+                    'user_id' => $user->id,
+                    'idempotency_key' => $idempotencyKey
+                ]);
+                throw new \Exception('Пополнение с таким ключом уже существует.');
+            }
+        }
+
+        return DB::transaction(function () use ($user, $amount, $currency, $gateway, $idempotencyKey) {
             $fee = Fee::getFeeByType('acquiring', $gateway);
 
-            // Получаем баланс только в указанной валюте
+            // Получаем баланс только в указанной валюте с блокировкой
             $userBalance = UserBalance::where('user_id', $user->id)
                 ->where('currency', $currency)
+                ->lockForUpdate()
                 ->first();
 
             if (! $userBalance) {
@@ -56,6 +72,7 @@ class BalanceService
                 'currency' => $currency,
                 'gateway' => $gateway,
                 'status' => 'succeeded',
+                'idempotency_key' => $idempotencyKey,
             ]);
 
             $transaction = Transaction::create([
