@@ -24,23 +24,29 @@ class SubscriptionService
     {
         $userId = Auth::id();
 
-        // Проверяем idempotency key для защиты от дубликатов
-        if ($idempotencyKey) {
-            $existingSubscription = Subscription::where('user_id', $userId)
-                ->where('idempotency_key', $idempotencyKey)
-                ->first();
-            if ($existingSubscription) {
-                return $existingSubscription;
-            }
-        }
-
-        // Проверяем, нет ли уже активной подписки
-        $activeSubscription = $this->getActiveSubscription();
-        if ($activeSubscription) {
-            throw new \Exception('У пользователя уже есть активная подписка.');
-        }
-
         return DB::transaction(function () use ($userId, $plan, $amount, $currency, $duration, $idempotencyKey) {
+            // Проверяем idempotency key для защиты от дубликатов (ВНУТРИ транзакции)
+            if ($idempotencyKey) {
+                $existingSubscription = Subscription::where('user_id', $userId)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->lockForUpdate()
+                    ->first();
+                if ($existingSubscription) {
+                    return $existingSubscription;
+                }
+            }
+
+            // Проверяем, нет ли уже активной подписки (ВНУТРИ транзакции)
+            $activeSubscription = Subscription::where('user_id', $userId)
+                ->where('status', 'active')
+                ->where('expires_at', '>', now())
+                ->lockForUpdate()
+                ->first();
+
+            if ($activeSubscription) {
+                throw new \Exception('У пользователя уже есть активная подписка.');
+            }
+
             // Проверяем и списываем баланс пользователя
             $userBalance = \App\Models\Users\UserBalance::where('user_id', $userId)
                 ->where('currency', $currency)
@@ -81,11 +87,11 @@ class SubscriptionService
                 'metadata' => ['subscription_id' => $subscription->id],
             ]);
 
-            // Диспатчим событие активации подписки
-            event(new SubscriptionActivated($subscription));
-
             return $subscription;
         });
+
+        // Диспатчим событие ПОСЛЕ транзакции
+        event(new SubscriptionActivated($subscription));
     }
 
     // Обновить статус подписки
