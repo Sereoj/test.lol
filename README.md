@@ -179,6 +179,144 @@ JavaScript (Laravel Echo) в браузере получает событие
       - **JavaScript Echo** (реал-тайм уведомления в браузере)
     - **Passport OAuth2** (API безопасность)
 
+## Навыки и знания, продемонстрированные в проекте
+
+Этот учебный проект демонстрирует следующие реальные навыки и знания:
+
+### Backend Development
+
+**Laravel Advanced Patterns:**
+- **Service Layer Pattern** — 67 сервисов в модулях Users, Posts, Media, Billing, Authentication, Acquiring, ChallengeService
+- **Repository Pattern** — 16 репозиториев для абстракции доступа к данным (PostRepository, ChallengeRepository, UserRepository и др.)
+- **DTO (Data Transfer Objects)** — классы для передачи данных между слоями приложения
+- **Events & Listeners** — 26 событий и 18 слушателей для асинхронной обработки (SubscriptionActivated, SubscriptionCancelled, PostPublished, ChallengeCreated и др.)
+- **Queue Jobs** — фоновая обработка тяжелых задач через Redis очереди
+- **Strategy Pattern** — 7 стратегий для вариативного поведения (Acquiring, Media processing)
+
+**Database & SQL:**
+- **Database Locks** — использование `lockForUpdate()` для защиты от race conditions в финансовых операциях
+- **Raw SQL vs Query Builder** — понимание когда использовать `selectRaw()` vs `select()`, защита от SQL injection
+- **Unique Indexes** — уникальные индексы для защиты от дубликатов и idempotency
+- **Complex Queries** — JOIN, GROUP BY, агрегатные функции (COUNT, SUM, COALESCE), CASE выражения
+- **Transactions** — `DB::transaction()` для атомарных операций в платежной системе
+- **Soft Deletes** — мягкое удаление записей в моделях пользователей
+- **Migrations** — версионирование схемы БД с комментариями и примерами использования
+
+**Security:**
+- **SQL Injection Prevention** — использование параметризованных запросов, понимание рисков интерполяции переменных
+- **OAuth2 Authentication** — Laravel Passport для API безопасности с токенами
+- **Idempotency Keys** — защита от повторных запросов при платежах
+- **Input Validation** — 68 Form Request классов для валидации входных данных
+- **Rate Limiting** — защита от abuse API
+- **Password Hashing** — bcrypt для безопасного хранения паролей
+- **Email Verification** — верификация email через токены
+
+**Architecture:**
+- **MVC Pattern** — 58 контроллеров, четкое разделение ответственности
+- **SOLID Principles** — Single Responsibility, Dependency Injection через сервисы
+- **Clean Code** — именование, комментарии, типизация
+- **Strict Typing** — `declare(strict_types=1)` для всех файлов
+- **Modular Structure** — разделение на модули (Users, Posts, Billing, Media, Authentication, Challenge)
+
+**Business Logic Domains:**
+- **Billing System** — полный цикл платежей (пополнения, списания, переводы, подписки, комиссии)
+- **User Management** — профили, настройки, уровни, бейджи, опыт, статус занятости
+- **Content Management** — посты, медиа, категории, теги, поиск, фильтрация
+- **Social Features** — подписки, лайки, комментарии, репосты, уведомления
+- **Challenge System** — конкурсы, голосования, призы, победители
+- **Messaging** — личные сообщения, чаты в реальном времени
+
+### DevOps & Infrastructure
+
+**Docker & Containerization:**
+- **Docker Compose** — оркестрация контейнеров для dev и production
+- **Multi-stage Builds** — оптимизация образов
+- **Service Orchestration** — связывание app, mysql, redis, reverb
+- **Environment Management** — разделение конфигураций для dev/staging/production
+
+**Web Server:**
+- **Caddy** — современный веб-сервер с автоматическим SSL
+- **Reverse Proxy** — проксирование к PHP-FPM и WebSocket
+- **HTTP/2 & HTTP/3** — современные протоколы
+- **Automatic HTTPS** — Let's Encrypt сертификаты без ручной настройки
+
+**Caching & Queues:**
+- **Redis** — кеширование, очереди, сессии
+- **Queue Workers** — обработка фоновых задач
+- **Cache Strategies** — TTL, invalidation, tagging
+- **Session Management** — хранение сессий в Redis для горизонтального масштабирования
+
+### Real-time Features
+
+**WebSocket:**
+- **Laravel Reverb** — WebSocket сервер для реал-тайм уведомлений
+- **Laravel Echo** — клиент для WebSocket в браузере
+- **Broadcasting** — события в реальном времени (уведомления, онлайн-статус, чаты)
+- **Presence Channels** — отслеживание пользователей онлайн
+
+### API Development
+
+**REST API:**
+- **API Resources** — 62 ресурса для трансформации данных в JSON
+- **API Controllers** — 58 контроллеров для обработки запросов
+- **Request Validation** — 68 Form Request классов для валидации
+- **Middleware** — 12 middleware для аутентификации, логирования, CORS
+- **Rate Limiting** — защита API от abuse
+- **API Documentation** — Swagger/OpenAPI документация
+
+**API Features:**
+- **Pagination** — пагинация больших списков данных
+- **Filtering** — сложная фильтрация по множеству параметров
+- **Sorting** — вариативная сортировка результатов
+- **Search** — полнотекстовый поиск с релевантностью
+- **Versioning** — подготовка к версионированию API
+
+### Code Quality
+
+**Testing:**
+- **PHPUnit** — unit и feature тесты
+- **Test Coverage** — покрытие кода тестами
+
+**Static Analysis:**
+- **PHPStan** — статический анализ кода
+- **PHP CS Fixer** — форматирование по стандартам PSR
+- **Git Hooks (Husky)** — автоматические проверки перед коммитом
+
+**Code Organization:**
+- **Helpers** — 3 вспомогательных класса для общих функций
+- **Traits** — 2 трейта для переиспользуемого функционала
+- **Processors** — 6 процессоров для обработки медиа и данных
+- **Logging** — структурированное логирование с контекстом
+
+### Что это говорит о кандидате
+
+**Для Junior/Middle позиций:**
+- Понимает и применяет паттерны проектирования (Service Layer, Repository, Strategy, Events)
+- Знает про race conditions в многопользовательских системах и умеет их предотвращать
+- Понимает SQL injection и умеет защищаться на уровне архитектуры
+- Работал с реальными проектами сложной структуры (67 сервисов, 53 модели, 58 контроллеров)
+- Умеет писать чистый и поддерживаемый код с комментариями
+- Знает DevOps инструменты (Docker, Caddy, Redis) для деплоя
+- Понимает REST API дизайн (Resources, Validation, Middleware)
+- Работал с реал-тайм системами (WebSocket, Broadcasting)
+
+**Для Senior позиций:**
+- Понимает архитектуру системы в целом и связи между компонентами
+- Умеет обосновывать выбор технологий (Caddy vs Nginx, Redis vs MySQL кеш)
+- Заботится о безопасности на уровне архитектуры (idempotency, locks, unique indexes)
+- Пишет документацию и комментарии для команды (примеры в миграциях)
+- Понимает производительность и оптимизацию (кеширование, очереди, индексы)
+- Умеет организовать код в крупных проектах (модули, сервисы, репозитории)
+- Понимает бизнес-логику сложных доменов (billing, challenges, messaging)
+- Умеет работать с асинхронными системами (events, listeners, queues, WebSocket)
+
+**Ключевые отличия от типичных учебных проектов:**
+- Реальная платежная система с защитой от race conditions и idempotency
+- Сложная бизнес-логика (биллинг, конкурсы, социальные функции)
+- Масштабируемая архитектура (Docker, Redis, WebSocket)
+- Качество кода (PHPStan, PHP CS Fixer, Git Hooks)
+- Документация и комментарии для будущей поддержки
+
 ## Требования
 
 ### Для локальной разработки
