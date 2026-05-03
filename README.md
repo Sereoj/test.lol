@@ -506,11 +506,7 @@ php artisan reverb:start
 
 ## Документация проекта
 
-- [QUICK_START.md](QUICK_START.md) – Быстрый старт
 - [DOCKER.md](DOCKER.md) – Инструкция по Docker
-- [README.docker.md](README.docker.md) – Дополнительно о Docker
-- [WEBSOCKET_NOTIFICATIONS_EXAMPLE.md](WEBSOCKET_NOTIFICATIONS_EXAMPLE.md) – WebSocket уведомления
-- [VERSION.md](VERSION.md) – История версий
 
 ## Авторские права и сотрудничество
 
