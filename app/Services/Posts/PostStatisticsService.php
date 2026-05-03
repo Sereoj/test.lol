@@ -17,15 +17,17 @@ class PostStatisticsService
         }
 
         // Определяем формат времени для группировки
-        $dateFormat = $groupBy === 'hour'
-            ? "DATE_FORMAT(post_statistics.updated_at, '%Y-%m-%d %H:00:00')"
-            : 'DATE(post_statistics.updated_at)';
+        // БЕЗОПАСНОСТЬ: $groupBy проверяется на равенство со строкой 'hour', не интерполируется в SQL
+        // Это защищает от SQL injection при формировании запроса
+        $timePeriodSelect = $groupBy === 'hour'
+            ? "DATE_FORMAT(post_statistics.updated_at, '%Y-%m-%d %H:00:00') as time_period"
+            : 'DATE(post_statistics.updated_at) as time_period';
 
         $query = PostStatistic::query()
             ->join('posts', 'post_statistics.post_id', '=', 'posts.id')
             ->where('posts.user_id', $userId)
             ->selectRaw("
-            $dateFormat as time_period,
+            $timePeriodSelect,
             COALESCE(SUM(post_statistics.views_count), 0) as total_views,
             COALESCE(SUM(post_statistics.likes_count), 0) as total_likes,
             COALESCE(SUM(post_statistics.downloads_count), 0) as total_downloads,
@@ -100,19 +102,21 @@ class PostStatisticsService
             return ['message' => 'User ID is required.'];
         }
 
+        // ПРИМЕНЕНИЕ selectRaw: используем сырой SQL для вычисляемого поля income
+        // Это чище, чем смешивание select() с DB::raw() внутри массива
         return PostStatistic::query()
             ->join('posts', 'post_statistics.post_id', '=', 'posts.id')
             ->where('posts.user_id', $userId) // Фильтр по пользователю
-            ->select([
-                'posts.id',
-                'posts.title',
-                'post_statistics.views_count',
-                'post_statistics.likes_count',
-                'post_statistics.downloads_count',
-                'post_statistics.purchases_count',
-                'post_statistics.comments_count',
-                DB::raw('posts.price * post_statistics.purchases_count as income'), // Расчёт дохода
-            ])
+            ->selectRaw("
+                posts.id,
+                posts.title,
+                post_statistics.views_count,
+                post_statistics.likes_count,
+                post_statistics.downloads_count,
+                post_statistics.purchases_count,
+                post_statistics.comments_count,
+                posts.price * post_statistics.purchases_count as income
+            ")
             ->orderBy('post_statistics.updated_at', 'desc') // Сортировка по последнему обновлению
             ->limit($limit) // Ограничение количества записей
             ->get()

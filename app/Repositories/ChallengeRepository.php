@@ -296,8 +296,10 @@ class ChallengeRepository
      */
     public function getTopSubmissionsByVotes(int $challengeId, int $limit): Collection
     {
+        // ПРИМЕНЕНИЕ selectRaw: используем сырой SQL для агрегатной функции COUNT(*)
+        // Это чище, чем смешивание select() с DB::raw()
         return ChallengeVote::where('challenge_id', $challengeId)
-            ->select('post_id', DB::raw('COUNT(*) as votes_count'))
+            ->selectRaw('post_id, COUNT(*) as votes_count')
             ->groupBy('post_id')
             ->orderBy('votes_count', 'desc')
             ->limit($limit)
@@ -344,4 +346,4 @@ class ChallengeRepository
             'submitted_at' => now(),
         ]);
     }
-} 
+}

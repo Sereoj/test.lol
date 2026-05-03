@@ -34,31 +34,33 @@ class SearchSuggestionService
 
             foreach ($queries as $preparedQuery) {
                 // Посты
+                // ПРИМЕНЕНИЕ selectRaw: используем сырой SQL для добавления вычисляемых полей
+                // Это чище, чем смешивание select() с DB::raw()
                 $postSuggestions = Post::query()
                     ->published()
                     ->where('title', 'like', "%{$preparedQuery}%")
-                    ->select('title as text', DB::raw("'post' as type"), DB::raw('100 as relevance_score'))
+                    ->selectRaw("title as text, 'post' as type, 100 as relevance_score")
                     ->take($limit)
                     ->get();
 
                 // Пользователи
                 $userSuggestions = User::query()
                     ->where('username', 'like', "%{$preparedQuery}%")
-                    ->select('username as text', DB::raw("'user' as type"), DB::raw('75 as relevance_score'))
+                    ->selectRaw("username as text, 'user' as type, 75 as relevance_score")
                     ->take($limit)
                     ->get();
 
                 // Теги
                 $tagSuggestions = Tag::query()
                     ->where('name', 'like', "%{$preparedQuery}%")
-                    ->select('name as text', DB::raw("'tag' as type"), DB::raw('50 as relevance_score'))
+                    ->selectRaw("name as text, 'tag' as type, 50 as relevance_score")
                     ->take($limit)
                     ->get();
 
                 // Категории
                 $categorySuggestions = Category::query()
                     ->where('name', 'like', "%{$preparedQuery}%")
-                    ->select('name as text', DB::raw("'category' as type"), DB::raw('25 as relevance_score'))
+                    ->selectRaw("name as text, 'category' as type, 25 as relevance_score")
                     ->take($limit)
                     ->get();
 

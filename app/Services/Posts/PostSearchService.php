@@ -125,7 +125,9 @@ class PostSearchService
             $whereParams[] = '%'.$query.'%'; // Для slug
         }
 
-        // ВАЖНО: selectRaw и whereRaw используют РАЗНЫЕ массивы параметров
+        // БЕЗОПАСНОСТЬ: selectRaw использует параметры для защиты от SQL injection
+        // $relevanceCase формируется из контролируемого массива $relevanceCases
+        // Параметры $relevanceParams передаются отдельно и экранируются
         $postsByContent = $baseQuery
             ->selectRaw("*, $relevanceCase", $relevanceParams)
             ->whereRaw(implode(' OR ', $whereConditions), $whereParams)
