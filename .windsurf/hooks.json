@@ -1,0 +1,20 @@
+{
+  "pre_write_code": [
+    {
+      "command": "powershell -File .windsurf\\hooks\\block-vendor-changes.ps1",
+      "description": "Block changes to vendor, node_modules, storage"
+    }
+  ],
+  "post_write_code": [
+    {
+      "command": "powershell -File .windsurf\\hooks\\format-php.ps1",
+      "description": "Format PHP files with Laravel Pint"
+    }
+  ],
+  "post_run_command": [
+    {
+      "command": "powershell -File .windsurf\\hooks\\log-artisan.ps1",
+      "description": "Log artisan commands"
+    }
+  ]
+}
